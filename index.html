@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HỆ THỐNG QUẢN LÝ HSD – Saigon Co.op</title>
+<title>QUẢN LÝ HẠN SỬ DỤNG</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -41,7 +41,6 @@ body{background:#f3f4f6}
 
 <body class="max-w-xl mx-auto p-3">
 
-<!-- SIDEBAR -->
 <div id="sidebar">
   <div class="p-4 border-b text-center">
     <img src="https://upload.wikimedia.org/wikipedia/vi/3/3f/Saigon_Co.op_logo.png" width="140" class="mx-auto mb-2">
@@ -54,7 +53,6 @@ body{background:#f3f4f6}
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
-<!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
   <div>
     <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
@@ -63,11 +61,10 @@ body{background:#f3f4f6}
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
 
-<!-- TAB HSD -->
 <div id="mainApp">
 
 <div class="card p-4 space-y-3">
-<label class="font-semibold">Barcode</label>
+<label class="font-semibold">Barcode sản phẩm</label>
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
 <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
@@ -75,43 +72,42 @@ body{background:#f3f4f6}
 
 <div id="reader" class="hidden mt-2"></div>
 
-<label class="font-semibold">NSX</label>
+<label class="font-semibold">Ngày sản xuất (NSX)</label>
 <input type="date" id="nsx" class="border p-2 rounded w-full">
 
-<label class="font-semibold">HSD</label>
+<label class="font-semibold">Hạn sử dụng (HSD)</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
-<div class="grid grid-cols-2 gap-2">
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH</button>
-<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">LẠI</button>
+<div class="grid grid-cols-2 gap-2 pt-2">
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
+<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded font-semibold">TÍNH LẠI</button>
 </div>
 
-<div id="result"></div>
+<div id="result" class="pt-2"></div>
 
-<div class="grid grid-cols-2 gap-2">
+<div class="grid grid-cols-2 gap-2 pt-2">
 <button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
 <button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
 </div>
 
-<div id="statistic" class="text-sm"></div>
+<div id="statistic" class="text-sm pt-2"></div>
 </div>
 
 <div class="card p-3 mt-4">
-<h2 class="font-bold brand-text mb-2">Lịch sử</h2>
-<div id="history" class="text-sm max-h-64 overflow-auto"></div>
+<h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
+<div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
 </div>
 
 </div>
 
-<!-- TAB PRINT -->
 <div id="printApp" class="hidden card p-4">
 
 <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
 
-<div class="flex gap-2 mb-2">
-<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">Quét</button>
-<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">Xuất TXT</button>
-<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">Xóa</button>
+<div class="flex flex-wrap gap-2 mb-2">
+<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét barcode</button>
+<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button>
+<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button>
 </div>
 
 <div id="printReader" class="hidden mb-2"></div>
@@ -143,74 +139,79 @@ function startScan(){
 }
 
 function calculate(){
- const nsxVal=document.getElementById("nsx").value;
- const hsdVal=document.getElementById("hsd").value;
+ const nsxVal=nsx.value;
+ const hsdVal=hsd.value;
  if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return;}
+ const nsxD=new Date(nsxVal);
+ const hsdD=new Date(hsdVal);
+ if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return;}
 
- const nsx=new Date(nsxVal);
- const hsd=new Date(hsdVal);
- if(hsd<=nsx){alert("HSD phải lớn hơn NSX");return;}
-
- const totalDays=(hsd-nsx)/86400000;
- const date30=new Date(nsx.getTime()+totalDays*0.7*86400000);
- const date20=new Date(nsx.getTime()+totalDays*0.8*86400000);
+ const total=(hsdD-nsxD)/86400000;
+ const date30=new Date(nsxD.getTime()+total*0.7*86400000);
+ const date20=new Date(nsxD.getTime()+total*0.8*86400000);
  const today=new Date();
 
- let b30="",b20="",t30="Trong ngưỡng an toàn",t20="Trong ngưỡng an toàn";
+ let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
 
- if(today>=date30){b30="blink30";t30="⚠ Giải tồn";}
- if(today>=date20){b20="blink20";t20="⚠ Rút hàng";}
+ if(today>=date30){
+   warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";
+   b30="blink30"; f30="Giải tồn";
+ }
+ if(today>=date20){
+   warn20="⚠️ <b>Rút hàng khỏi quầy</b>";
+   b20="blink20"; f20="Rút hàng";
+ }
 
  result.innerHTML=`
 <div class="border p-3 mb-3 ${b30}">
-<b>MỐC 30%</b> – ${date30.toLocaleDateString("vi-VN")}<br>${t30}
+<b>MỐC 30%</b><br>
+📅 ${date30.toLocaleDateString("vi-VN")}
+<div class="mt-1">${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
 </div>
-<div class="border p-3 ${b20}">
-<b>MỐC 20%</b> – ${date20.toLocaleDateString("vi-VN")}<br>${t20}
-</div>`;
 
- saveHistory(t30,t20);
+<div class="border p-3 ${b20}">
+<b>MỐC 20% (LÙI HÀNG)</b><br>
+📅 ${date20.toLocaleDateString("vi-VN")}
+<div class="mt-1">${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+</div>
+`;
+ saveHistory(f30,f20);
 }
 
-function saveHistory(a,b){
+function saveHistory(f30,f20){
  let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"30%":a,"20%":b,time:new Date().toLocaleString()});
+ h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
  localStorage.setItem(historyKey,JSON.stringify(h));
  renderHistory();
 }
 
 function renderHistory(){
  const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- history.innerHTML=h.map(x=>`${x.Barcode} | 30%:${x["30%"]} | 20%:${x["20%"]}`).join("<br>");
- statistic.innerHTML=`Tổng: ${h.length}`;
+ history.innerHTML=h.map(x=>`<div>- ${x.Barcode} | 30%:${x["Cảnh báo 30%"]} | 20%:${x["Cảnh báo 20%"]}</div>`).join("");
+ statistic.innerHTML=`📦 Tổng: ${h.length}`;
 }
 
 function clearHistory(){localStorage.removeItem(historyKey);renderHistory();}
-
 function exportExcel(){
  const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
  if(!h.length)return alert("Không có dữ liệu");
  const ws=XLSX.utils.json_to_sheet(h);
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,"HSD");
- XLSX.writeFile(wb,"hsd.xlsx");
+ XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
 }
-
 function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML="";}
-
 renderHistory();
 
-/* PRINT */
 const printKey="coop_print_history";
 let qr2=null;
 
 function startPrintScan(){
- const r=document.getElementById("printReader");
- r.classList.remove("hidden");
+ printReader.classList.remove("hidden");
  if(!qr2) qr2=new Html5Qrcode("printReader");
  qr2.start({facingMode:"environment"},{fps:10,qrbox:250},code=>{
   addBarcode(code);
-  qr2.stop();r.classList.add("hidden");
+  qr2.stop();printReader.classList.add("hidden");
  });
 }
 
@@ -223,16 +224,17 @@ function addBarcode(code){
 
 function renderPrint(){
  const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`${b},${q};`).join("<br>");
+ printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q};</div>`).join("");
 }
 
 function exportText(){
  const d=JSON.parse(localStorage.getItem(printKey)||"{}");
+ if(!Object.keys(d).length){alert("Không có dữ liệu");return;}
  const txt=Object.entries(d).map(([b,q])=>`${b},${q};`).join("\n");
  const blob=new Blob([txt],{type:"text/plain"});
  const a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
- a.download="barcode.txt";
+ a.download="barcode_print.txt";
  a.click();
 }
 
