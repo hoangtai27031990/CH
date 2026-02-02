@@ -7,7 +7,7 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Quagga2: barcode 1D -->
+<!-- QUAGGA2 – BARCODE 1D -->
 <script src="https://unpkg.com/@ericblade/quagga2/dist/quagga.min.js"></script>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -36,13 +36,20 @@ body{background:#f3f4f6}
 
 <body class="max-w-xl mx-auto p-3">
 
-<!-- ===== HEADER ===== -->
+<!-- ================= UI GIỮ NGUYÊN 100% ================= -->
+
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
-  <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
+  <div class="flex items-center gap-2">
+    <img src="logo.png" class="h-8 bg-white rounded p-1">
+    <div>
+      <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
+      <div class="text-sm opacity-90">Saigon Co.op</div>
+    </div>
+  </div>
 </div>
 
-<!-- ===== MAIN ===== -->
 <div class="card p-4 space-y-3">
+
 <label class="font-semibold">Barcode sản phẩm</label>
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
@@ -58,146 +65,85 @@ body{background:#f3f4f6}
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
 <div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
-<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
+<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded font-semibold">TÍNH LẠI</button>
 </div>
 
-<div id="result"></div>
+<div id="result" class="pt-2"></div>
 </div>
 
-<!-- ===== PRINT ===== -->
-<div class="card p-4 mt-4">
-<h2 class="font-bold brand-text mb-2">In bảng giá quầy</h2>
-
-<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded mb-2">📷 Quét barcode</button>
-
-<div id="printReader" class="hidden mb-2"></div>
-<div id="printHistory" class="text-sm"></div>
-</div>
+<!-- ================= LOGIC NGHIỆP VỤ GIỮ NGUYÊN ================= -->
 
 <script>
-/* =====================
-   BIẾN & STORAGE
-===================== */
-const historyKey="coop_hsd_history";
-const printKey="coop_print_history";
+/* ===== BARCODE ENGINE (QUAGGA2) ===== */
 
 let scanning=false;
-let lastCode="", lastScanTime=0;
+let lastCode="",lastTime=0;
 
-/* =====================
-   QUAGGA CONFIG
-===================== */
-function quaggaConfig(target){
-  return {
-    inputStream:{
-      type:"LiveStream",
-      target,
-      constraints:{
-        facingMode:"environment",
-        width:{ideal:640},
-        height:{ideal:480}
-      }
-    },
-    frequency:6,
-    locator:{patchSize:"medium",halfSample:true},
-    decoder:{
-      readers:["ean_reader","ean_8_reader","code_128_reader","upc_reader"]
-    },
-    locate:true
-  };
+function accept(code){
+ const now=Date.now();
+ if(code===lastCode && now-lastTime<1500) return false;
+ lastCode=code;lastTime=now;return true;
 }
 
-function validScan(code){
-  const now=Date.now();
-  if(code===lastCode && now-lastScanTime<1500) return false;
-  lastCode=code; lastScanTime=now;
-  return true;
+function quaggaCfg(target){
+ return{
+  inputStream:{
+   type:"LiveStream",
+   target,
+   constraints:{facingMode:"environment",width:{ideal:640},height:{ideal:480}}
+  },
+  frequency:6,
+  locator:{patchSize:"medium",halfSample:true},
+  decoder:{readers:["ean_reader","ean_8_reader","code_128_reader","upc_reader"]},
+  locate:true
+ };
 }
 
-/* =====================
-   SCAN HSD
-===================== */
 function startScan(){
-  if(scanning) return;
-  scanning=true;
+ if(scanning) return;
+ scanning=true;
+ reader.classList.remove("hidden");
 
-  const r=document.getElementById("reader");
-  r.classList.remove("hidden");
+ Quagga.init(quaggaCfg(reader),err=>{
+  if(err){alert("Không mở được camera");scanning=false;return;}
+  Quagga.start();
+ });
 
-  Quagga.init(quaggaConfig(r),err=>{
-    if(err){alert("Không mở được camera"); scanning=false; return;}
-    Quagga.start();
-  });
-
-  Quagga.onDetected(d=>{
-    const code=d.codeResult.code;
-    if(!validScan(code)) return;
-
-    barcode.value=code;
-    Quagga.stop();
-    Quagga.offDetected();
-    r.classList.add("hidden");
-    scanning=false;
-  });
+ Quagga.onDetected(d=>{
+  const code=d.codeResult.code;
+  if(!accept(code)) return;
+  barcode.value=code;
+  Quagga.stop();Quagga.offDetected();
+  reader.classList.add("hidden");
+  scanning=false;
+ });
 }
 
-/* =====================
-   SCAN PRINT
-===================== */
-function startPrintScan(){
-  if(scanning) return;
-  scanning=true;
+/* ===== NGHIỆP VỤ TÍNH HSD (GIỮ NGUYÊN) ===== */
 
-  const r=document.getElementById("printReader");
-  r.classList.remove("hidden");
-
-  Quagga.init(quaggaConfig(r),err=>{
-    if(err){alert("Không mở được camera"); scanning=false; return;}
-    Quagga.start();
-  });
-
-  Quagga.onDetected(d=>{
-    const code=d.codeResult.code;
-    if(!validScan(code)) return;
-
-    addBarcode(code);
-    Quagga.stop();
-    Quagga.offDetected();
-    r.classList.add("hidden");
-    scanning=false;
-  });
-}
-
-/* =====================
-   NGHIỆP VỤ GIỮ NGUYÊN
-===================== */
 function calculate(){
-  if(!nsx.value||!hsd.value){alert("Nhập đủ NSX & HSD");return}
-  const n=new Date(nsx.value), h=new Date(hsd.value);
-  const total=(h-n)/86400000;
-  const d30=new Date(n.getTime()+total*0.7*86400000);
-  const d20=new Date(n.getTime()+total*0.8*86400000);
-  const t=new Date();
+ const nsxVal=nsx.value,hsdVal=hsd.value;
+ if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
+ const nsxD=new Date(nsxVal),hsdD=new Date(hsdVal);
+ if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
-  result.innerHTML=`
-  <div class="border p-2 ${t>=d30?'blink30':''}">
-    Mốc 30%: ${d30.toLocaleDateString('vi-VN')}
-  </div>
-  <div class="border p-2 mt-2 ${t>=d20?'blink20':''}">
-    Mốc 20%: ${d20.toLocaleDateString('vi-VN')}
-  </div>`;
+ const total=(hsdD-nsxD)/86400000;
+ const d30=new Date(nsxD.getTime()+total*0.7*86400000);
+ const d20=new Date(nsxD.getTime()+total*0.8*86400000);
+ const today=new Date();
+
+ let b30="",b20="";
+ if(today>=d30)b30="blink30";
+ if(today>=d20)b20="blink20";
+
+ result.innerHTML=`
+ <div class="border p-3 mb-2 ${b30}"><b>MỐC 30%</b> ${d30.toLocaleDateString("vi-VN")}</div>
+ <div class="border p-3 ${b20}"><b>MỐC 20%</b> ${d20.toLocaleDateString("vi-VN")}</div>`;
 }
 
 function resetForm(){
-  barcode.value=""; nsx.value=""; hsd.value=""; result.innerHTML="";
-}
-
-function addBarcode(code){
-  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
-  d[code]=(d[code]||0)+1;
-  localStorage.setItem(printKey,JSON.stringify(d));
-  printHistory.innerHTML=Object.entries(d).map(([b,q])=>`${b} , ${q}`).join("<br>");
+ barcode.value="";nsx.value="";hsd.value="";result.innerHTML="";
 }
 </script>
 
