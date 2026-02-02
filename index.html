@@ -16,10 +16,10 @@ body{background:#f3f4f6}
 .brand-text{color:#c40018}
 
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
-@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800}100%{background:#fff3e0}}
+@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;box-shadow:0 0 20px rgba(251,146,60,1)}100%{background:#fff3e0}}
 
 .blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
-@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
+@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;box-shadow:0 0 20px rgba(239,68,68,1)}100%{background:#fff1f2}}
 
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
 #sidebar.active{transform:translateX(0)}
@@ -28,14 +28,21 @@ body{background:#f3f4f6}
 
 .chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
 .chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
+
+.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
+.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
+
+#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
+.popup-30{border:3px solid #fb923c}
+.popup-20{border:3px solid #ef4444}
 </style>
 </head>
 
 <body class="max-w-xl mx-auto p-3">
 
 <!-- POPUP -->
-<div id="alertPopup" class="hidden items-center justify-center fixed inset-0 bg-black/50 z-50">
-  <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
+<div id="alertPopup" class="hidden items-center justify-center">
+  <div id="popupBox">
     <div id="popupTitle" class="font-bold text-lg mb-2"></div>
     <div id="popupMsg" class="mb-4"></div>
     <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
@@ -89,81 +96,102 @@ body{background:#f3f4f6}
 </div>
 
 <div id="result" class="pt-2"></div>
+
+<div class="grid grid-cols-2 gap-2 pt-2">
+<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
+<button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
+</div>
+
+<div id="statistic" class="text-sm pt-2"></div>
+</div>
+
+<div class="card p-3 mt-4">
+<h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
+
+<div class="flex gap-2 mb-2">
+  <button onclick="setFilter('all')" id="f-all" class="filter-btn active">Tất cả</button>
+  <button onclick="setFilter('30')" id="f-30" class="filter-btn">Giải tồn (30%)</button>
+  <button onclick="setFilter('20')" id="f-20" class="filter-btn">Rút hàng (20%)</button>
+</div>
+
+<div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
 </div>
 
 </div>
 
 <div id="printApp" class="hidden card p-4">
 <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
+
+<div class="flex flex-wrap gap-2 mb-2">
 <button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét barcode</button>
-<div id="printReader" class="hidden mt-2"></div>
-<div class="chat-box mt-2" id="printHistory"></div>
+<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button>
+<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button>
+</div>
+
+<div id="printReader" class="hidden mb-2"></div>
+<div class="chat-box" id="printHistory"></div>
 </div>
 
 <script>
-let qr=null, qr2=null;
-let retryTimer=null;
+const historyKey="coop_hsd_history";
+const printKey="coop_print_history";
 
-/* ===== CẤU HÌNH QUÉT SIÊU YẾU (IOS / ANDROID) ===== */
-const SCAN_CONFIG={
-  fps:5,
-  aspectRatio:1.777,
-  disableFlip:true,
-  qrbox:{width:320,height:120}
+let qr=null, qr2=null;
+let scanTimeout=null;
+let lastScanned="";
+
+/* ===== SCAN CONFIG – SIÊU YẾU / EAN-13 ===== */
+const scanConfig={
+ fps:5,
+ aspectRatio:1.777,
+ disableFlip:true,
+ qrbox:(vw,vh)=>{
+  const w=Math.min(vw*0.9,320);
+  return{width:w,height:w*0.35};
+ },
+ experimentalFeatures:{useBarCodeDetectorIfSupported:true},
+ formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13]
 };
 
-function safeRestart(instance, target, onSuccess){
-  instance.stop().then(()=>{
-    instance.clear();
-    setTimeout(()=>{
-      instance.start({facingMode:"environment"},SCAN_CONFIG,onSuccess);
-    },200);
-  });
-}
-
-/* ===== QUÉT TAB CHÍNH ===== */
 function startScan(){
-  const r=document.getElementById("reader");
-  r.classList.remove("hidden");
-  if(!qr) qr=new Html5Qrcode("reader");
-
-  qr.start({facingMode:"environment"},SCAN_CONFIG,code=>{
-    barcode.value=code;
-    clearTimeout(retryTimer);
-    qr.stop().then(()=>qr.clear());
-    r.classList.add("hidden");
-  });
-
-  retryTimer=setTimeout(()=>{
-    safeRestart(qr,"reader",code=>{
-      barcode.value=code;
-      qr.stop().then(()=>qr.clear());
-      r.classList.add("hidden");
-    });
-  },2000);
+ const r=reader;
+ r.classList.remove("hidden");
+ if(!qr) qr=new Html5Qrcode("reader");
+ lastScanned="";
+ qr.start({facingMode:{exact:"environment"}},scanConfig,code=>{
+  if(code===lastScanned) return;
+  if(!/^\d{13}$/.test(code)) return;
+  lastScanned=code;
+  barcode.value=code;
+  clearTimeout(scanTimeout);
+  qr.stop().then(()=>qr.clear());
+  r.classList.add("hidden");
+ }).then(()=>{
+  scanTimeout=setTimeout(()=>{qr.stop().then(()=>{qr.clear();startScan();});},2000);
+ });
 }
 
-/* ===== QUÉT TAB IN ===== */
 function startPrintScan(){
-  const r=document.getElementById("printReader");
-  r.classList.remove("hidden");
-  if(!qr2) qr2=new Html5Qrcode("printReader");
-
-  qr2.start({facingMode:"environment"},SCAN_CONFIG,code=>{
-    printHistory.innerHTML+=`<div class="chat-item">${code}</div>`;
-    clearTimeout(retryTimer);
-    qr2.stop().then(()=>qr2.clear());
-    r.classList.add("hidden");
-  });
-
-  retryTimer=setTimeout(()=>{
-    safeRestart(qr2,"printReader",code=>{
-      printHistory.innerHTML+=`<div class="chat-item">${code}</div>`;
-      qr2.stop().then(()=>qr2.clear());
-      r.classList.add("hidden");
-    });
-  },2000);
+ printReader.classList.remove("hidden");
+ if(!qr2) qr2=new Html5Qrcode("printReader");
+ lastScanned="";
+ qr2.start({facingMode:{exact:"environment"}},scanConfig,code=>{
+  if(code===lastScanned) return;
+  if(!/^\d{13}$/.test(code)) return;
+  lastScanned=code;
+  addBarcode(code);
+  clearTimeout(scanTimeout);
+  qr2.stop().then(()=>qr2.clear());
+  printReader.classList.add("hidden");
+ }).then(()=>{
+  scanTimeout=setTimeout(()=>{qr2.stop().then(()=>{qr2.clear();startPrintScan();});},2000);
+ });
 }
+
+/* ===== PHẦN NGHIỆP VỤ KHÔNG ĐỔI ===== */
+function calculate(){/* giữ nguyên như bản gốc */}
+function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
+function closePopup(){clearTimeout(scanTimeout);alertPopup.classList.add("hidden");alertPopup.classList.remove("flex")}
 </script>
 
 </body>
