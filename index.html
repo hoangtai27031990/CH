@@ -145,7 +145,7 @@ const scanConfig={
  fps:5,
  aspectRatio:1.777,
  disableFlip:true,
- qrbox:(vw,vh)=>{
+ qrbox:(vw)=>{
   const w=Math.min(vw*0.9,320);
   return{width:w,height:w*0.35};
  },
@@ -153,12 +153,22 @@ const scanConfig={
  formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13]
 };
 
+function safeRestart(instance, starter){
+ try{
+  instance.stop().then(()=>{
+   instance.clear();
+   starter();
+  });
+ }catch(e){}
+}
+
 function startScan(){
  const r=reader;
  r.classList.remove("hidden");
  if(!qr) qr=new Html5Qrcode("reader");
  lastScanned="";
- qr.start({facingMode:{exact:"environment"}},scanConfig,code=>{
+
+ qr.start({facingMode:{ideal:"environment"}},scanConfig,code=>{
   if(code===lastScanned) return;
   if(!/^\d{13}$/.test(code)) return;
   lastScanned=code;
@@ -167,7 +177,7 @@ function startScan(){
   qr.stop().then(()=>qr.clear());
   r.classList.add("hidden");
  }).then(()=>{
-  scanTimeout=setTimeout(()=>{qr.stop().then(()=>{qr.clear();startScan();});},2000);
+  scanTimeout=setTimeout(()=>safeRestart(qr,startScan),2000);
  });
 }
 
@@ -175,7 +185,8 @@ function startPrintScan(){
  printReader.classList.remove("hidden");
  if(!qr2) qr2=new Html5Qrcode("printReader");
  lastScanned="";
- qr2.start({facingMode:{exact:"environment"}},scanConfig,code=>{
+
+ qr2.start({facingMode:{ideal:"environment"}},scanConfig,code=>{
   if(code===lastScanned) return;
   if(!/^\d{13}$/.test(code)) return;
   lastScanned=code;
@@ -184,14 +195,15 @@ function startPrintScan(){
   qr2.stop().then(()=>qr2.clear());
   printReader.classList.add("hidden");
  }).then(()=>{
-  scanTimeout=setTimeout(()=>{qr2.stop().then(()=>{qr2.clear();startPrintScan();});},2000);
+  scanTimeout=setTimeout(()=>safeRestart(qr2,startPrintScan),2000);
  });
 }
 
-/* ===== PHẦN NGHIỆP VỤ KHÔNG ĐỔI ===== */
-function calculate(){/* giữ nguyên như bản gốc */}
-function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
-function closePopup(){clearTimeout(scanTimeout);alertPopup.classList.add("hidden");alertPopup.classList.remove("flex")}
+function closePopup(){
+ clearTimeout(scanTimeout);
+ alertPopup.classList.add("hidden");
+ alertPopup.classList.remove("flex");
+}
 </script>
 
 </body>
