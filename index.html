@@ -36,19 +36,37 @@ body{background:#f3f4f6}
 .popup-30{border:3px solid #fb923c}
 .popup-20{border:3px solid #ef4444}
   /* VẠCH ĐỎ HỖ TRỢ CANH BARCODE */
-.scan-line{
-position:absolute;
-top:50%;
-left:5%;
-width:90%;
-height:3px;
-background:#ff0000;
-z-index:20;
+#reader {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  background: #000;
 }
-#reader,#printReader{position:relative;overflow:hidden}
-  #reader, #printReader{
-  height:240px;       /* BẮT BUỘC cho Safari */
-  background:#000;
+
+.scan-frame {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255,255,255,0.3);
+  z-index: 10;
+}
+
+.scan-line {
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  width: 90%;
+  height: 4px;
+  background: red;
+  box-shadow: 0 0 12px red;
+  animation: scanMove 1.2s linear infinite;
+  z-index: 20;
+}
+
+@keyframes scanMove {
+  0% { top: 30%; }
+  50% { top: 50%; }
+  100% { top: 70%; }
+}
 }
 </style>
 </head>
@@ -150,6 +168,14 @@ z-index:20;
 </div>
 
 <script>
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
+}
+
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+</script>
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
 
@@ -166,36 +192,40 @@ let qr=null, qr2=null, currentFilter="all";
 
 /* ===== TỐI ƯU QUÉT BARCODE ===== */
 const scanConfig = {
-  fps: 10,
-  qrbox: { width: 280, height: 120 },
-  aspectRatio: 1.777,
-  disableFlip: true
+  fps: 6,
+  aspectRatio: 1.333,
+  disableFlip: true,
+  qrbox: { width: 280, height: 100 },
+  experimentalFeatures: {
+    useBarCodeDetectorIfSupported: true
+  }
 };
-function startScan(){
+
   const r = document.getElementById("reader");
-  r.innerHTML = '<div class="scan-line"></div>';
+
+  r.innerHTML = `
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+    </div>
+  `;
   r.classList.remove("hidden");
 
-  if(!qr) qr = new Html5Qrcode("reader");
+  if (!qr) qr = new Html5Qrcode("reader");
 
   qr.start(
-  {
-    facingMode: "environment",
-    width: { ideal: 1280 },
-    height: { ideal: 720 }
-  },
-  scanConfig,
-  (code) => {
-    barcode.value = code;
-    qr.stop().then(() => {
-      qr.clear();
-      r.classList.add("hidden");
-    });
-  }
-).catch(() => {
-  alert("Safari iOS hạn chế quét barcode 1D. Nếu không quét được, vui lòng nhập tay.");
-  r.classList.add("hidden");
-});
+    { facingMode: "environment" },
+    scanConfig,
+    (code) => {
+      barcode.value = code;
+      qr.stop().then(() => {
+        qr.clear();
+        r.classList.add("hidden");
+      });
+    },
+    () => {}
+  );
+}
+
 
 
 function calculate(){
