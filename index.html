@@ -46,6 +46,10 @@ background:#ff0000;
 z-index:20;
 }
 #reader,#printReader{position:relative;overflow:hidden}
+  #reader, #printReader{
+  height:240px;       /* BẮT BUỘC cho Safari */
+  background:#000;
+}
 </style>
 </head>
 
@@ -175,20 +179,23 @@ function startScan(){
   if(!qr) qr = new Html5Qrcode("reader");
 
   qr.start(
-    { facingMode: "environment" },
-    scanConfig,
-    (code) => {
-      barcode.value = code;
-      qr.stop().then(() => {
-        qr.clear();
-        r.classList.add("hidden");
-      });
-    }
-  ).catch(err => {
-    alert("Không mở được camera. Vui lòng kiểm tra quyền camera hoặc dùng HTTPS.");
-    r.classList.add("hidden");
-  });
-}
+  {
+    facingMode: "environment",
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  },
+  scanConfig,
+  (code) => {
+    barcode.value = code;
+    qr.stop().then(() => {
+      qr.clear();
+      r.classList.add("hidden");
+    });
+  }
+).catch(() => {
+  alert("Safari iOS hạn chế quét barcode 1D. Nếu không quét được, vui lòng nhập tay.");
+  r.classList.add("hidden");
+});
 
 
 function calculate(){
