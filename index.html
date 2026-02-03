@@ -15,31 +15,56 @@ body{background:#f3f4f6}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
 
-/* BLINK */
+/* ===== BLINK ===== */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
 @keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800}100%{background:#fff3e0}}
 .blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
 @keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
 
-#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;
-box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);
-transition:.3s;z-index:1000}
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
 #sidebar.active{transform:translateX(0)}
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
 #overlay.active{display:block}
 
-.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;
-border-radius:10px;padding:10px}
-.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;
-padding:6px 10px;margin-bottom:6px;font-family:monospace}
+.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
 
-.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;
-background:#f5f5f5;cursor:pointer;font-size:13px}
+.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
 .filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
 
+/* ===== POPUP ===== */
 #alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
 .popup-30{border:3px solid #fb923c}
 .popup-20{border:3px solid #ef4444}
+
+/* ===== SCAN OVERLAY ===== */
+#reader,#printReader{
+  position:relative;
+  width:100%;
+  height:260px;
+  background:#000;
+}
+.scan-frame{
+  position:absolute;
+  inset:10%;
+  border:2px solid rgba(255,255,255,.4);
+  z-index:10;
+}
+.scan-line{
+  position:absolute;
+  left:5%;
+  width:90%;
+  height:4px;
+  background:red;
+  box-shadow:0 0 12px red;
+  animation:scanMove 1.2s linear infinite;
+  z-index:20;
+}
+@keyframes scanMove{
+  0%{top:30%}
+  50%{top:50%}
+  100%{top:70%}
+}
 </style>
 </head>
 
@@ -60,15 +85,12 @@ background:#f5f5f5;cursor:pointer;font-size:13px}
     <div class="font-bold brand-text">Saigon Co.op</div>
   </div>
   <div class="p-3 space-y-2">
-    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">
-      📦 Quản lý HSD
-    </button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">
-      🖨 In bảng giá quầy
-    </button>
-    <button onclick="showDanhGiaHV()" class="w-full text-left px-3 py-2 rounded bg-slate-100">
-      📝 Đánh giá HV
-    </button>
+    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
+    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
+    <button onclick="showEvaluate()" 
+        class="w-full text-left px-3 py-2 rounded bg-slate-100">
+  🎓 Đánh giá học viên
+</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -138,89 +160,274 @@ background:#f5f5f5;cursor:pointer;font-size:13px}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
+<!-- ================= EVALUATE APP ================= -->
+<div id="evaluateApp" class="hidden card p-4 mt-4">
+  <h2 class="font-bold brand-text mb-4">Đánh giá học viên</h2>
+
+  <div class="grid grid-cols-2 gap-3">
+    <button class="brand-bg text-white py-3 rounded"
+            onclick="openEvaluate('NVBH_COOPFOOD')">
+      NVBH Co.op Food
+    </button>
+
+    <button class="brand-bg text-white py-3 rounded"
+            onclick="openEvaluate('CHT_COOPFOOD')">
+      CHT Co.op Food
+    </button>
+
+    <button class="brand-bg text-white py-3 rounded"
+            onclick="openEvaluate('NVBH_BACHHOA')">
+      NVBH Bách Hóa
+    </button>
+
+    <button class="brand-bg text-white py-3 rounded"
+            onclick="openEvaluate('CHT_BACHHOA')">
+      CHT Bách Hóa
+    </button>
+  </div>
+</div>
 
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
+/* ================= CORE ================= */
+const historyKey="coop_hsd_history";
+const printKey="coop_print_history";
 
-<!-- ================= ĐÁNH GIÁ HỌC VIÊN ================= -->
-<div id="danhGiaHV" class="hidden card p-4">
-
-<h2 class="font-bold brand-text mb-3 text-center">
-PHIẾU ĐÁNH GIÁ KẾT QUẢ THỰC TẬP<br>
-NHÂN VIÊN BÁN HÀNG CF
-</h2>
-
-<div class="grid grid-cols-1 gap-2 mb-3">
-  <input id="dg_name" class="border p-2 rounded" placeholder="Họ tên học viên">
-  <input id="dg_code" class="border p-2 rounded" placeholder="Mã học viên">
-  <input id="dg_date" type="date" class="border p-2 rounded">
-  <input id="dg_unit" class="border p-2 rounded" placeholder="Đơn vị thực tập">
-</div>
-
-<div class="grid grid-cols-2 gap-2 mb-3">
-  <input id="F22" class="border p-2 rounded" placeholder="F22">
-  <input id="F23" class="border p-2 rounded" placeholder="F23">
-  <input id="F24" class="border p-2 rounded" placeholder="F24">
-  <input id="F25" class="border p-2 rounded" placeholder="F25">
-  <input id="F26" class="border p-2 rounded" placeholder="F26">
-  <input id="F27" class="border p-2 rounded" placeholder="F27">
-  <input id="F28" class="border p-2 rounded" placeholder="F28">
-  <input id="F30" class="border p-2 rounded" placeholder="F30">
-  <input id="F32" class="border p-2 rounded" placeholder="F32">
-  <input id="F34" class="border p-2 rounded" placeholder="F34">
-</div>
-
-<button onclick="exportDanhGiaHV()" class="brand-bg text-white w-full py-2 rounded font-semibold">
-Xuất file đánh giá để in & ký
-</button>
-
-</div>
-
-<script>
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
-const danhGiaHV=document.getElementById("danhGiaHV");
+const evaluateApp=document.getElementById("evaluateApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");danhGiaHV.classList.add("hidden");toggleMenu()}
-function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");danhGiaHV.classList.add("hidden");toggleMenu()}
-function showDanhGiaHV(){mainApp.classList.add("hidden");printApp.classList.add("hidden");danhGiaHV.classList.remove("hidden");toggleMenu()}
-
-async function exportDanhGiaHV(){
-  const res = await fetch("Danh_gia_NV_Ban_Hang_CF.xlsx");
-  if(!res.ok){alert("Không tìm thấy file Excel mẫu");return;}
-
-  const buf = await res.arrayBuffer();
-  const wb = XLSX.read(buf,{type:"array"});
-  const ws = wb.Sheets[wb.SheetNames[0]];
-
-  ws["F5"]={t:"s",v:dg_name.value};
-  ws["F6"]={t:"s",v:dg_code.value};
-  ws["F7"]={t:"s",v:dg_date.value};
-  ws["F8"]={t:"s",v:dg_unit.value};
-
-  ["F22","F23","F24","F25","F26","F27","F28","F30","F32","F34"]
-  .forEach(c=>ws[c]={t:"n",v:Number(document.getElementById(c).value||0)});
-
-  XLSX.writeFile(wb,"Danh_gia_NV_Ban_Hang_CF_DA_DIEN.xlsx");
-  showPopup("export");
+function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
+function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
+function showEvaluate(){
+  mainApp.classList.add("hidden");
+  printApp.classList.add("hidden");
+  evaluateApp.classList.remove("hidden");
+  toggleMenu();
 }
 
-function showPopup(){
-  alertPopup.classList.remove("hidden");
-  alertPopup.classList.add("flex");
-  popupTitle.innerText="Xuất file thành công";
-  popupMsg.innerText="File đã sẵn sàng để in và ký tay";
+/* ================= SCAN CONFIG ================= */
+const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
+
+let qr=null,qr2=null,currentFilter="all";
+
+/* ================= SCAN MAIN ================= */
+function startScan(){
+  if(isIOS()){
+    alert("⚠️ iPhone không hỗ trợ quét barcode ổn định.\nVui lòng nhập tay barcode.");
+    return;
+  }
+
+  const r=document.getElementById("reader");
+  r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
+  r.classList.remove("hidden");
+
+  if(!qr) qr=new Html5Qrcode("reader");
+
+  qr.start(
+    { facingMode:{ ideal:"environment" } },
+    scanConfigAndroidWeak,
+    code=>{
+      barcode.value=code;
+      qr.stop().then(()=>qr.clear());
+      r.classList.add("hidden");
+    },
+    err=>{}
+  );
+}
+
+/* ================= SCAN PRINT ================= */
+function startPrintScan(){
+
+  if (isIOS()) {
+    alert(
+      "⚠️ THIẾT BỊ iOS KHÔNG HỖ TRỢ QUÉT BARCODE\n\n" +
+      "Vui lòng:\n" +
+      "• Dùng điện thoại Android\n" +
+      "• Hoặc nhập barcode thủ công"
+    );
+    return;
+  }
+
+  const r = document.getElementById("printReader");
+  r.innerHTML = `
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+    </div>
+  `;
+  r.classList.remove("hidden");
+
+  if(!qr2) qr2 = new Html5Qrcode("printReader");
+
+  qr2.start(
+    { facingMode: "environment" },
+    scanConfigAndroidWeak,
+    (code) => {
+      addBarcode(code);
+      qr2.stop().then(() => {
+        qr2.clear();
+        r.classList.add("hidden");
+      });
+    }
+  );
+}
+
+function calculate(){
+ const nsxVal=nsx.value, hsdVal=hsd.value;
+ if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
+ const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
+ if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
+
+ const total=(hsdD-nsxD)/86400000;
+ const date30=new Date(nsxD.getTime()+total*0.7*86400000);
+ const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+ const today=new Date();
+
+ let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
+
+ if(today>=date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
+ if(today>=date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
+
+ result.innerHTML=`
+<div class="border p-3 mb-3 ${b30}">
+<b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
+<div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+</div>
+
+<div class="border p-3 ${b20}">
+<b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
+<div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+</div>`;
+
+ saveHistory(f30,f20);
+
+ if(today>=date20) showPopup("20");
+ else if(today>=date30) showPopup("30");
+}
+
+function saveHistory(f30,f20){
+ let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
+ localStorage.setItem(historyKey,JSON.stringify(h));
+ renderHistory();
+}
+
+function setFilter(type){
+ currentFilter=type;
+ document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+ document.getElementById("f-"+type).classList.add("active");
+ renderHistory();
+}
+
+function renderHistory(){
+ let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ if(currentFilter==="30") data=data.filter(x=>x["Cảnh báo 30%"]==="Giải tồn");
+ if(currentFilter==="20") data=data.filter(x=>x["Cảnh báo 20%"]==="Rút hàng");
+
+ if(!data.length){
+  history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu phù hợp</div>";
+  statistic.innerHTML="📦 Tổng: 0";
+  return;
+ }
+
+ history.innerHTML=data.map(x=>`
+<div class="border-b pb-1">
+<div><b>Barcode:</b> ${x.Barcode||"-"}</div>
+<div>30%: <span class="${x["Cảnh báo 30%"]==="Giải tồn"?"text-orange-600 font-semibold":"text-green-700"}">${x["Cảnh báo 30%"]}</span>
+ | 20%: <span class="${x["Cảnh báo 20%"]==="Rút hàng"?"text-red-600 font-semibold":"text-green-700"}">${x["Cảnh báo 20%"]}</span></div>
+<div class="text-xs text-gray-500">⏱ ${x["Thời gian"]}</div>
+</div>`).join("");
+
+ statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
+}
+
+function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
+
+function exportExcel(){
+ const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ if(!h.length){alert("Không có dữ liệu");return}
+
+ const ws=XLSX.utils.json_to_sheet(h);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"HSD");
+ XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
+
+ localStorage.removeItem(historyKey);
+ renderHistory();
+ showPopup("export");
+}
+
+function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
+renderHistory();
+
+function addBarcode(code){
+ let d=JSON.parse(localStorage.getItem(printKey)||"{}");
+ d[code]=(d[code]||0)+1;
+ localStorage.setItem(printKey,JSON.stringify(d));
+ renderPrint();
+}
+
+function renderPrint(){
+ const d=JSON.parse(localStorage.getItem(printKey)||"{}");
+ printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
+}
+
+function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
+
+function exportText(){
+ const d=JSON.parse(localStorage.getItem(printKey)||"{}");
+ if(!Object.keys(d).length){alert("Không có dữ liệu");return}
+
+ const txt=Object.entries(d).map(([b,q])=>`${b},${q}`).join("\n");
+ const blob=new Blob([txt],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="barcode_print.txt";
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+
+ localStorage.removeItem(printKey);
+ renderPrint();
+ showPopup("export");
+}
+
+function showPopup(type){
+ const popup=document.getElementById("alertPopup");
+ const box=document.getElementById("popupBox");
+ const title=document.getElementById("popupTitle");
+ const msg=document.getElementById("popupMsg");
+
+ box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
+
+ if(type==="30"){title.innerText="CẢNH BÁO MỐC 30%";msg.innerText="Báo cáo quản lý để thực hiện giải tồn.";box.classList.add("popup-30")}
+ if(type==="20"){title.innerText="CẢNH BÁO MỐC 20%";msg.innerText="Rút hàng khỏi quầy ngay.";box.classList.add("popup-20")}
+ if(type==="export"){title.innerText="✅ XUẤT FILE THÀNH CÔNG";msg.innerText="Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo."}
+
+ popup.classList.remove("hidden");
+ popup.classList.add("flex");
+
+ if(type==="export") setTimeout(closePopup,2500);
 }
 
 function closePopup(){
-  alertPopup.classList.add("hidden");
-  alertPopup.classList.remove("flex");
+ alertPopup.classList.add("hidden");
+ alertPopup.classList.remove("flex");
 }
+  /* ================= EVALUATE HANDLER ================= */
+function openEvaluate(type){
+  alert("Bạn đã chọn đánh giá đối tượng: " + type);
+
+  // Gợi ý mở rộng:
+  // if(type==="NVBH_COOPFOOD"){...}
+  // if(type==="CHT_COOPFOOD"){...}
+  // window.location.href = "evaluate.html?type=" + type;
+}
+
 </script>
 
 </body>
