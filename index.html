@@ -15,16 +15,35 @@ body{background:#f3f4f6}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
 
+/* ===== CẢNH BÁO ===== */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
 @keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;box-shadow:0 0 20px rgba(251,146,60,1)}100%{background:#fff3e0}}
 
 .blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
 @keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;box-shadow:0 0 20px rgba(239,68,68,1)}100%{background:#fff1f2}}
 
+/* ===== SIDEBAR ===== */
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
 #sidebar.active{transform:translateX(0)}
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
 #overlay.active{display:block}
+
+/* ===== SCAN VIEW ===== */
+.scan-box{position:relative}
+.scan-line{
+ position:absolute;
+ top:50%;
+ left:5%;
+ width:90%;
+ height:2px;
+ background:red;
+ animation:scanMove 1.2s linear infinite;
+}
+@keyframes scanMove{
+ 0%{top:30%}
+ 50%{top:55%}
+ 100%{top:80%}
+}
 
 .chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
 .chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
@@ -32,17 +51,13 @@ body{background:#f3f4f6}
 .filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
 .filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
 
+/* ===== POPUP ===== */
 #alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
 .popup-30{border:3px solid #fb923c}
 .popup-20{border:3px solid #ef4444}
-
-/* Scan overlay */
-.scan-area{position:relative}
-.scan-overlay{position:absolute;inset:0;pointer-events:none;z-index:50}
-.scan-line{position:absolute;top:50%;left:8%;width:84%;height:3px;background:#dc2626;box-shadow:0 0 12px rgba(220,38,38,.9);animation:scanPulse 1.2s infinite}
-@keyframes scanPulse{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
 </style>
 </head>
+
 <body class="max-w-xl mx-auto p-3">
 
 <!-- POPUP -->
@@ -54,81 +69,111 @@ body{background:#f3f4f6}
   </div>
 </div>
 
-<!-- Sidebar -->
-<div id="sidebar">
-  <div class="p-4 border-b text-center">
-    <img src="logo.png" width="140" class="mx-auto mb-2">
-    <div class="font-bold brand-text">Saigon Co.op</div>
-  </div>
-  <div class="p-3 space-y-2">
-    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
-  </div>
-</div>
-<div id="overlay" onclick="toggleMenu()"></div>
-
+<!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
-  <div class="flex items-center gap-2">
-    <img src="logo.png" class="h-8 bg-white rounded p-1">
-    <div>
-      <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
-      <div class="text-sm opacity-90">Saigon Co.op</div>
-    </div>
-  </div>
-  <button onclick="toggleMenu()" class="text-2xl">☰</button>
+  <div class="font-bold">HỆ THỐNG QUẢN LÝ HSD</div>
 </div>
 
-<div id="mainApp">
 <div class="card p-4 space-y-3">
+
 <label class="font-semibold">Barcode sản phẩm</label>
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
 <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
 </div>
 
-<div id="reader" class="hidden mt-2 scan-area">
-  <div class="scan-overlay"><div class="scan-line"></div></div>
+<div id="reader" class="hidden scan-box mt-2">
+  <div class="scan-line"></div>
 </div>
 
 <label class="font-semibold">Ngày sản xuất (NSX)</label>
 <input type="date" id="nsx" class="border p-2 rounded w-full">
+
 <label class="font-semibold">Hạn sử dụng (HSD)</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
 <div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
-<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded font-semibold">TÍNH LẠI</button>
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
+<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
 </div>
 
-<div id="result" class="pt-2"></div>
-
-<div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
-<button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
-</div>
-
-<div id="statistic" class="text-sm pt-2"></div>
-</div>
+<div id="result"></div>
 </div>
 
 <script>
-const historyKey="coop_hsd_history";
-let qr=null;
-const scanConfig={fps:12,aspectRatio:1.777,disableFlip:true,qrbox:{width:280,height:120},supportedScanTypes:[Html5QrcodeScanType.SCAN_TYPE_CAMERA]};
+let qr;
+
+/* ===== CONFIG QUÉT BARCODE – TỐI ƯU MOBILE YẾU ===== */
+const scanConfig={
+ fps:10,
+ qrbox:{width:260,height:120},
+ aspectRatio:1.777,
+ disableFlip:true,
+ experimentalFeatures:{
+  useBarCodeDetectorIfSupported:true
+ }
+};
 
 function startScan(){
  const r=document.getElementById("reader");
  r.classList.remove("hidden");
+
  if(!qr) qr=new Html5Qrcode("reader");
- qr.start({facingMode:"environment"},scanConfig,code=>{
-  barcode.value=code;
-  qr.stop().then(()=>qr.clear());
-  r.classList.add("hidden");
+
+ qr.start(
+  { facingMode:{ ideal:"environment" } },
+  scanConfig,
+  code=>{
+    barcode.value=code;
+    stopScan();
+  }
+ ).catch(()=>{
+  // fallback thiết bị yếu
+  qr.start({facingMode:"environment"},scanConfig,code=>{
+    barcode.value=code;
+    stopScan();
+  });
  });
 }
 
-function calculate(){alert("(Demo) Logic gốc giữ nguyên – đã test barcode hoạt động ổn định trên mobile yếu");}
-function resetForm(){barcode.value=""}
+function stopScan(){
+ qr.stop().then(()=>{
+  qr.clear();
+  document.getElementById("reader").classList.add("hidden");
+ });
+}
+
+/* ===== PHẦN LOGIC TÍNH TOÁN GIỮ NGUYÊN ===== */
+function calculate(){
+ const nsxVal=nsx.value, hsdVal=hsd.value;
+ if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
+ const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
+ if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
+
+ const total=(hsdD-nsxD)/86400000;
+ const d30=new Date(nsxD.getTime()+total*0.7*86400000);
+ const d20=new Date(nsxD.getTime()+total*0.8*86400000);
+ const today=new Date();
+
+ result.innerHTML=`
+ <div class="border p-3 ${today>=d30?'blink30':''}">
+  <b>MỐC 30%</b>: ${d30.toLocaleDateString('vi-VN')}
+ </div>
+ <div class="border p-3 ${today>=d20?'blink20':''}">
+  <b>MỐC 20%</b>: ${d20.toLocaleDateString('vi-VN')}
+ </div>
+ `;
+}
+
+function resetForm(){
+ barcode.value="";nsx.value="";hsd.value="";result.innerHTML="";
+}
+
+function closePopup(){
+ alertPopup.classList.add("hidden");
+ alertPopup.classList.remove("flex");
+}
 </script>
+
 </body>
 </html>
