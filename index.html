@@ -192,6 +192,18 @@ PHIẾU ĐÁNH GIÁ KẾT QUẢ THỰC TẬP
   <input id="dg_donVi" class="border p-2 rounded"
     placeholder="Đơn vị thực tập">
 </div>
+<div class="mt-4 grid grid-cols-2 gap-2">
+  <input id="f22" class="border p-2 rounded" placeholder="Tiêu chí 1 (F22)">
+  <input id="f23" class="border p-2 rounded" placeholder="Tiêu chí 2 (F23)">
+  <input id="f24" class="border p-2 rounded" placeholder="Tiêu chí 3 (F24)">
+  <input id="f25" class="border p-2 rounded" placeholder="Tiêu chí 4 (F25)">
+  <input id="f26" class="border p-2 rounded" placeholder="Tiêu chí 5 (F26)">
+  <input id="f27" class="border p-2 rounded" placeholder="Tiêu chí 6 (F27)">
+  <input id="f28" class="border p-2 rounded" placeholder="Tiêu chí 7 (F28)">
+  <input id="f30" class="border p-2 rounded" placeholder="Tiêu chí 8 (F30)">
+  <input id="f32" class="border p-2 rounded" placeholder="Tiêu chí 9 (F32)">
+  <input id="f34" class="border p-2 rounded" placeholder="Tiêu chí 10 (F34)">
+</div>
 
 <button
   onclick="xuatDanhGiaHV()"
@@ -223,35 +235,21 @@ function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("
   danhGiaHV.classList.remove("hidden");
   toggleMenu();
 }
-function xuatDanhGiaHV(){
- const fileInput=document.getElementById("excelDanhGia");
- if(!fileInput.files.length){
-   alert("Vui lòng upload file Excel mẫu");
-   return;
- }
+function exportDanhGiaHV() {
+  // Thông tin học viên (ví dụ vị trí đã có sẵn trong file)
+  worksheet["F5"]  = { t: "s", v: document.getElementById("hoTen").value };
+  worksheet["F6"]  = { t: "s", v: document.getElementById("maHV").value };
+  worksheet["F7"]  = { t: "s", v: document.getElementById("ngayThucTap").value };
+  worksheet["F8"]  = { t: "s", v: document.getElementById("donVi").value };
 
- const reader=new FileReader();
- reader.onload=function(e){
-   const data=new Uint8Array(e.target.result);
-   const wb=XLSX.read(data,{type:"array"});
-   const ws=wb.Sheets[wb.SheetNames[0]];
+  // Điểm đánh giá (CHÍNH XÁC THEO YÊU CẦU)
+  ["F22","F23","F24","F25","F26","F27","F28","F30","F32","F34"]
+    .forEach(cell => {
+      worksheet[cell] = { t: "n", v: Number(document.getElementById(cell).value || 0) };
+    });
 
-   // GHI ĐÚNG BIỂU MẪU – KHÔNG ĐƯỢC ĐỔI Ô
-   ws["F22"]={t:"s",v:dg_hoTen.value};
-   ws["F23"]={t:"s",v:dg_maHV.value};
-   ws["F24"]={t:"s",v:dg_ngayTT.value};
-   ws["F25"]={t:"s",v:dg_donVi.value};
-
-   // Giữ nguyên các ô đánh giá (QL ký tay)
-   ["F26","F27","F28","F30","F32","F34"].forEach(c=>{
-     ws[c]=ws[c]||{t:"s",v:""};
-   });
-
-   XLSX.writeFile(
-     wb,
-     "Danh_gia_HV_NVBH_CF.xlsx"
-   );
- };
+  XLSX.writeFile(workbook, "Danh_gia_NV_Ban_Hang_CF.xlsx");
+}
 
  reader.readAsArrayBuffer(fileInput.files[0]);
 }
