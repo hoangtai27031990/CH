@@ -15,21 +15,7 @@ body{background:#f3f4f6}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
 
-.blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
-@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;box-shadow:0 0 20px rgba(251,146,60,1)}100%{background:#fff3e0}}
-
-.blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
-@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;box-shadow:0 0 20px rgba(239,68,68,1)}100%{background:#fff1f2}}
-
-#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
-#sidebar.active{transform:translateX(0)}
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
-#overlay.active{display:block}
-
-.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
-.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
-
-/* CAMERA */
+/* ===== SCAN OVERLAY ===== */
 #reader,#printReader{
   position:relative;
   width:100%;
@@ -38,12 +24,13 @@ body{background:#f3f4f6}
 }
 .scan-frame{
   position:absolute;
-  inset:0;
-  border:2px solid rgba(255,255,255,.3);
+  inset:10%;
+  border:2px solid rgba(255,255,255,.4);
   z-index:10;
 }
 .scan-line{
   position:absolute;
+  top:50%;
   left:5%;
   width:90%;
   height:4px;
@@ -57,15 +44,31 @@ body{background:#f3f4f6}
   50%{top:50%}
   100%{top:70%}
 }
+
+/* ===== BLINK ===== */
+.blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
+@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800}100%{background:#fff3e0}}
+.blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
+@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
+
+#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
+.popup-30{border:3px solid #fb923c}
+.popup-20{border:3px solid #ef4444}
 </style>
 </head>
 
 <body class="max-w-xl mx-auto p-3">
 
-<div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
-  <div class="font-bold">HỆ THỐNG QUẢN LÝ HSD</div>
+<!-- POPUP -->
+<div id="alertPopup" class="hidden items-center justify-center">
+  <div id="popupBox">
+    <div id="popupTitle" class="font-bold text-lg mb-2"></div>
+    <div id="popupMsg" class="mb-4"></div>
+    <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
+  </div>
 </div>
 
+<!-- MAIN -->
 <div class="card p-4 space-y-3">
 <label class="font-semibold">Barcode sản phẩm</label>
 <div class="flex gap-2">
@@ -75,106 +78,43 @@ body{background:#f3f4f6}
 
 <div id="reader" class="hidden"></div>
 
-<label class="font-semibold">Ngày sản xuất</label>
+<label class="font-semibold">NSX</label>
 <input type="date" id="nsx" class="border p-2 rounded w-full">
 
-<label class="font-semibold">Hạn sử dụng</label>
+<label class="font-semibold">HSD</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold w-full">TÍNH KẾT QUẢ</button>
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH</button>
+
 <div id="result"></div>
-
-<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded w-full">Xuất Excel</button>
-</div>
-
-<div class="card p-3 mt-4">
-<h2 class="font-bold brand-text mb-2">In bảng giá quầy</h2>
-<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded mb-2">📷 Quét barcode</button>
-<div id="printReader" class="hidden"></div>
-<div id="printHistory" class="text-sm mt-2"></div>
 </div>
 
 <script>
-/* ===== KIỂM TRA ANDROID ===== */
-function isAndroid(){return /Android/i.test(navigator.userAgent);}
-
-/* ===== BIẾN ===== */
-let qr=null, qr2=null;
-const historyKey="coop_hsd_history";
-const printKey="coop_print_history";
-
-/* ===== CONFIG QUÉT ===== */
 const scanConfig={
-  fps:8,
+  fps:6,
+  aspectRatio:1.333,
   disableFlip:true,
-  qrbox:{width:280,height:100},
+  qrbox:{width:260,height:90},
   experimentalFeatures:{useBarCodeDetectorIfSupported:true}
 };
 
-/* ===== QUÉT HSD ===== */
+let qr=null;
+
 function startScan(){
-  if(!isAndroid()){alert("Chỉ hỗ trợ Android");return;}
   const r=document.getElementById("reader");
   r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
   r.classList.remove("hidden");
 
   if(!qr) qr=new Html5Qrcode("reader");
-  qr.start({facingMode:"environment"},scanConfig,
+  qr.start(
+    {facingMode:{ideal:"environment"}},
+    scanConfig,
     code=>{
       barcode.value=code;
-      qr.stop().then(()=>{qr.clear();r.classList.add("hidden");});
+      qr.stop().then(()=>qr.clear());
+      r.classList.add("hidden");
     }
   );
-}
-
-/* ===== QUÉT IN BẢNG GIÁ ===== */
-function startPrintScan(){
-  if(!isAndroid()){alert("Chỉ hỗ trợ Android");return;}
-  const r=document.getElementById("printReader");
-  r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
-  r.classList.remove("hidden");
-
-  if(!qr2) qr2=new Html5Qrcode("printReader");
-  qr2.start({facingMode:"environment"},scanConfig,
-    code=>{
-      addBarcode(code);
-      qr2.stop().then(()=>{qr2.clear();r.classList.add("hidden");});
-    }
-  );
-}
-
-function addBarcode(code){
-  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
-  d[code]=(d[code]||0)+1;
-  localStorage.setItem(printKey,JSON.stringify(d));
-  renderPrint();
-}
-
-function renderPrint(){
-  const d=JSON.parse(localStorage.getItem(printKey)||"{}");
-  printHistory.innerHTML=Object.entries(d).map(
-    ([b,q])=>`<div>${b} , SL: ${q}</div>`
-  ).join("");
-}
-
-/* ===== TÍNH HSD ===== */
-function calculate(){
-  if(!nsx.value||!hsd.value){alert("Thiếu ngày");return;}
-  const n=new Date(nsx.value), h=new Date(hsd.value);
-  const total=(h-n)/86400000;
-  const m30=new Date(n.getTime()+total*0.7*86400000);
-  const m20=new Date(n.getTime()+total*0.8*86400000);
-  result.innerHTML=`
-  <div class="border p-2">Mốc 30%: ${m30.toLocaleDateString("vi-VN")}</div>
-  <div class="border p-2 mt-2">Mốc 20%: ${m20.toLocaleDateString("vi-VN")}</div>`;
-}
-
-/* ===== EXCEL ===== */
-function exportExcel(){
-  const ws=XLSX.utils.json_to_sheet([{Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value}]);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"HSD");
-  XLSX.writeFile(wb,"hsd.xlsx");
 }
 </script>
 
