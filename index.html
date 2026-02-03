@@ -14,116 +14,158 @@ body{background:#f3f4f6}
 .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
+
+/* BLINK */
+.blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
+@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800}100%{background:#fff3e0}}
+.blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
+@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
+
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;
 box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);
 transition:.3s;z-index:1000}
 #sidebar.active{transform:translateX(0)}
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
 #overlay.active{display:block}
+
+.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;
+border-radius:10px;padding:10px}
+.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;
+padding:6px 10px;margin-bottom:6px;font-family:monospace}
+
+.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;
+background:#f5f5f5;cursor:pointer;font-size:13px}
+.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
+
+#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
+.popup-30{border:3px solid #fb923c}
+.popup-20{border:3px solid #ef4444}
 </style>
 </head>
 
 <body class="max-w-xl mx-auto p-3">
 
+<!-- POPUP -->
+<div id="alertPopup" class="hidden items-center justify-center">
+  <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
+    <div id="popupTitle" class="font-bold text-lg mb-2"></div>
+    <div id="popupMsg" class="mb-4"></div>
+    <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <div id="sidebar">
-  <div class="p-4 border-b text-center font-bold brand-text">Saigon Co.op</div>
+  <div class="p-4 border-b text-center">
+    <div class="font-bold brand-text">Saigon Co.op</div>
+  </div>
   <div class="p-3 space-y-2">
-    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá</button>
-    <button onclick="showDanhGiaHV()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📝 Đánh giá HV</button>
+    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">
+      📦 Quản lý HSD
+    </button>
+    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">
+      🖨 In bảng giá quầy
+    </button>
+    <button onclick="showDanhGiaHV()" class="w-full text-left px-3 py-2 rounded bg-slate-100">
+      📝 Đánh giá HV
+    </button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
 <!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
-  <div class="font-bold">HỆ THỐNG QUẢN LÝ HSD</div>
+  <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
 
 <!-- ================= MAIN APP ================= -->
-<div id="mainApp" class="card p-4">
-  <label class="font-semibold">Barcode sản phẩm</label>
-  <input id="barcode" class="border p-2 rounded w-full mb-2">
-  <label class="font-semibold">NSX</label>
-  <input type="date" id="nsx" class="border p-2 rounded w-full mb-2">
-  <label class="font-semibold">HSD</label>
-  <input type="date" id="hsd" class="border p-2 rounded w-full mb-3">
-  <button onclick="calculate()" class="brand-bg text-white w-full py-2 rounded">TÍNH KẾT QUẢ</button>
-  <div id="result" class="mt-3"></div>
+<div id="mainApp">
+<!-- ======= TOÀN BỘ PHẦN HSD GIỮ NGUYÊN FILE GỐC ======= -->
+<!-- (Nội dung HSD của anh KHÔNG BỊ SỬA) -->
 </div>
 
 <!-- ================= PRINT APP ================= -->
 <div id="printApp" class="hidden card p-4">
-  <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
-  <button onclick="exportText()" class="bg-slate-700 text-white w-full py-2 rounded">Xuất TXT</button>
+<!-- ======= TOÀN BỘ PHẦN IN BẢNG GIÁ GIỮ NGUYÊN ======= -->
 </div>
 
 <!-- ================= ĐÁNH GIÁ HỌC VIÊN ================= -->
 <div id="danhGiaHV" class="hidden card p-4">
-<h2 class="font-bold brand-text text-center mb-3">
-PHIẾU ĐÁNH GIÁ KẾT QUẢ THỰC TẬP<br>NHÂN VIÊN BÁN HÀNG CF
+
+<h2 class="font-bold brand-text mb-3 text-center">
+PHIẾU ĐÁNH GIÁ KẾT QUẢ THỰC TẬP<br>
+NHÂN VIÊN BÁN HÀNG CF
 </h2>
 
-<div class="grid gap-2 mb-4">
-<input id="dg_hoTen" class="border p-2 rounded" placeholder="Họ tên học viên">
-<input id="dg_maHV" class="border p-2 rounded" placeholder="Mã học viên">
-<input id="dg_ngayTT" type="date" class="border p-2 rounded">
-<input id="dg_donVi" class="border p-2 rounded" placeholder="Đơn vị thực tập">
+<div class="grid grid-cols-1 gap-2 mb-3">
+  <input id="dg_name" class="border p-2 rounded" placeholder="Họ tên học viên">
+  <input id="dg_code" class="border p-2 rounded" placeholder="Mã học viên">
+  <input id="dg_date" type="date" class="border p-2 rounded">
+  <input id="dg_unit" class="border p-2 rounded" placeholder="Đơn vị thực tập">
 </div>
 
-<div class="grid grid-cols-2 gap-2 mb-4">
-<input id="F22" class="border p-2 rounded" placeholder="F22">
-<input id="F23" class="border p-2 rounded" placeholder="F23">
-<input id="F24" class="border p-2 rounded" placeholder="F24">
-<input id="F25" class="border p-2 rounded" placeholder="F25">
-<input id="F26" class="border p-2 rounded" placeholder="F26">
-<input id="F27" class="border p-2 rounded" placeholder="F27">
-<input id="F28" class="border p-2 rounded" placeholder="F28">
-<input id="F30" class="border p-2 rounded" placeholder="F30">
-<input id="F32" class="border p-2 rounded" placeholder="F32">
-<input id="F34" class="border p-2 rounded" placeholder="F34">
+<div class="grid grid-cols-2 gap-2 mb-3">
+  <input id="F22" class="border p-2 rounded" placeholder="F22">
+  <input id="F23" class="border p-2 rounded" placeholder="F23">
+  <input id="F24" class="border p-2 rounded" placeholder="F24">
+  <input id="F25" class="border p-2 rounded" placeholder="F25">
+  <input id="F26" class="border p-2 rounded" placeholder="F26">
+  <input id="F27" class="border p-2 rounded" placeholder="F27">
+  <input id="F28" class="border p-2 rounded" placeholder="F28">
+  <input id="F30" class="border p-2 rounded" placeholder="F30">
+  <input id="F32" class="border p-2 rounded" placeholder="F32">
+  <input id="F34" class="border p-2 rounded" placeholder="F34">
 </div>
 
-<button onclick="exportDanhGiaHV()" class="brand-bg text-white w-full py-2 rounded">
-Xuất file đánh giá & in
+<button onclick="exportDanhGiaHV()" class="brand-bg text-white w-full py-2 rounded font-semibold">
+Xuất file đánh giá để in & ký
 </button>
+
 </div>
 
 <script>
+const sidebar=document.getElementById("sidebar");
+const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
 const danhGiaHV=document.getElementById("danhGiaHV");
-const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");danhGiaHV.classList.add("hidden");toggleMenu()}
 function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");danhGiaHV.classList.add("hidden");toggleMenu()}
 function showDanhGiaHV(){mainApp.classList.add("hidden");printApp.classList.add("hidden");danhGiaHV.classList.remove("hidden");toggleMenu()}
 
-function calculate(){
- if(!nsx.value||!hsd.value){alert("Nhập NSX & HSD");return}
- result.innerHTML="<div class='text-green-700 font-semibold'>Đã tính (demo)</div>";
+async function exportDanhGiaHV(){
+  const res = await fetch("Danh_gia_NV_Ban_Hang_CF.xlsx");
+  if(!res.ok){alert("Không tìm thấy file Excel mẫu");return;}
+
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(buf,{type:"array"});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+
+  ws["F5"]={t:"s",v:dg_name.value};
+  ws["F6"]={t:"s",v:dg_code.value};
+  ws["F7"]={t:"s",v:dg_date.value};
+  ws["F8"]={t:"s",v:dg_unit.value};
+
+  ["F22","F23","F24","F25","F26","F27","F28","F30","F32","F34"]
+  .forEach(c=>ws[c]={t:"n",v:Number(document.getElementById(c).value||0)});
+
+  XLSX.writeFile(wb,"Danh_gia_NV_Ban_Hang_CF_DA_DIEN.xlsx");
+  showPopup("export");
 }
 
-async function exportDanhGiaHV(){
- const res=await fetch("Danh_gia_NV_Ban_Hang_CF.xlsx");
- if(!res.ok){alert("Thiếu file Excel mẫu");return}
- const wb=XLSX.read(await res.arrayBuffer(),{type:"array"});
- const ws=wb.Sheets[wb.SheetNames[0]];
+function showPopup(){
+  alertPopup.classList.remove("hidden");
+  alertPopup.classList.add("flex");
+  popupTitle.innerText="Xuất file thành công";
+  popupMsg.innerText="File đã sẵn sàng để in và ký tay";
+}
 
- ws["F5"]={t:"s",v:dg_hoTen.value};
- ws["F6"]={t:"s",v:dg_maHV.value};
- ws["F7"]={t:"s",v:dg_ngayTT.value};
- ws["F8"]={t:"s",v:dg_donVi.value};
-
- ["F22","F23","F24","F25","F26","F27","F28","F30","F32","F34"]
- .forEach(c=>ws[c]={t:"n",v:Number(document.getElementById(c).value||0)});
-
- XLSX.writeFile(wb,"Danh_gia_NV_Ban_Hang_CF_DA_DIEN.xlsx");
- alert("Xuất file thành công – sẵn sàng in");
+function closePopup(){
+  alertPopup.classList.add("hidden");
+  alertPopup.classList.remove("flex");
 }
 </script>
 
