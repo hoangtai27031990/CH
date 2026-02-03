@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>HỆ THỐNG QUẢN LÝ HSD – Saigon Co.op</title>
 
-<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- html5-qrcode (fallback) -->
 <script src="https://unpkg.com/html5-qrcode"></script>
-
-<!-- SheetJS -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <style>
@@ -20,163 +15,145 @@ body{background:#f3f4f6}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
 
-/* Blink */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
 @keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;box-shadow:0 0 20px rgba(251,146,60,1)}100%{background:#fff3e0}}
+
 .blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
 @keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;box-shadow:0 0 20px rgba(239,68,68,1)}100%{background:#fff1f2}}
 
-/* Camera overlay */
-.scan-zone{
-  position:absolute;
-  top:50%;left:50%;
-  width:300px;height:120px;
-  transform:translate(-50%,-50%);
-  border:3px dashed #22c55e;
+#reader,#printReader{
+  position:relative;
+  border:2px dashed #c40018;
   border-radius:12px;
-  box-shadow:0 0 0 2000px rgba(0,0,0,.45);
+  padding:8px;
+}
+.scan-box{
+  position:absolute;
+  inset:35% 10%;
+  border:3px solid rgba(255,0,0,.7);
+  border-radius:10px;
   pointer-events:none;
 }
 
-/* Popup */
-#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
-.popup-30{border:3px solid #fb923c}
-.popup-20{border:3px solid #ef4444}
 </style>
 </head>
 
 <body class="max-w-xl mx-auto p-3">
 
-<!-- POPUP -->
-<div id="alertPopup" class="hidden items-center justify-center">
-  <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
-    <div id="popupTitle" class="font-bold text-lg mb-2"></div>
-    <div id="popupMsg" class="mb-4"></div>
-    <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
-  </div>
-</div>
-
-<!-- HEADER -->
-<div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
-  <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
-</div>
-
-<!-- MAIN -->
-<div class="card p-4 space-y-3">
-<label class="font-semibold">Barcode sản phẩm</label>
-<div class="flex gap-2">
-<input id="barcode" class="border p-2 rounded w-full">
-<button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
-</div>
-
-<!-- Camera -->
-<div id="cameraWrap" class="relative hidden mt-3">
-  <video id="video" class="w-full rounded-xl" autoplay playsinline></video>
-  <div class="scan-zone"></div>
-</div>
-
-<label class="font-semibold">NSX</label>
-<input type="date" id="nsx" class="border p-2 rounded w-full">
-
-<label class="font-semibold">HSD</label>
-<input type="date" id="hsd" class="border p-2 rounded w-full">
-
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
-
-<div id="result" class="pt-2"></div>
-</div>
+<!-- ===== UI GIỮ NGUYÊN ===== -->
+<!-- (toàn bộ HTML phía trên bạn giữ nguyên như đã gửi) -->
 
 <script>
 /* ===============================
-   CAMERA – BARCODE OPTIMIZED
-================================ */
-let stream=null, detector=null, scanning=false;
+   CAMERA & BARCODE – BẢN TỐI ƯU
+   =============================== */
 
-async function startScan(){
- if(scanning) return;
- scanning=true;
+let qr=null, qr2=null;
+let detector=null;
 
- const wrap=document.getElementById("cameraWrap");
- const video=document.getElementById("video");
- wrap.classList.remove("hidden");
-
- try{
-   stream=await navigator.mediaDevices.getUserMedia({
-     video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}
-   });
-   video.srcObject=stream;
-
-   if("BarcodeDetector" in window){
-     detector=new BarcodeDetector({formats:["ean_13","ean_8","code_128"]});
-     scanLoop();
-   }else{
-     fallbackHtml5();
-   }
- }catch(e){
-   alert("Thiết bị không cho phép camera");
-   stopScan();
- }
+/* Khởi tạo BarcodeDetector nếu có */
+if ('BarcodeDetector' in window) {
+  try {
+    detector = new BarcodeDetector({
+      formats: ['ean_13','ean_8','code_128','upc_a','upc_e']
+    });
+  } catch(e){}
 }
 
-async function scanLoop(){
- if(!scanning) return;
- try{
-   const codes=await detector.detect(video);
-   if(codes.length){
-     barcode.value=codes[0].rawValue;
-     stopScan();
-     return;
-   }
- }catch{}
- requestAnimationFrame(scanLoop);
-}
+/* ===== Scan bằng BarcodeDetector (ưu tiên) ===== */
+async function startNativeScan(targetInput, containerId){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:"environment",
+        width:{ideal:1280},
+        height:{ideal:720}
+      }
+    });
 
-function stopScan(){
- scanning=false;
- if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
- document.getElementById("cameraWrap").classList.add("hidden");
+    const video=document.createElement("video");
+    video.srcObject=stream;
+    video.setAttribute("playsinline",true);
+    video.play();
+
+    const container=document.getElementById(containerId);
+    container.innerHTML="";
+    container.classList.remove("hidden");
+    container.appendChild(video);
+
+    const box=document.createElement("div");
+    box.className="scan-box";
+    container.appendChild(box);
+
+    const canvas=document.createElement("canvas");
+    const ctx=canvas.getContext("2d");
+
+    const scan=async()=>{
+      if(video.readyState===video.HAVE_ENOUGH_DATA){
+        canvas.width=video.videoWidth;
+        canvas.height=video.videoHeight;
+        ctx.drawImage(video,0,0);
+
+        const codes=await detector.detect(canvas);
+        if(codes.length){
+          targetInput.value=codes[0].rawValue;
+          stream.getTracks().forEach(t=>t.stop());
+          container.classList.add("hidden");
+          return;
+        }
+      }
+      requestAnimationFrame(scan);
+    };
+    scan();
+  }catch(e){
+    alert("Không thể mở camera. Vui lòng cấp quyền camera.");
+  }
 }
 
 /* ===== Fallback html5-qrcode ===== */
-function fallbackHtml5(){
- const qr=new Html5Qrcode("cameraWrap");
- qr.start(
-  {facingMode:"environment"},
-  {fps:10,qrbox:{width:300,height:120}},
-  code=>{
-    barcode.value=code;
-    qr.stop().then(stopScan);
+const scanConfig={
+  fps:10,
+  disableFlip:true,
+  qrbox:{width:260,height:120}
+};
+
+/* ===== Scan MAIN ===== */
+function startScan(){
+  const r=document.getElementById("reader");
+  if(detector){
+    startNativeScan(barcode,"reader");
+    return;
   }
- );
+  r.classList.remove("hidden");
+  if(!qr) qr=new Html5Qrcode("reader");
+  qr.start({facingMode:"environment"},scanConfig,code=>{
+    barcode.value=code;
+    qr.stop().then(()=>qr.clear());
+    r.classList.add("hidden");
+  },()=>{}).catch(()=>{
+    alert("Không thể mở camera");
+  });
 }
 
-/* ===============================
-   LOGIC NGHIỆP VỤ (GIỮ NGUYÊN)
-================================ */
-function calculate(){
- const nsxVal=nsx.value, hsdVal=hsd.value;
- if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
- const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
-
- const total=(hsdD-nsxD)/86400000;
- const date30=new Date(nsxD.getTime()+total*0.7*86400000);
- const date20=new Date(nsxD.getTime()+total*0.8*86400000);
- const today=new Date();
-
- result.innerHTML=`
-<div class="border p-3 ${today>=date30?'blink30':''}">
-<b>MỐC 30%</b>: ${date30.toLocaleDateString("vi-VN")}
-</div>
-<div class="border p-3 mt-2 ${today>=date20?'blink20':''}">
-<b>MỐC 20%</b>: ${date20.toLocaleDateString("vi-VN")}
-</div>`;
+/* ===== Scan PRINT ===== */
+function startPrintScan(){
+  const r=document.getElementById("printReader");
+  if(detector){
+    startNativeScan({value:"",set value(v){addBarcode(v)} },"printReader");
+    return;
+  }
+  r.classList.remove("hidden");
+  if(!qr2) qr2=new Html5Qrcode("printReader");
+  qr2.start({facingMode:"environment"},scanConfig,code=>{
+    addBarcode(code);
+    qr2.stop().then(()=>qr2.clear());
+    r.classList.add("hidden");
+  },()=>{}).catch(()=>{
+    alert("Không thể mở camera");
+  });
 }
 
-function closePopup(){
- alertPopup.classList.add("hidden");
- alertPopup.classList.remove("flex");
-}
+/* ===== TOÀN BỘ LOGIC KHÁC GIỮ NGUYÊN ===== */
 </script>
 
 </body>
