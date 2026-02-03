@@ -13,7 +13,7 @@
 body{background:#f3f4f6}
 .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .brand-bg{background:#c40018}
-.brand-text{color:#c40018}
+.brand-text{color:#c40018f}
 
 /* ===== BLINK ===== */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
@@ -461,26 +461,31 @@ async function loadNVBHCFTemplate(){
   const response = await fetch("./DG_NV_BAN_HANG_CF.xlsx");
   const arrayBuffer = await response.arrayBuffer();
   return XLSX.read(arrayBuffer, { type: "array" });
-  loadNVBHCFTemplate().then(wb=>{
-  console.log("Đã load Excel:", wb.SheetNames);
-});
 }
+
 async function exportNVBHCF(){
   const wb = await loadNVBHCFTemplate();
   const ws = wb.Sheets[wb.SheetNames[0]];
 
-  ws["B5"] = { v: hoten.value };
-  ws["B6"] = { v: mahv.value };
-  ws["B7"] = { v: ngaytt.value };
-  ws["B8"] = { v: donvi.value };
+  ws["B5"] = { t:"s", v: hoten.value };
+  ws["B6"] = { t:"s", v: mahv.value };
+  ws["B7"] = { t:"s", v: ngaytt.value };
+  ws["B8"] = { t:"s", v: donvi.value };
 
   ["22","23","24","25","26","27","28","30","32","34"].forEach(n=>{
-    ws["F"+n] = { v: document.getElementById("F"+n).value };
+    ws["F"+n] = { t:"n", v: Number(document.getElementById("F"+n).value || 0) };
   });
 
   XLSX.writeFile(wb, "DG_NV_BAN_HANG_CF_DA_DANH_GIA.xlsx");
-}
 
+  alert(
+    "Đã tạo file đánh giá.\n\n" +
+    "Vui lòng:\n" +
+    "1. Mở file Excel\n" +
+    "2. Nhấn In → Lưu PDF\n" +
+    "3. Ký tên và gửi"
+  );
+}
 </script>
 
 </body>
