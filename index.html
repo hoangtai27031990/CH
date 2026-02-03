@@ -161,29 +161,35 @@ function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("
 let qr=null, qr2=null, currentFilter="all";
 
 /* ===== TỐI ƯU QUÉT BARCODE ===== */
-const scanConfig={
-fps:8, // giảm fps cho máy yếu
-aspectRatio:1.6,
-disableFlip:true,
-qrbox:{width:260,height:90}, // khung hẹp, dễ focus mã vạch
-experimentalFeatures:{
-useBarCodeDetectorIfSupported:true // dùng API mới nếu máy hỗ trợ
-}
+const scanConfig = {
+  fps: 10,
+  qrbox: { width: 280, height: 120 },
+  aspectRatio: 1.777,
+  disableFlip: true
 };
-
 function startScan(){
-const r=document.getElementById("reader");
-r.innerHTML='<div class="scan-line"></div>';
-r.classList.remove("hidden");
+  const r = document.getElementById("reader");
+  r.innerHTML = '<div class="scan-line"></div>';
+  r.classList.remove("hidden");
 
+  if(!qr) qr = new Html5Qrcode("reader");
 
-if(!qr) qr=new Html5Qrcode("reader");
-qr.start({facingMode:{ideal:"environment"}},scanConfig,code=>{
-barcode.value=code;
-qr.stop().then(()=>qr.clear());
-r.classList.add("hidden");
-});
+  qr.start(
+    { facingMode: "environment" },
+    scanConfig,
+    (code) => {
+      barcode.value = code;
+      qr.stop().then(() => {
+        qr.clear();
+        r.classList.add("hidden");
+      });
+    }
+  ).catch(err => {
+    alert("Không mở được camera. Vui lòng kiểm tra quyền camera hoặc dùng HTTPS.");
+    r.classList.add("hidden");
+  });
 }
+
 
 function calculate(){
  const nsxVal=nsx.value, hsdVal=hsd.value;
@@ -274,18 +280,28 @@ function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML
 renderHistory();
 
 function startPrintScan(){
-const r=document.getElementById("printReader");
-r.innerHTML='<div class="scan-line"></div>';
-r.classList.remove("hidden");
+  const r = document.getElementById("printReader");
+  r.innerHTML = '<div class="scan-line"></div>';
+  r.classList.remove("hidden");
 
+  if(!qr2) qr2 = new Html5Qrcode("printReader");
 
-if(!qr2) qr2=new Html5Qrcode("printReader");
-qr2.start({facingMode:{ideal:"environment"}},scanConfig,code=>{
-addBarcode(code);
-qr2.stop().then(()=>qr2.clear());
-r.classList.add("hidden");
-});
+  qr2.start(
+    { facingMode: "environment" },
+    scanConfig,
+    (code) => {
+      addBarcode(code);
+      qr2.stop().then(() => {
+        qr2.clear();
+        r.classList.add("hidden");
+      });
+    }
+  ).catch(err => {
+    alert("Không mở được camera.");
+    r.classList.add("hidden");
+  });
 }
+
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
