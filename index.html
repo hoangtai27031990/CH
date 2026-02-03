@@ -15,38 +15,36 @@ body{background:#f3f4f6}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
 
-/* ===== BLINK ===== */
-.blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
-@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;box-shadow:0 0 20px rgba(251,146,60,1)}100%{background:#fff3e0}}
-.blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
-@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;box-shadow:0 0 20px rgba(239,68,68,1)}100%{background:#fff1f2}}
-
-/* ===== SIDEBAR ===== */
+/* ===== Sidebar ===== */
 #sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
 #sidebar.active{transform:translateX(0)}
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
 #overlay.active{display:block}
 
-/* ===== SCAN BARCODE ===== */
-.scan-area{position:relative}
-.scan-line{
+/* ===== Scan overlay ===== */
+.scan-wrapper{position:relative}
+.scan-overlay{
  position:absolute;
- top:50%;left:10%;
- width:80%;height:2px;
+ inset:0;
+ z-index:20;
+ pointer-events:none;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+.scan-line{
+ width:85%;
+ height:3px;
  background:#dc2626;
- box-shadow:0 0 10px rgba(220,38,38,.9);
+ box-shadow:0 0 15px rgba(220,38,38,.9);
  animation:pulse 1.2s infinite;
- z-index:10
 }
 @keyframes pulse{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
 
-.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
-.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
+.chat-box{max-height:280px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:8px}
+.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px;margin-bottom:6px;font-family:monospace}
 
-.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
-.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
-
-#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
+#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000}
 .popup-30{border:3px solid #fb923c}
 .popup-20{border:3px solid #ef4444}
 </style>
@@ -65,142 +63,180 @@ body{background:#f3f4f6}
 
 <!-- SIDEBAR -->
 <div id="sidebar">
-  <div class="p-4 border-b text-center">
-    <div class="font-bold brand-text">Saigon Co.op</div>
-  </div>
+  <div class="p-4 border-b text-center font-bold brand-text">Saigon Co.op</div>
   <div class="p-3 space-y-2">
     <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
+    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá</button>
+    <button onclick="exportExcel()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📤 Xuất Excel</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
 <!-- HEADER -->
-<div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
+<div class="flex justify-between items-center mb-3 p-3 rounded-lg brand-bg text-white">
   <div class="font-bold">HỆ THỐNG QUẢN LÝ HSD</div>
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
 
-<!-- MAIN APP -->
-<div id="mainApp">
+<!-- MAIN -->
+<div id="mainApp" class="card p-4 space-y-3">
 
-<div class="card p-4 space-y-3">
-<label class="font-semibold">Barcode sản phẩm</label>
+<label class="font-semibold">Barcode</label>
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
 <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
 </div>
 
-<div id="reader" class="hidden mt-2 scan-area"></div>
+<div id="reader" class="hidden scan-wrapper mt-2">
+  <div class="scan-overlay"><div class="scan-line"></div></div>
+</div>
 
-<label class="font-semibold">Ngày sản xuất (NSX)</label>
+<label>NSX</label>
 <input type="date" id="nsx" class="border p-2 rounded w-full">
-
-<label class="font-semibold">Hạn sử dụng (HSD)</label>
+<label>HSD</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
-<div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
-<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded font-semibold">TÍNH LẠI</button>
-</div>
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH</button>
 
-<div id="result" class="pt-2"></div>
+<div id="result"></div>
 
-<div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
-<button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
-</div>
-
-<div id="statistic" class="text-sm pt-2"></div>
-</div>
-
-<div class="card p-3 mt-4">
-<h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
-
-<div class="flex gap-2 mb-2">
-  <button onclick="setFilter('all')" id="f-all" class="filter-btn active">Tất cả</button>
-  <button onclick="setFilter('30')" id="f-30" class="filter-btn">Giải tồn (30%)</button>
-  <button onclick="setFilter('20')" id="f-20" class="filter-btn">Rút hàng (20%)</button>
-</div>
-
-<div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
-</div>
+<h3 class="font-bold mt-3">Lịch sử</h3>
+<div id="history" class="chat-box"></div>
 
 </div>
 
-<!-- PRINT APP -->
+<!-- PRINT -->
 <div id="printApp" class="hidden card p-4">
-<h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
-
-<div class="flex flex-wrap gap-2 mb-2">
-<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét barcode</button>
-<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button>
-<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button>
-</div>
-
-<div id="printReader" class="hidden mb-2 scan-area"></div>
-<div class="chat-box" id="printHistory"></div>
+<h2 class="font-bold mb-2">IN BẢNG GIÁ</h2>
+<button onclick="exportText()" class="brand-bg text-white px-4 py-2 rounded">Xuất TXT</button>
+<div id="printHistory" class="chat-box mt-2"></div>
 </div>
 
 <script>
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
 
-const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
-const mainApp=document.getElementById("mainApp");
-const printApp=document.getElementById("printApp");
-
-function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
-function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
-
-let qr=null, qr2=null, currentFilter="all";
-
-/* ===== CONFIG QUÉT BARCODE (FIX) ===== */
+let qr=null;
 const scanConfig={
  fps:10,
- aspectRatio:16/9,
- disableFlip:true,
  qrbox:{width:320,height:120},
+ aspectRatio:16/9,
  experimentalFeatures:{useBarCodeDetectorIfSupported:true},
  formatsToSupport:[
-  Html5QrcodeSupportedFormats.CODE_128,
   Html5QrcodeSupportedFormats.EAN_13,
   Html5QrcodeSupportedFormats.EAN_8,
-  Html5QrcodeSupportedFormats.UPC_A,
-  Html5QrcodeSupportedFormats.UPC_E
+  Html5QrcodeSupportedFormats.CODE_128,
+  Html5QrcodeSupportedFormats.UPC_A
  ]
 };
 
+function toggleMenu(){
+ sidebar.classList.toggle("active");
+ overlay.classList.toggle("active");
+}
+
+function showMain(){
+ mainApp.classList.remove("hidden");
+ printApp.classList.add("hidden");
+ toggleMenu();
+}
+function showPrint(){
+ mainApp.classList.add("hidden");
+ printApp.classList.remove("hidden");
+ toggleMenu();
+ renderPrint();
+}
+
 function startScan(){
- const r=document.getElementById("reader");
- r.innerHTML='<div class="scan-line"></div>';
- r.classList.remove("hidden");
+ reader.classList.remove("hidden");
  if(!qr) qr=new Html5Qrcode("reader");
  qr.start({facingMode:"environment"},scanConfig,code=>{
   barcode.value=code;
+  savePrint(code);
   qr.stop().then(()=>qr.clear());
-  r.classList.add("hidden");
+  reader.classList.add("hidden");
  });
 }
 
-function startPrintScan(){
- const r=document.getElementById("printReader");
- r.innerHTML='<div class="scan-line"></div>';
- r.classList.remove("hidden");
- if(!qr2) qr2=new Html5Qrcode("printReader");
- qr2.start({facingMode:"environment"},scanConfig,code=>{
-  addBarcode(code);
-  qr2.stop().then(()=>qr2.clear());
-  r.classList.add("hidden");
- });
+function calculate(){
+ if(!nsx.value||!hsd.value){alert("Nhập đủ NSX và HSD");return}
+ const nsxD=new Date(nsx.value);
+ const hsdD=new Date(hsd.value);
+ const total=(hsdD-nsxD)/86400000;
+
+ const d30=new Date(nsxD.getTime()+total*0.7*86400000);
+ const d20=new Date(nsxD.getTime()+total*0.8*86400000);
+ const today=new Date();
+
+ let warn="";
+ if(today>=d20){showPopup("20");warn="Rút hàng"}
+ else if(today>=d30){showPopup("30");warn="Giải tồn"}
+
+ result.innerHTML=`
+ <div class="border p-2">30%: ${d30.toLocaleDateString("vi-VN")}</div>
+ <div class="border p-2">20%: ${d20.toLocaleDateString("vi-VN")}</div>
+ `;
+
+ let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ h.unshift({barcode:barcode.value,nsx:nsx.value,hsd:hsd.value,canhbao:warn,time:new Date().toLocaleString("vi-VN")});
+ localStorage.setItem(historyKey,JSON.stringify(h));
+ renderHistory();
 }
 
-/* ===== PHẦN NGHIỆP VỤ GỐC (KHÔNG ĐỔI) ===== */
-/* calculate, history, exportExcel, exportText, popup ... */
-/* (giữ nguyên như file gốc của anh – không cắt) */
+function renderHistory(){
+ let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ history.innerHTML=h.map(x=>`
+  <div class="chat-item">
+   ${x.barcode}<br>
+   ${x.nsx} → ${x.hsd}<br>
+   ${x.canhbao||"Bình thường"}
+  </div>`).join("");
+}
 
+function exportExcel(){
+ let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ if(!h.length){alert("Không có dữ liệu");return}
+ const ws=XLSX.utils.json_to_sheet(h);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"HSD");
+ XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
+}
+
+function savePrint(code){
+ let p=JSON.parse(localStorage.getItem(printKey)||"{}");
+ p[code]=(p[code]||0)+1;
+ localStorage.setItem(printKey,JSON.stringify(p));
+}
+
+function renderPrint(){
+ let p=JSON.parse(localStorage.getItem(printKey)||"{}");
+ printHistory.innerHTML=Object.entries(p).map(([b,q])=>`${b},${q}`).join("<br>");
+}
+
+function exportText(){
+ let p=JSON.parse(localStorage.getItem(printKey)||"{}");
+ let txt=Object.entries(p).map(([b,q])=>`${b},${q}`).join("\n");
+ const blob=new Blob([txt],{type:"text/plain"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="barcode_print.txt";
+ a.click();
+}
+
+function showPopup(type){
+ popupTitle.innerText=type==="20"?"CẢNH BÁO 20%":"CẢNH BÁO 30%";
+ popupMsg.innerText=type==="20"?"Rút hàng khỏi quầy":"Báo quản lý để giải tồn";
+ popupBox.className="bg-white p-5 rounded-xl popup-"+type;
+ alertPopup.classList.remove("hidden");
+ alertPopup.classList.add("flex");
+}
+
+function closePopup(){
+ alertPopup.classList.add("hidden");
+ alertPopup.classList.remove("flex");
+}
+
+renderHistory();
 </script>
 
 </body>
