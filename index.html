@@ -87,6 +87,9 @@ body{background:#f3f4f6}
   <div class="p-3 space-y-2">
     <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
+    <button onclick="showDanhGiaHV()" class="w-full text-left px-3 py-2 rounded bg-slate-100">
+  📝 Đánh giá HV
+</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -156,7 +159,47 @@ body{background:#f3f4f6}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
+<!-- ================= ĐÁNH GIÁ HỌC VIÊN ================= -->
+<div id="danhGiaHV" class="hidden card p-4">
 
+<h2 class="font-bold brand-text mb-3">
+PHIẾU ĐÁNH GIÁ KẾT QUẢ THỰC TẬP  
+<br>NHÂN VIÊN BÁN HÀNG CF
+</h2>
+
+<div class="mb-3">
+  <label class="font-semibold">
+    Upload phiếu đánh giá (Excel mẫu)
+  </label>
+  <input
+    type="file"
+    id="excelDanhGia"
+    accept=".xlsx,.xls"
+    class="border p-2 rounded w-full"
+  >
+</div>
+
+<div class="grid grid-cols-1 gap-2">
+  <input id="dg_hoTen" class="border p-2 rounded"
+    placeholder="Họ tên học viên">
+
+  <input id="dg_maHV" class="border p-2 rounded"
+    placeholder="Mã học viên">
+
+  <input id="dg_ngayTT" type="date"
+    class="border p-2 rounded">
+
+  <input id="dg_donVi" class="border p-2 rounded"
+    placeholder="Đơn vị thực tập">
+</div>
+
+<button
+  onclick="xuatDanhGiaHV()"
+  class="brand-bg text-white mt-4 py-2 rounded w-full">
+  Xuất file đánh giá & in
+</button>
+
+</div>
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -169,10 +212,49 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
-
+const danhGiaHV=document.getElementById("danhGiaHV");
+  
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
 function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
+  function showDanhGiaHV(){
+  mainApp.classList.add("hidden");
+  printApp.classList.add("hidden");
+  danhGiaHV.classList.remove("hidden");
+  toggleMenu();
+}
+function xuatDanhGiaHV(){
+ const fileInput=document.getElementById("excelDanhGia");
+ if(!fileInput.files.length){
+   alert("Vui lòng upload file Excel mẫu");
+   return;
+ }
+
+ const reader=new FileReader();
+ reader.onload=function(e){
+   const data=new Uint8Array(e.target.result);
+   const wb=XLSX.read(data,{type:"array"});
+   const ws=wb.Sheets[wb.SheetNames[0]];
+
+   // GHI ĐÚNG BIỂU MẪU – KHÔNG ĐƯỢC ĐỔI Ô
+   ws["F22"]={t:"s",v:dg_hoTen.value};
+   ws["F23"]={t:"s",v:dg_maHV.value};
+   ws["F24"]={t:"s",v:dg_ngayTT.value};
+   ws["F25"]={t:"s",v:dg_donVi.value};
+
+   // Giữ nguyên các ô đánh giá (QL ký tay)
+   ["F26","F27","F28","F30","F32","F34"].forEach(c=>{
+     ws[c]=ws[c]||{t:"s",v:""};
+   });
+
+   XLSX.writeFile(
+     wb,
+     "Danh_gia_HV_NVBH_CF.xlsx"
+   );
+ };
+
+ reader.readAsArrayBuffer(fileInput.files[0]);
+}
 
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
