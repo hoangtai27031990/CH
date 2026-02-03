@@ -175,18 +175,7 @@ function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("h
 function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
 
 /* ================= SCAN CONFIG ================= */
-const scanConfig={
-  qr.start(
-  { facingMode: "environment" },
-  scanConfigAndroidWeak,
-  (code) => {
-    barcode.value = code;
-    qr.stop().then(() => {
-      qr.clear();
-      r.classList.add("hidden");
-    });
-  }
-);
+const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 
 let qr=null,qr2=null,currentFilter="all";
 
@@ -205,7 +194,7 @@ function startScan(){
 
   qr.start(
     { facingMode:{ ideal:"environment" } },
-    scanConfig,
+    scanConfigAndroidWeak,
     code=>{
       barcode.value=code;
       qr.stop().then(()=>qr.clear());
@@ -250,6 +239,7 @@ function startPrintScan(){
     }
   );
 }
+
 function calculate(){
  const nsxVal=nsx.value, hsdVal=hsd.value;
  if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
@@ -337,16 +327,6 @@ function exportExcel(){
 
 function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
 renderHistory();
-
-function startPrintScan(){
- printReader.classList.remove("hidden");
- if(!qr2) qr2=new Html5Qrcode("printReader");
- qr2.start({facingMode:"environment"},scanConfig,code=>{
-  addBarcode(code);
-  qr2.stop().then(()=>qr2.clear());
-  printReader.classList.add("hidden");
- });
-}
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
