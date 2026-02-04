@@ -477,19 +477,13 @@ function guiDanhGia() {
     F32: document.getElementById("F32").value,
     F34: document.getElementById("F34").value
   };
-
-  fetch("https://script.google.com/macros/s/AKfycbw0elaYRY6OAs71bpmk30o7SipcBv36a4cgN6gg0o4fmJraaUB-mtQ_iKzEV79H4s7z/exec", {
-    method: "POST",
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(msg => {
-    alert("Đã gửi dữ liệu thành công!\nPhiếu đánh giá đã được tạo trên Google Sheets.");
-  })
-  .catch(err => {
-    alert("Lỗi gửi dữ liệu, vui lòng thử lại.");
-    console.error(err);
-  });
+fetch("https://script.google.com/macros/s/AKfycbw0elaYRY6OAs71bpmk30o7SipcBv36a4cgN6gg0o4fmJraaUB-mtQ_iKzEV79H4s7z/exec", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+})  
 }
 </script>
 
