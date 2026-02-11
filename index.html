@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -7,12 +8,13 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <style>
 body{background:#f3f4f6}
 .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .brand-bg{background:#c40018}
-.brand-text{color:#c40018f}
+.brand-text{color:#c40018}
 
 /* ===== BLINK ===== */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
@@ -64,6 +66,45 @@ body{background:#f3f4f6}
   50%{top:50%}
   100%{top:70%}
 }
+  /* ================= PULSE POPUP ================= */
+
+/* Pulse màu cam – mốc 30% */
+@keyframes pulseOrange {
+  0% {
+    box-shadow: 0 0 0 0 rgba(251,146,60,0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(251,146,60,0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(251,146,60,0);
+  }
+}
+
+/* Pulse màu đỏ – mốc 20% */
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(239,68,68,0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239,68,68,0);
+  }
+}
+
+/* Class áp dụng */
+.popup-pulse-30 {
+  border: 3px solid #fb923c;
+  animation: pulseOrange 1.4s infinite;
+}
+
+.popup-pulse-20 {
+  border: 3px solid #ef4444;
+  animation: pulseRed 0.9s infinite;
+}
+
 </style>
 </head>
 
@@ -86,10 +127,6 @@ body{background:#f3f4f6}
   <div class="p-3 space-y-2">
     <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
-    <button onclick="showEvaluate()" 
-        class="w-full text-left px-3 py-2 rounded bg-slate-100">
-  🎓 Đánh giá học viên
-</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -111,12 +148,47 @@ body{background:#f3f4f6}
 </div>
 
 <div id="reader" class="hidden"></div>
+<label class="font-semibold">Chọn loại tính</label>
+<select id="calcMode" class="border p-2 rounded w-full" onchange="changeCalcMode()">
+  <option value="full">Có NSX & HSD</option>
+  <option value="hsdBack">Chỉ có HẠN SỬ DỤNG</option>
+  <option value="nsxPeriod">Chỉ có NGÀY SẢN XUẤT</option>
+</select>
 
-<label class="font-semibold">Ngày sản xuất (NSX)</label>
-<input type="date" id="nsx" class="border p-2 rounded w-full">
+<div id="nsxBlock">
+  <label class="font-semibold">Ngày sản xuất (NSX)</label>
+  <input type="date" id="nsx" class="border p-2 rounded w-full">
+</div>
 
-<label class="font-semibold">Hạn sử dụng (HSD)</label>
-<input type="date" id="hsd" class="border p-2 rounded w-full">
+<div id="hsdBlock">
+  <label class="font-semibold">Hạn sử dụng (HSD)</label>
+  <input type="date" id="hsd" class="border p-2 rounded w-full">
+</div>
+<!-- Thời gian trước HSD -->
+<div id="beforeHsdBlock" class="hidden">
+  <label class="font-semibold">Thời gian trước HSD</label>
+  <div class="flex gap-2">
+    <input type="number" id="beforeHsdValue" class="border p-2 rounded w-1/2" placeholder="Ví dụ: 6">
+    <select id="beforeHsdUnit" class="border p-2 rounded w-1/2">
+      <option value="day">Ngày</option>
+      <option value="month">Tháng</option>
+      <option value="year">Năm</option>
+    </select>
+  </div>
+</div>
+
+<!-- Thời gian sử dụng từ NSX -->
+<div id="nsxPeriodBlock" class="hidden">
+  <label class="font-semibold">Thời gian sử dụng từ NSX</label>
+  <div class="flex gap-2">
+    <input type="number" id="periodValue" class="border p-2 rounded w-1/2" placeholder="Ví dụ: 6">
+    <select id="periodUnit" class="border p-2 rounded w-1/2">
+      <option value="day">Ngày</option>
+      <option value="month">Tháng</option>
+      <option value="year">Năm</option>
+    </select>
+  </div>
+</div>
 
 <div class="grid grid-cols-2 gap-2 pt-2">
 <button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
@@ -159,67 +231,6 @@ body{background:#f3f4f6}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
-<!-- ================= EVALUATE APP ================= -->
-<div id="evaluateApp" class="hidden card p-4 mt-4">
-  <h2 class="font-bold brand-text mb-4">Đánh giá học viên</h2>
-
-  <div class="grid grid-cols-2 gap-3">
-    <button class="brand-bg text-white py-3 rounded"
-            onclick="openEvaluate('NVBH_COOPFOOD')">
-      NVBH Co.op Food
-    </button>
-
-    <button class="brand-bg text-white py-3 rounded"
-            onclick="openEvaluate('CHT_COOPFOOD')">
-      CHT Co.op Food
-    </button>
-
-    <button class="brand-bg text-white py-3 rounded"
-            onclick="openEvaluate('NVBH_BACHHOA')">
-      NVBH Bách Hóa
-    </button>
-
-    <button class="brand-bg text-white py-3 rounded"
-            onclick="openEvaluate('CHT_BACHHOA')">
-      CHT Bách Hóa
-    </button>
-  </div>
-</div>
-<div id="nvbhCFForm" class="hidden mt-4 space-y-3">
-
-  <h3 class="font-bold text-center">
-    PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP<br>
-    NHÂN VIÊN BÁN HÀNG CO.OP FOOD
-  </h3>
-
-  <input id="hoten" class="border p-2 w-full" placeholder="Họ tên">
-  <input id="mahv" class="border p-2 w-full" placeholder="Mã số học viên">
-  <input id="ngaytt" type="date" class="border p-2 w-full">
-  <input id="donvi" class="border p-2 w-full" placeholder="Đơn vị thực tập">
-
-  <hr>
-
-  <!-- Điểm đánh giá -->
-  <div class="grid grid-cols-2 gap-2">
-    <input type="number" min="0" max="10" id="F22" class="border p-2" placeholder="F22">
-    <input type="number" min="0" max="10" id="F23" class="border p-2" placeholder="F23">
-    <input type="number" min="0" max="10" id="F24" class="border p-2" placeholder="F24">
-    <input type="number" min="0" max="10" id="F25" class="border p-2" placeholder="F25">
-    <input type="number" min="0" max="10" id="F26" class="border p-2" placeholder="F26">
-    <input type="number" min="0" max="10" id="F27" class="border p-2" placeholder="F27">
-    <input type="number" min="0" max="10" id="F28" class="border p-2" placeholder="F28">
-    <input type="number" min="0" max="10" id="F29" class="border p-2" placeholder="F29">
-    <input type="number" min="0" max="10" id="F30" class="border p-2" placeholder="F30">
-    <input type="number" min="0" max="10" id="F32" class="border p-2" placeholder="F32">
-    <input type="number" min="0" max="10" id="F34" class="border p-2" placeholder="F34">
-  </div>
-
-<button onclick="guiDanhGia()" class="brand-bg text-white py-2 w-full rounded">
-  Gửi dữ liệu & tạo phiếu đánh giá
-</button>
-
-
-</div>
 
 <script>
   function isIOS(){
@@ -233,59 +244,131 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
-const evaluateApp=document.getElementById("evaluateApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
-function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
-function showEvaluate(){
-  mainApp.classList.add("hidden");
+function stopAllScanner(){
+  if(qr){
+    qr.stop().then(()=>qr.clear()).catch(()=>{});
+    qr = null;
+  }
+  if(qr2){
+    qr2.stop().then(()=>qr2.clear()).catch(()=>{});
+    qr2 = null;
+  }
+  isScanning = false;
+}
+  
+function showMain(){
+  stopAllScanner();
+  mainApp.classList.remove("hidden");
   printApp.classList.add("hidden");
-  evaluateApp.classList.remove("hidden");
   toggleMenu();
+}
+
+function showPrint(){
+  stopAllScanner();
+  mainApp.classList.add("hidden");
+  printApp.classList.remove("hidden");
+  toggleMenu();
+}
+
+function changeCalcMode(){
+  const m = calcMode.value;
+
+  nsxBlock.classList.add("hidden");
+  hsdBlock.classList.add("hidden");
+  beforeHsdBlock.classList.add("hidden");
+  nsxPeriodBlock.classList.add("hidden");
+
+  if(m === "full"){
+    nsxBlock.classList.remove("hidden");
+    hsdBlock.classList.remove("hidden");
+  }
+
+  if(m === "hsdBack"){
+    hsdBlock.classList.remove("hidden");
+    beforeHsdBlock.classList.remove("hidden");
+  }
+
+  if(m === "nsxPeriod"){
+    nsxBlock.classList.remove("hidden");
+    nsxPeriodBlock.classList.remove("hidden");
+  }
 }
 
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 
 let qr=null,qr2=null,currentFilter="all";
+let isScanning = false;
 
 /* ================= SCAN MAIN ================= */
-function startScan(){
+async function startScan(){
+
   if(isIOS()){
-    alert("⚠️ iPhone không hỗ trợ quét barcode ổn định.\nVui lòng nhập tay barcode.");
+    alert("⚠️ iPhone không hỗ trợ quét barcode.\nVui lòng nhập tay.");
     return;
   }
 
-  const r=document.getElementById("reader");
-  r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
+  if(isScanning) return;
+  isScanning = true;
+
+  // 🔴 DỪNG CAMERA CŨ (NẾU CÓ)
+  if(qr){
+    try{
+      await qr.stop();
+      await qr.clear();
+    }catch(e){}
+    qr = null;
+  }
+
+  const r = document.getElementById("reader");
+  r.innerHTML = `
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+    </div>
+  `;
   r.classList.remove("hidden");
 
-  if(!qr) qr=new Html5Qrcode("reader");
+  qr = new Html5Qrcode("reader");
 
   qr.start(
-    { facingMode:{ ideal:"environment" } },
+    { facingMode: "environment" },
     scanConfigAndroidWeak,
-    code=>{
-      barcode.value=code;
-      qr.stop().then(()=>qr.clear());
-      r.classList.add("hidden");
+    code => {
+      barcode.value = code;
+
+      qr.stop().then(()=>{
+        qr.clear();
+        qr = null;
+        r.classList.add("hidden");
+        isScanning = false;
+      });
     },
-    err=>{}
-  );
+    () => {}
+  ).catch(()=>{
+    isScanning = false;
+    r.classList.add("hidden");
+  });
 }
 
 /* ================= SCAN PRINT ================= */
-function startPrintScan(){
+async function startPrintScan(){
 
-  if (isIOS()) {
-    alert(
-      "⚠️ THIẾT BỊ iOS KHÔNG HỖ TRỢ QUÉT BARCODE\n\n" +
-      "Vui lòng:\n" +
-      "• Dùng điện thoại Android\n" +
-      "• Hoặc nhập barcode thủ công"
-    );
+  if(isIOS()){
+    alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode.");
     return;
+  }
+
+  if(isScanning) return;
+  isScanning = true;
+
+  if(qr2){
+    try{
+      await qr2.stop();
+      await qr2.clear();
+    }catch(e){}
+    qr2 = null;
   }
 
   const r = document.getElementById("printReader");
@@ -296,25 +379,84 @@ function startPrintScan(){
   `;
   r.classList.remove("hidden");
 
-  if(!qr2) qr2 = new Html5Qrcode("printReader");
+  qr2 = new Html5Qrcode("printReader");
 
   qr2.start(
     { facingMode: "environment" },
     scanConfigAndroidWeak,
-    (code) => {
+    code=>{
       addBarcode(code);
-      qr2.stop().then(() => {
+      qr2.stop().then(()=>{
         qr2.clear();
+        qr2 = null;
         r.classList.add("hidden");
+        isScanning = false;
       });
     }
-  );
+  ).catch(()=>{
+    isScanning = false;
+    r.classList.add("hidden");
+  });
+}
+
+function addPeriod(date, value, unit){
+  const d = new Date(date);
+
+  if(unit === "day") d.setDate(d.getDate() + value);
+
+  if(unit === "month"){
+    const day = d.getDate();
+    d.setMonth(d.getMonth() + value);
+    if(d.getDate() < day) d.setDate(0);
+  }
+
+  if(unit === "year") d.setFullYear(d.getFullYear() + value);
+
+  return d;
 }
 
 function calculate(){
- const nsxVal=nsx.value, hsdVal=hsd.value;
- if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
- const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
+let nsxD, hsdD;
+const mode = calcMode.value;
+
+if(mode === "full"){
+  if(!nsx.value || !hsd.value){
+    alert("Nhập đủ NSX & HSD"); return;
+  }
+  nsxD = new Date(nsx.value);
+  hsdD = new Date(hsd.value);
+}
+
+if(mode === "hsdBack"){
+  if(!hsd.value){
+    alert("Nhập HSD"); return;
+  }
+  const v = Number(beforeHsdValue.value);
+  const u = beforeHsdUnit.value;
+  if(!v){
+    alert("Nhập thời gian trước HSD"); return;
+  }
+  hsdD = new Date(hsd.value);
+  nsxD = addPeriod(hsdD, -v, u);
+}
+
+if(mode === "nsxPeriod"){
+  if(!nsx.value){
+    alert("Nhập NSX"); return;
+  }
+  const v = Number(periodValue.value);
+  const u = periodUnit.value;
+  if(!v){
+    alert("Nhập thời gian sử dụng"); return;
+  }
+  nsxD = new Date(nsx.value);
+  hsdD = addPeriod(nsxD, v, u);
+}
+
+if(hsdD <= nsxD){
+  alert("HSD phải lớn hơn NSX"); return;
+}
+
  if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
  const total=(hsdD-nsxD)/86400000;
@@ -438,9 +580,22 @@ function showPopup(type){
 
  box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
 
- if(type==="30"){title.innerText="CẢNH BÁO MỐC 30%";msg.innerText="Báo cáo quản lý để thực hiện giải tồn.";box.classList.add("popup-30")}
- if(type==="20"){title.innerText="CẢNH BÁO MỐC 20%";msg.innerText="Rút hàng khỏi quầy ngay.";box.classList.add("popup-20")}
- if(type==="export"){title.innerText="✅ XUẤT FILE THÀNH CÔNG";msg.innerText="Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo."}
+ if(type === "30"){
+  title.innerText = "CẢNH BÁO MỐC 30%";
+  msg.innerText = "Báo cáo quản lý để thực hiện giải tồn.";
+  box.classList.add("popup-pulse-30");
+}
+
+if(type === "20"){
+  title.innerText = "CẢNH BÁO MỐC 20%";
+  msg.innerText = "Rút hàng khỏi quầy ngay.";
+  box.classList.add("popup-pulse-20");
+}
+
+if(type === "export"){
+  title.innerText = "✅ XUẤT FILE THÀNH CÔNG";
+  msg.innerText = "Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo.";
+}
 
  popup.classList.remove("hidden");
  popup.classList.add("flex");
@@ -452,39 +607,15 @@ function closePopup(){
  alertPopup.classList.add("hidden");
  alertPopup.classList.remove("flex");
 }
-  /* ================= EVALUATE HANDLER ================= */
-function openEvaluate(type){
-  if(type==="NVBH_COOPFOOD"){
-    document.getElementById("nvbhCFForm").classList.remove("hidden");
-  }
+function resetForm(){
+  barcode.value="";
+  nsx.value="";
+  hsd.value="";
+  beforeHsdValue.value="";
+  periodValue.value="";
+  result.innerHTML="";
 }
-function guiDanhGia() {
-  const data = {
-    hoten: document.getElementById("hoten").value,
-    mahv: document.getElementById("mahv").value,
-    ngaytt: document.getElementById("ngaytt").value,
-    donvi: document.getElementById("donvi").value,
 
-    F22: document.getElementById("F22").value,
-    F23: document.getElementById("F23").value,
-    F24: document.getElementById("F24").value,
-    F25: document.getElementById("F25").value,
-    F26: document.getElementById("F26").value,
-    F27: document.getElementById("F27").value,
-    F28: document.getElementById("F28").value,
-    F29: document.getElementById("F29").value,
-    F30: document.getElementById("F30").value,
-    F32: document.getElementById("F32").value,
-    F34: document.getElementById("F34").value
-  };
-fetch("https://script.google.com/macros/s/AKfycbw0elaYRY6OAs71bpmk30o7SipcBv36a4cgN6gg0o4fmJraaUB-mtQ_iKzEV79H4s7z/exec", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(data)
-})  
-}
 </script>
 
 </body>
