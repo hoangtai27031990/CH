@@ -675,11 +675,15 @@ function exportExcel(){
 }
 
 
-autoCleanExpired();   // THÊM DÒNG NÀY
+window.addEventListener("DOMContentLoaded", function(){
 
-renderHistory();
-renderPrint();
-checkStoredProducts();
+  autoCleanExpired();
+  renderHistory();
+  renderPrint();
+  checkStoredProducts();
+
+});
+
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
@@ -689,9 +693,13 @@ function addBarcode(code){
 }
 
 function renderPrint(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
+ const d = JSON.parse(localStorage.getItem(printKey)||"{}");
+ if(!printHistory) return;
+ printHistory.innerHTML = Object.entries(d)
+   .map(([b,q])=>`<div class="chat-item">${b},${q}</div>`)
+   .join("");
 }
+
 
 function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
 
