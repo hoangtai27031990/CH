@@ -681,12 +681,14 @@ function exportExcel(){
   showPopup("export");
 }
 
-
-autoCleanExpired();   // THÊM DÒNG NÀY
-
-renderHistory();
-renderPrint();
-checkStoredProducts();
+try{
+  autoCleanExpired();
+  renderHistory();
+  renderPrint();
+  checkStoredProducts();
+}catch(e){
+  console.error("Init error:", e);
+};
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
@@ -696,9 +698,17 @@ function addBarcode(code){
 }
 
 function renderPrint(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
+
+ const d = JSON.parse(localStorage.getItem(printKey) || "{}");
+ const box = document.getElementById("printHistory");
+
+ if(!box) return;
+
+ box.innerHTML = Object.entries(d)
+   .map(([b,q]) => `<div class="chat-item">${b},${q}</div>`)
+   .join("");
 }
+
 
 function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
 
