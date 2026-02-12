@@ -337,7 +337,6 @@ const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
   const statistic = document.getElementById("statistic");
 const result = document.getElementById("result");
-const printHistory = document.getElementById("printHistory");
 
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
@@ -350,18 +349,23 @@ function stopAllScanner(){
   // ❌ KHÔNG reset scanMode ở đây
 }
   
+function closeMenu(){
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+}
+
 function showMain(){
   stopAllScanner();
   mainApp.classList.remove("hidden");
   printApp.classList.add("hidden");
-  toggleMenu();
+  closeMenu();
 }
 
 function showPrint(){
   stopAllScanner();
   mainApp.classList.add("hidden");
   printApp.classList.remove("hidden");
-  toggleMenu();
+  closeMenu();
 }
 
 function changeCalcMode(){
@@ -704,9 +708,10 @@ function addBarcode(code){
 
 function renderPrint(){
 
+  const printHistory = document.getElementById("printHistory");
   if(!printHistory) return;
 
-  const d = JSON.parse(localStorage.getItem(printKey)||"{}");
+  const d = JSON.parse(localStorage.getItem(printKey) || "{}");
 
   printHistory.innerHTML = Object.entries(d)
     .map(([b,q])=>`<div class="chat-item">${b},${q}</div>`)
