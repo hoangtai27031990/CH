@@ -277,11 +277,6 @@ body{background:#f3f4f6}
 <div id="statistic" class="text-sm pt-2"></div>
 </div>
 
-<div class="card p-3 mt-4">
-  <h2 class="font-bold brand-text mb-2">Thống kê</h2>
-  <div id="statistic" class="text-sm"></div>
-</div>
-
 <!-- ================= PRINT APP ================= -->
 <div id="printApp" class="hidden card p-4">
 <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
@@ -691,11 +686,15 @@ function exportExcel(){
 }
 
 
-autoCleanExpired();   // THÊM DÒNG NÀY
+document.addEventListener("DOMContentLoaded", function(){
 
-renderHistory();
-renderPrint();
-checkStoredProducts();
+  autoCleanExpired();
+  renderHistory();
+  renderPrint();
+  checkStoredProducts();
+
+});
+
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
@@ -705,9 +704,16 @@ function addBarcode(code){
 }
 
 function renderPrint(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
+
+  if(!printHistory) return;
+
+  const d = JSON.parse(localStorage.getItem(printKey)||"{}");
+
+  printHistory.innerHTML = Object.entries(d)
+    .map(([b,q])=>`<div class="chat-item">${b},${q}</div>`)
+    .join("");
 }
+
 
 function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
 
