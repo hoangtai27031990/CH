@@ -409,11 +409,12 @@ async function startScan(){
     return;
   }
 
-  if(isScanning) return;
-  isScanning = true;
-  scanMode = "main";
+if(isScanning) return;
 
-  stopAllScanner();
+stopAllScanner();
+
+isScanning = true;
+scanMode = "main";
 
   const r = document.getElementById("reader");
   r.innerHTML = `
@@ -447,11 +448,12 @@ async function startPrintScan(){
     return;
   }
 
-  if(isScanning) return;
-  isScanning = true;
-  scanMode = "print";
+if(isScanning) return;
 
-  stopAllScanner();
+stopAllScanner();   // dừng cái cũ trước
+
+isScanning = true;
+scanMode = "print";
 
   const r = document.getElementById("printReader");
   r.innerHTML = `
