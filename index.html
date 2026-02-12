@@ -335,6 +335,9 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
+  
+const printHistory = document.getElementById("printHistory");
+const result = document.getElementById("result");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function stopAllScanner(){
@@ -765,6 +768,7 @@ function resetForm(){
   beforeHsdValue.value="";
   periodValue.value="";
   result.innerHTML="";
+  
 }
 function checkStoredProducts(){
 if(isPopupShowing) return;
