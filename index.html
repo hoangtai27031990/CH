@@ -518,7 +518,16 @@ function handleScanResult(code){
       qr = null;
       isScanning = false;
       scanMode = null;
-    }).catch(()=>{});
+
+      // 🔥 BẮT BUỘC render lại sau khi stop hoàn tất
+      if(printApp.classList.contains("hidden") === false){
+        renderPrint();
+      }
+
+    }).catch(()=>{
+      isScanning = false;
+      scanMode = null;
+    });
   }
 }
 
