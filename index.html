@@ -644,11 +644,19 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
 
 function setFilter(type){
- currentFilter=type;
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
- document.getElementById("f-"+type).classList.add("active");
- renderHistory();
+  currentFilter = type;
+
+  document.querySelectorAll(".filter-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  const btn = document.getElementById("f-" + type);
+  if(btn){
+    btn.classList.add("active");
+  }
+
+  renderHistory();
 }
+
 
 function renderHistory(){
 
