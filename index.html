@@ -363,10 +363,19 @@ function showMain(){
 
 function showPrint(){
   stopAllScanner();
+
   mainApp.classList.add("hidden");
   printApp.classList.remove("hidden");
+
+  // đảm bảo vùng quét đang ẩn
+  document.getElementById("printReader").classList.add("hidden");
+
+  // render lại dữ liệu mỗi lần mở tab
+  renderPrint();
+
   closeMenu();
 }
+
 
 function changeCalcMode(){
   const m = calcMode.value;
@@ -715,10 +724,20 @@ function renderPrint(){
 
   const d = JSON.parse(localStorage.getItem(printKey) || "{}");
 
+  if(!Object.keys(d).length){
+    printHistory.innerHTML = `
+      <div class="text-center text-gray-400 text-sm mt-5">
+        Chưa có barcode nào được quét
+      </div>
+    `;
+    return;
+  }
+
   printHistory.innerHTML = Object.entries(d)
     .map(([b,q])=>`<div class="chat-item">${b},${q}</div>`)
     .join("");
 }
+
 
 
 function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
