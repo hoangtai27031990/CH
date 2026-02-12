@@ -347,9 +347,8 @@ function stopAllScanner(){
     qr = null;
   }
   isScanning = false;
-  scanMode = null;
+  // ❌ KHÔNG reset scanMode ở đây
 }
-
   
 function showMain(){
   stopAllScanner();
