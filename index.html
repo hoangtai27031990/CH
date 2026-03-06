@@ -1041,13 +1041,17 @@ function completeProduct(id){
   });
 
   // Render lại popup đúng dữ liệu mới
- showToast("Đã xử lý sản phẩm");
+showToast("Đã xử lý sản phẩm");
 
-if(warningProducts.length > 0){
-  showCheckDatePopup(warningProducts);
-} else {
-  closeCheckDatePopup();
-}
+setTimeout(()=>{
+
+  if(warningProducts.length > 0){
+    showCheckDatePopup(warningProducts);
+  } else {
+    closeCheckDatePopup();
+  }
+
+},500);
 
 autoCleanExpired();
 renderHistory();
@@ -1133,7 +1137,7 @@ const price = getNumber(document.getElementById("priceInput"));
 
    priceResult.innerHTML =
    "Giá bán (có VAT): <span class='text-green-700'>" +
-   sellVat.toLocaleString("en-US") + "</span>";
+   sellVat.toLocaleString("vi-VN") + "</span>";
 
  }
 
@@ -1144,7 +1148,7 @@ const price = getNumber(document.getElementById("priceInput"));
 
    priceResult.innerHTML =
    "Giá vốn: <span class='text-green-700'>" +
-  cost.toLocaleString("en-US") + "</span>";
+  cost.toLocaleString("vi-VN") + "</span>";
 
  }
 
@@ -1193,17 +1197,17 @@ function formatNumberInput(input){
 
  if(value === "") return;
 
- value = Number(value).toLocaleString("en-US");
+ value = Number(value).toLocaleString("vi-VN");
 
  input.value = value;
 
 }
 
 function getNumber(input){
-
+ if(!input.value) return 0;
  return Number(input.value.replace(/,/g,''));
-
 }
+
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
