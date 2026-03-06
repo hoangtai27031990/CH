@@ -326,12 +326,17 @@ Tính giá sản phẩm
 Tính số lượng bán để giữ nguyên tỉ lệ lãi
 </button>
 
-</div>
+<button onclick="openTool('discount')" class="bg-slate-700 text-white py-2 rounded">
+Tính mức giảm tối đa vẫn giữ lãi
+</button>
+
 </div>
 
 <!-- ================= TÍNH TỈ LỆ LÃI ================= -->
 <div id="toolProfit" class="card p-4 tool-box">
-
+<button onclick="backTool()" class="text-sm text-blue-600 mb-2">
+← Quay lại
+</button>
 <label>Giá vốn</label>
 <input id="toolCost" type="number" class="border p-2 rounded w-full">
 
@@ -386,6 +391,8 @@ Tính số lượng bán để giữ nguyên tỉ lệ lãi
 </div>
 
 <!-- ================= GIỮ NGUYÊN TỈ LỆ LÃI ================= -->
+<div id="toolKeep" class="card p-4 tool-box">
+
 <label>Giá bán hiện tại</label>
 <input id="keepPrice" type="number" class="border p-2 rounded w-full">
 
@@ -410,8 +417,36 @@ Tính số lượng bán để giữ nguyên tỉ lệ lãi
 <button onclick="calcKeep()" class="brand-bg text-white py-2 rounded">TÍNH</button>
 <button onclick="resetKeep()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
 </div>
+<div id="toolDiscount" class="card p-4 tool-box">
 
+<button onclick="backTool()" class="text-sm text-blue-600 mb-2">
+← Quay lại
+</button>
+
+<label>Giá vốn</label>
+<input id="dCost" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Giá bán</label>
+<input id="dPrice" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">VAT</label>
+<select id="dVat" class="border p-2 rounded w-full">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
+</select>
+
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button onclick="calcDiscount()" class="brand-bg text-white py-2 rounded">TÍNH</button>
+</div>
+
+<div id="discountResult" class="mt-3 font-semibold"></div>
+
+</div>
 <div id="keepResult" class="mt-3 font-semibold"></div>
+
+</div>
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -492,6 +527,13 @@ function showTool(){
   printApp.classList.add("hidden");
   toolApp.classList.remove("hidden");
   toggleMenu();
+}
+  function backTool(){
+
+document.querySelectorAll(".tool-box").forEach(t=>{
+t.style.display="none";
+});
+
 }
 function changeCalcMode(){
   const m = calcMode.value;
@@ -881,18 +923,21 @@ function exportText(){
 }
 function openTool(type){
 
-  document.querySelectorAll(".tool-box").forEach(e=>{
-    e.style.display="none";
-  });
+document.querySelectorAll(".tool-box").forEach(t=>{
+t.style.display="none";
+});
 
-  if(type==="profit")
-    document.getElementById("toolProfit").style.display="block";
+if(type==="profit"){
+document.getElementById("toolProfit").style.display="block";
+}
 
-  if(type==="product")
-    document.getElementById("toolProduct").style.display="block";
+if(type==="product"){
+document.getElementById("toolProduct").style.display="block";
+}
 
-  if(type==="keep")
-    document.getElementById("toolKeep").style.display="block";
+if(type==="keep"){
+document.getElementById("toolKeep").style.display="block";
+}
 
 }
 function showPopup(type){
@@ -1232,6 +1277,25 @@ keepQty.value="";
 keepMargin.value="";
 keepDiscount.value="";
 keepResult.innerHTML="";
+}
+  /* ===== TÍNH GIẢM TỐI ĐA ===== */
+function calcDiscount(){
+
+const cost = Number(dCost.value);
+const price = Number(dPrice.value);
+const vat = Number(dVat.value);
+
+const priceNoVat = price/(1+vat/100);
+
+const margin = (priceNoVat-cost)/priceNoVat;
+
+const minPrice = cost/(1-margin);
+
+const maxDiscount = (1-minPrice/price)*100;
+
+discountResult.innerHTML =
+"Mức giảm tối đa: <b>"+maxDiscount.toFixed(2)+"%</b>";
+
 }
 function formatMoneyInput(input){
 
