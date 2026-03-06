@@ -318,6 +318,10 @@ Tỉ lệ lãi
 Tính giá SP
 </button>
 
+<button onclick="openDiscountTool()" class="brand-bg text-white p-3 rounded col-span-2">
+Giữ tỷ lệ lãi khi giảm giá
+</button>
+
 </div>
 
 <!-- ================= TỈ LỆ LÃI ================= -->
@@ -397,6 +401,50 @@ Tính lại
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
+  <!-- ================= DISCOUNT TOOL ================= -->
+
+<div id="discountBox" class="hidden mt-4 border p-3 rounded">
+
+<div class="font-semibold mb-2">Giữ tỷ lệ lãi khi giảm giá</div>
+
+<label>Giá bán hiện tại</label>
+<input id="currentPrice" type="text"
+class="border p-2 rounded w-full"
+onkeyup="formatNumberInput(this)">
+
+<label class="mt-2">VAT</label>
+<select id="vatRate3" class="border p-2 rounded w-full">
+<option value="0">Không VAT</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<label class="mt-2">Số lượng hiện tại</label>
+<input id="currentQty" type="number"
+class="border p-2 rounded w-full">
+
+<label class="mt-2">Tỷ lệ lãi hiện tại (%)</label>
+<input id="currentMargin" type="number"
+class="border p-2 rounded w-full">
+
+<label class="mt-2">Giảm giá (%)</label>
+<input id="discountPercent" type="number"
+class="border p-2 rounded w-full">
+
+<button onclick="calcDiscount()" 
+class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
+Tính
+</button>
+
+<div id="discountResult" class="mt-2 font-semibold"></div>
+
+<button onclick="resetDiscount()" 
+class="mt-3 w-full border p-2 rounded">
+Tính lại
+</button>
+
+</div>
 /* ================= CORE ================= */
 const historyKey="coop_hsd_history";
   /* ================= AUTO CLEAN EXPIRED ================= */
@@ -1161,6 +1209,7 @@ const price = getNumber(document.getElementById("priceInput"));
 
 const marginBox = document.getElementById("marginBox");
 const priceBox = document.getElementById("priceBox");
+const discountBox = document.getElementById("discountBox");
 
 function openMargin(){
 
@@ -1176,6 +1225,13 @@ marginBox.classList.add("hidden");
 
 }
 
+function openDiscountTool(){
+
+discountBox.classList.remove("hidden");
+marginBox.classList.add("hidden");
+priceBox.classList.add("hidden");
+
+}
 function resetMargin(){
 
 costPrice.value="";
@@ -1191,6 +1247,49 @@ priceInput.value="";
 marginPercent.value="";
 priceResult.innerHTML="";
 priceBox.classList.add("hidden");
+
+}
+  function calcDiscount(){
+
+const price = getNumber(document.getElementById("currentPrice"));
+const vat = Number(vatRate3.value)/100;
+const qty = Number(currentQty.value);
+const margin = Number(currentMargin.value)/100;
+const discount = Number(discountPercent.value)/100;
+
+if(!price || !qty || !margin){
+ alert("Nhập đủ dữ liệu");
+ return;
+}
+
+const sellNoVat = price / (1 + vat);
+
+const cost = sellNoVat * (1 - margin);
+
+const newPrice = price * (1 - discount);
+
+const newSellNoVat = newPrice / (1 + vat);
+
+const newProfit = newSellNoVat - cost;
+
+const oldProfit = sellNoVat - cost;
+
+const requiredQty = (qty * oldProfit) / newProfit;
+
+discountResult.innerHTML =
+"Cần bán khoảng <span class='text-red-600'>" +
+Math.ceil(requiredQty) +
+"</span> sản phẩm để giữ tỷ lệ lãi";
+
+}
+  function resetDiscount(){
+
+currentPrice.value="";
+currentQty.value="";
+currentMargin.value="";
+discountPercent.value="";
+discountResult.innerHTML="";
+discountBox.classList.add("hidden");
 
 }
   /* ===== FORMAT NUMBER ===== */
