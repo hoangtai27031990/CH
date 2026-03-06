@@ -342,7 +342,7 @@ background:#e2e8f0;
 </button>
 
 <button onclick="openTool('keep')" class="tool-btn">
-🔄 Giữ nguyên tỉ lệ lãi
+🔄 Tính số lượng bán ra để giữ nguyên tỉ lệ lãi
 </button>
 
 <button onclick="openTool('inventory')" class="tool-btn">
@@ -384,7 +384,7 @@ background:#e2e8f0;
 
 <h3 class="font-bold">Tính giá sản phẩm</h3>
 
-<input id="toolProfit2" placeholder="% lãi mong muốn" class="border p-2 rounded w-full">
+<input id="toolProfit2" placeholder="% tỉ lệ lãi của sản phẩm" class="border p-2 rounded w-full">
 
 <select id="toolMode2" class="border p-2 rounded w-full">
 <option value="cost">Nhập giá vốn → tính giá bán</option>
@@ -411,7 +411,7 @@ background:#e2e8f0;
 
 <button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
 
-<h3 class="font-bold">Giữ nguyên tỉ lệ lãi</h3>
+<h3 class="font-bold">Tính số lượng sản phẩm cần bán ra khi giảm giá để giữ nguyên tỉ lệ lãi</h3>
 
 <input id="keepPrice" placeholder="Giá bán hiện tại" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
