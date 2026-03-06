@@ -371,6 +371,7 @@ background:#e2e8f0;
 </select>
 
 <button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetProfit()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="profitResult"></div>
 
@@ -400,6 +401,7 @@ background:#e2e8f0;
 </select>
 
 <button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetProduct()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="productResult"></div>
 
@@ -427,6 +429,7 @@ background:#e2e8f0;
 <input id="keepDiscount" placeholder="Giảm giá %" class="border p-2 rounded w-full">
 
 <button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetKeep()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="keepResult"></div>
 
@@ -449,6 +452,7 @@ background:#e2e8f0;
 </select>
 
 <button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetInventory()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="inventoryResult"></div>
 
@@ -1466,7 +1470,63 @@ ${explain}
 `;
 
 }
+/* ================= RESET TOOL ================= */
 
+function resetProfit(){
+toolCost.value="";
+toolPrice.value="";
+profitResult.innerHTML="";
+}
+
+function resetProduct(){
+toolProfit2.value="";
+toolValue2.value="";
+productResult.innerHTML="";
+}
+
+function resetKeep(){
+keepPrice.value="";
+keepProfit.value="";
+keepQty.value="";
+keepDiscount.value="";
+keepResult.innerHTML="";
+}
+
+function resetInventory(){
+invSales.value="";
+invStock.value="";
+inventoryResult.innerHTML="";
+}
+  /* ================= AUTO FORMAT MONEY ================= */
+
+function formatInputMoney(el){
+
+let v = el.value.replace(/,/g,"");
+
+if(v === "") return;
+
+if(!isNaN(v)){
+el.value = Number(v).toLocaleString("vi-VN");
+}
+
+}
+
+/* áp dụng cho tất cả input giá */
+
+[
+"toolCost",
+"toolPrice",
+"toolValue2",
+"keepPrice",
+"invSales",
+"invStock"
+].forEach(id=>{
+const el = document.getElementById(id);
+if(el){
+el.addEventListener("blur",()=>formatInputMoney(el));
+}
+});
+  
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
