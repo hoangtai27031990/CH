@@ -417,31 +417,6 @@ Tính mức giảm tối đa vẫn giữ lãi
 <button onclick="calcKeep()" class="brand-bg text-white py-2 rounded">TÍNH</button>
 <button onclick="resetKeep()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
 </div>
-<div id="toolDiscount" class="card p-4 tool-box">
-
-<button onclick="backTool()" class="text-sm text-blue-600 mb-2">
-← Quay lại
-</button>
-
-<label>Giá vốn</label>
-<input id="dCost" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">Giá bán</label>
-<input id="dPrice" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">VAT</label>
-<select id="dVat" class="border p-2 rounded w-full">
-<option value="0">0%</option>
-<option value="5">5%</option>
-<option value="8">8%</option>
-<option value="10">10%</option>
-</select>
-
-<div class="grid grid-cols-2 gap-2 mt-3">
-<button onclick="calcDiscount()" class="brand-bg text-white py-2 rounded">TÍNH</button>
-</div>
-
-<div id="discountResult" class="mt-3 font-semibold"></div>
 
 </div>
 <div id="keepResult" class="mt-3 font-semibold"></div>
@@ -951,21 +926,21 @@ function exportText(){
 }
 function openTool(type){
 
-document.querySelectorAll(".tool-box").forEach(e=>{
-  e.style.display="none";
-});
+  document.querySelectorAll(".tool-box").forEach(e=>{
+    e.style.display="none";
+  });
 
-if(type==="profit")
-document.getElementById("toolProfit").style.display="block";
+  if(type==="profit")
+    document.getElementById("toolProfit").style.display="block";
 
-if(type==="product")
-document.getElementById("toolProduct").style.display="block";
+  if(type==="product")
+    document.getElementById("toolProduct").style.display="block";
 
-if(type==="keep")
-document.getElementById("toolKeep").style.display="block";
+  if(type==="keep")
+    document.getElementById("toolKeep").style.display="block";
 
-if(type==="discount")
-document.getElementById("toolDiscount").style.display="block";
+  if(type==="discount")
+    document.getElementById("toolDiscount").style.display="block";
 
 }
 function showPopup(type){
