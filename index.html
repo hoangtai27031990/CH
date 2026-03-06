@@ -445,10 +445,6 @@ function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 </script>
-  <!-- ================= DISCOUNT TOOL ================= -->
-
-<div id="discountBox" class="hidden mt-4 border p-3 rounded">
-
 <div class="font-semibold mb-2">Giữ tỷ lệ lãi khi giảm giá</div>
 
 <label>Giá bán hiện tại</label>
@@ -489,8 +485,9 @@ Tính lại
 </button>
 
 </div>
+  <script>
 /* ================= CORE ================= */
-const historyKey="coop_hsd_history";
+  const historyKey="coop_hsd_history";
   /* ================= AUTO CLEAN EXPIRED ================= */
 function autoCleanExpired(){
 
@@ -529,6 +526,7 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
+const businessApp = document.getElementById("businessApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function stopAllScanner(){
@@ -807,10 +805,14 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
 
 function setFilter(type){
- currentFilter=type;
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
- document.getElementById("f-"+type).classList.add("active");
- renderHistory();
+  currentFilter = type;
+
+  document.querySelectorAll(".filter-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  document.getElementById("f-" + type).classList.add("active");
+
+  renderHistory();
 }
 
 function renderHistory(){
@@ -1349,7 +1351,31 @@ function formatNumberInput(input){
 
  input.value = Number(value).toLocaleString("vi-VN");
 }
+function renderHistory(){}
 
+function showPopup(type){}
+
+function closePopup(){
+  document.getElementById("alertPopup").classList.add("hidden");
+}
+
+function exportExcel(){}
+
+function clearHistory(){
+  localStorage.removeItem(historyKey);
+  renderHistory();
+}
+
+function addBarcode(code){
+  const box = document.getElementById("printHistory");
+  box.innerHTML += `<div class="chat-item">${code}</div>`;
+}
+
+function exportText(){}
+
+function clearPrintHistory(){
+  document.getElementById("printHistory").innerHTML="";
+}
 function getNumber(input){
  if(!input.value) return 0;
  return Number(input.value.replace(/,/g,''));
@@ -1382,5 +1408,7 @@ function getNumber(input){
   </div>
 </div>
  <div id="toastBox" class="toast"></div> 
+</script>
+
 </body>
 </html>
