@@ -323,7 +323,7 @@ Tính giá sản phẩm
 </button>
 
 <button onclick="openTool('keep')" class="bg-slate-700 text-white py-2 rounded">
-Giữ nguyên tỉ lệ lãi
+Tính số lượng bán để giữ nguyên tỉ lệ lãi
 </button>
 
 </div>
@@ -386,9 +386,7 @@ Giữ nguyên tỉ lệ lãi
 </div>
 
 <!-- ================= GIỮ NGUYÊN TỈ LỆ LÃI ================= -->
-<div id="toolKeep" class="card p-4 tool-box">
-
-<label>Giá bán</label>
+<label>Giá bán hiện tại</label>
 <input id="keepPrice" type="number" class="border p-2 rounded w-full">
 
 <label class="mt-2">VAT</label>
@@ -399,7 +397,10 @@ Giữ nguyên tỉ lệ lãi
 <option value="10">10%</option>
 </select>
 
-<label class="mt-2">Tỉ lệ lãi (%)</label>
+<label class="mt-2">Số lượng bán hiện tại</label>
+<input id="keepQty" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Tỉ lệ lãi đạt được (%)</label>
 <input id="keepMargin" type="number" class="border p-2 rounded w-full">
 
 <label class="mt-2">% Giảm giá</label>
@@ -411,9 +412,6 @@ Giữ nguyên tỉ lệ lãi
 </div>
 
 <div id="keepResult" class="mt-3 font-semibold"></div>
-</div>
-
-</div>
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1190,34 +1188,51 @@ productResult.innerHTML="";
 
 function calcKeep(){
 
-let price=Number(keepPrice.value);
-let vat=Number(keepVat.value);
-let margin=Number(keepMargin.value)/100;
-let discount=Number(keepDiscount.value)/100;
+const price = Number(keepPrice.value);
+const vat = Number(keepVat.value);
+const qty = Number(keepQty.value);
+const margin = Number(keepMargin.value);
+const discount = Number(keepDiscount.value);
 
-if(!price||!margin){
-alert("Nhập đủ dữ liệu");return;
+if(!price || !qty){
+  alert("Nhập đầy đủ dữ liệu");
+  return;
 }
 
-let priceNoVat=price/(1+vat/100);
+/* Giá sau VAT */
+const priceNoVat = price / (1 + vat/100);
 
-let cost=priceNoVat/(1+margin);
+/* Lợi nhuận trên mỗi sản phẩm */
+const profitPerUnit = priceNoVat * margin / 100;
 
-let salePrice=price*(1-discount);
+/* Tổng lợi nhuận hiện tại */
+const totalProfit = profitPerUnit * qty;
 
-let saleNoVat=salePrice/(1+vat/100);
+/* Giá bán sau khi giảm */
+const newPrice = price * (1 - discount/100);
 
-let qty=(cost/(saleNoVat-cost)).toFixed(2);
+/* Giá sau VAT khi giảm */
+const newPriceNoVat = newPrice / (1 + vat/100);
 
-keepResult.innerHTML=`Cần bán khoảng <span class="text-red-600">${qty}</span> sản phẩm để giữ tỉ lệ lãi`;
+/* Lợi nhuận mỗi sản phẩm sau giảm */
+const newProfitUnit = newPriceNoVat * margin / 100;
+
+/* Số lượng cần bán */
+const needQty = Math.ceil(totalProfit / newProfitUnit);
+
+keepResult.innerHTML = `
+Giá sau giảm: <b>${newPrice.toLocaleString("vi-VN")} đ</b><br>
+Cần bán khoảng: <b class="text-red-600">${needQty}</b> sản phẩm<br>
+để giữ tỉ lệ lãi <b>${margin}%</b>
+`;
 }
-
 function resetKeep(){
 keepPrice.value="";
+keepQty.value="";
 keepMargin.value="";
 keepDiscount.value="";
 keepResult.innerHTML="";
-} 
+}
 function formatMoneyInput(input){
 
   input.addEventListener("input", function(){
