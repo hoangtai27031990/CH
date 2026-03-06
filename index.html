@@ -158,6 +158,19 @@ display:none;
 .tool-box.active{
 display:block;
 }
+.tool-btn{
+padding:10px;
+border-radius:8px;
+background:#f1f5f9;
+border:1px solid #e2e8f0;
+font-weight:500;
+text-align:left;
+transition:.2s;
+}
+
+.tool-btn:hover{
+background:#e2e8f0;
+}  
 </style>
 </head>
 
@@ -320,26 +333,117 @@ display:block;
 
 <div id="toolMenu" class="grid grid-cols-1 gap-2">
 
-<button onclick="openTool('profit')" class="tool-btn">Tính tỉ lệ lãi</button>
+<button onclick="openTool('profit')" class="tool-btn">
+📈 Tính tỉ lệ lãi
+</button>
 
-<button onclick="openTool('product')" class="tool-btn">Tính giá sản phẩm</button>
+<button onclick="openTool('product')" class="tool-btn">
+🧮 Tính giá sản phẩm
+</button>
 
-<button onclick="openTool('keep')" class="tool-btn">Giữ nguyên tỉ lệ lãi</button>
+<button onclick="openTool('keep')" class="tool-btn">
+🔄 Giữ nguyên tỉ lệ lãi
+</button>
 
-<button onclick="openTool('inventory')" class="tool-btn">Vòng quay tồn kho</button>
+<button onclick="openTool('inventory')" class="tool-btn">
+📦 Vòng quay tồn kho
+</button>
 
 </div>
 </div>
 
-
-<!-- TOOL CONTAINER -->
-<div id="toolContainer" class="space-y-4 hidden">
+<!-- TOOL PROFIT -->
+<div id="toolProfit" class="tool-box card p-4 space-y-2">
 
 <button onclick="backTool()" class="text-sm text-blue-600">
 ← Quay lại
 </button>
 
-<div id="toolContent"></div>
+<h3 class="font-bold">Tính tỉ lệ lãi</h3>
+
+<input id="toolCost" placeholder="Giá vốn"
+class="border p-2 rounded w-full">
+
+<input id="toolPrice" placeholder="Giá bán"
+class="border p-2 rounded w-full">
+
+<button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full">
+TÍNH
+</button>
+
+<div id="profitResult"></div>
+
+</div>
+
+<!-- TOOL PRODUCT -->
+<div id="toolProduct" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">
+← Quay lại
+</button>
+
+<h3 class="font-bold">Tính giá bán theo % lãi</h3>
+
+<input id="toolCost2" placeholder="Giá vốn"
+class="border p-2 rounded w-full">
+
+<input id="toolProfit2" placeholder="% lãi mong muốn"
+class="border p-2 rounded w-full">
+
+<button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full">
+TÍNH
+</button>
+
+<div id="productResult"></div>
+
+</div>
+
+<!-- TOOL KEEP -->
+<div id="toolKeep" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">
+← Quay lại
+</button>
+
+<h3 class="font-bold">Giữ nguyên % lãi</h3>
+
+<input id="keepCost" placeholder="Giá vốn cũ"
+class="border p-2 rounded w-full">
+
+<input id="keepPrice" placeholder="Giá bán cũ"
+class="border p-2 rounded w-full">
+
+<input id="keepCostNew" placeholder="Giá vốn mới"
+class="border p-2 rounded w-full">
+
+<button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full">
+TÍNH
+</button>
+
+<div id="keepResult"></div>
+
+</div>
+
+<!-- TOOL INVENTORY -->
+<div id="toolInventory" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">
+← Quay lại
+</button>
+
+<h3 class="font-bold">Vòng quay tồn kho</h3>
+
+<input id="invSales" placeholder="Doanh số tháng"
+class="border p-2 rounded w-full">
+
+<input id="invStock" placeholder="Tồn kho trung bình"
+class="border p-2 rounded w-full">
+
+<button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full">
+TÍNH
+</button>
+
+<div id="inventoryResult"></div>
 
 </div>
 
@@ -798,17 +902,21 @@ function openTool(type){
 document.getElementById("toolMenu").style.display="none";
 
 document.querySelectorAll(".tool-box").forEach(e=>{
-e.style.display="none";
+e.classList.remove("active");
 });
 
-if(type==="profit")
-document.getElementById("toolProfit").style.display="block";
+const map={
+profit:"toolProfit",
+product:"toolProduct",
+keep:"toolKeep",
+inventory:"toolInventory"
+};
 
-if(type==="product")
-document.getElementById("toolProduct").style.display="block";
+const target=document.getElementById(map[type]);
 
-if(type==="keep")
-document.getElementById("toolKeep").style.display="block";
+if(target){
+target.classList.add("active");
+}
 
 }
 function showPopup(type){
@@ -1146,11 +1254,13 @@ document.getElementById("toolContent").innerHTML = toolTemplates[type];
 
 function backTool(){
 
-document.getElementById("toolContainer").classList.add("hidden");
-document.getElementById("toolMenu").classList.remove("hidden");
+document.querySelectorAll(".tool-box").forEach(e=>{
+e.classList.remove("active");
+});
+
+document.getElementById("toolMenu").style.display="grid";
 
 }
-
 
 /* ================= CALC ================= */
 
