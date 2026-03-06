@@ -310,13 +310,13 @@ body{background:#f3f4f6}
 <h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
 
 <div class="border p-3 rounded">
-<div class="font-semibold mb-2">1️⃣ Tính tỷ lệ lãi</div>
+<div class="font-semibold mb-2">Tỉ lệ lãi</div>
 
 <label>Giá vốn</label>
-<input id="costPrice" type="number" class="border p-2 rounded w-full">
+<input id="costPrice" type="text" class="border p-2 rounded w-full" onkeyup="formatNumberInput(this)">
 
 <label class="mt-2">Giá bán</label>
-<input id="sellPrice" type="number" class="border p-2 rounded w-full">
+<input id="sellPrice" type="text" class="border p-2 rounded w-full" onkeyup="formatNumberInput(this)">
 
 <label class="mt-2">VAT</label>
 <select id="vatRate" class="border p-2 rounded w-full">
@@ -335,7 +335,7 @@ TÍNH TỶ LỆ LÃI
 
 <div class="border p-3 rounded">
 
-<div class="font-semibold mb-2">2️⃣ Tính giá bán / giá vốn</div>
+<div class="font-semibold mb-2">Tính giá SP</div>
 
 <label>Tỷ lệ lãi (%)</label>
 <input id="marginPercent" type="number" class="border p-2 rounded w-full">
@@ -347,7 +347,7 @@ TÍNH TỶ LỆ LÃI
 </select>
 
 <label class="mt-2">Nhập giá</label>
-<input id="priceInput" type="number" class="border p-2 rounded w-full">
+<input id="priceInput" type="text" class="border p-2 rounded w-full" onkeyup="formatNumberInput(this)">
 
 <label class="mt-2">VAT</label>
 <select id="vatRate2" class="border p-2 rounded w-full">
@@ -1052,8 +1052,8 @@ function showBusiness(){
 
 function calcMargin(){
 
- const cost = Number(costPrice.value);
- const sell = Number(sellPrice.value);
+ const cost = getNumber(costPrice);
+const sell = getNumber(sellPrice);
  const vat = Number(vatRate.value);
 
  if(!cost || !sell){
@@ -1076,7 +1076,7 @@ function calcMargin(){
 function calcPrice(){
 
  const margin = Number(marginPercent.value)/100;
- const price = Number(priceInput.value);
+const price = getNumber(priceInput);
  const vat = Number(vatRate2.value)/100;
  const type = calcType.value;
 
@@ -1092,7 +1092,7 @@ function calcPrice(){
 
    priceResult.innerHTML =
    "Giá bán (có VAT): <span class='text-green-700'>" +
-   sellVat.toFixed(0) + "</span>";
+   sellVat.toLocaleString("en-US") + "</span>";
 
  }
 
@@ -1103,9 +1103,28 @@ function calcPrice(){
 
    priceResult.innerHTML =
    "Giá vốn: <span class='text-green-700'>" +
-   cost.toFixed(0) + "</span>";
+  cost.toLocaleString("en-US") + "</span>";
 
  }
+
+}
+  /* ===== FORMAT NUMBER ===== */
+
+function formatNumberInput(input){
+
+ let value = input.value.replace(/,/g,'');
+
+ if(value === "") return;
+
+ value = Number(value).toLocaleString("en-US");
+
+ input.value = value;
+
+}
+
+function getNumber(input){
+
+ return Number(input.value.replace(/,/g,''));
 
 }
 </script>
