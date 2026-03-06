@@ -143,7 +143,7 @@ body{background:#f3f4f6}
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
- z-index: 3000;
+ z-index: 9999;
   pointer-events: none;
 }
 
@@ -1041,13 +1041,13 @@ function completeProduct(id){
   });
 
   // Render lại popup đúng dữ liệu mới
-  if(warningProducts.length > 0){
-    showCheckDatePopup(warningProducts);
-  } else {
-    closeCheckDatePopup();
-  }
+ showToast("Đã xử lý sản phẩm");
 
-showToast("Đã xử lý sản phẩm");
+if(warningProducts.length > 0){
+  showCheckDatePopup(warningProducts);
+} else {
+  closeCheckDatePopup();
+}
 
 autoCleanExpired();
 renderHistory();
@@ -1117,7 +1117,7 @@ const sell = getNumber(document.getElementById("sellPrice"));
 function calcPrice(){
 
  const margin = Number(marginPercent.value)/100;
-const price = getNumber(priceInput);
+const price = getNumber(document.getElementById("priceInput"));
  const vat = Number(vatRate2.value)/100;
  const type = calcType.value;
 
