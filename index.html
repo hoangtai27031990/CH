@@ -392,7 +392,6 @@ Tính lại
 </button>
 
 </div>
-<div id="toastBox" class="toast"></div>
   
 <script>
   function isIOS(){
@@ -1042,9 +1041,11 @@ function completeProduct(id){
   });
 
   // Render lại popup đúng dữ liệu mới
-showToast("Đã xử lý sản phẩm");
+showToast("✔ Đã xử lý sản phẩm");
 
 setTimeout(()=>{
+
+  isPopupShowing = false;
 
   if(warningProducts.length > 0){
     showCheckDatePopup(warningProducts);
@@ -1194,14 +1195,14 @@ priceBox.classList.add("hidden");
 
 function formatNumberInput(input){
 
- let value = input.value.replace(/,/g,'');
+ let value = input.value.replace(/[^0-9]/g,'');
 
- if(value === "") return;
+ if(!value){
+   input.value="";
+   return;
+ }
 
- value = Number(value).toLocaleString("vi-VN");
-
- input.value = value;
-
+ input.value = Number(value).toLocaleString("vi-VN");
 }
 
 function getNumber(input){
@@ -1235,5 +1236,6 @@ function getNumber(input){
     </div>
   </div>
 </div>
+ <div id="toastBox" class="toast"></div> 
 </body>
 </html>
