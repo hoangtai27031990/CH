@@ -151,8 +151,12 @@ body{background:#f3f4f6}
   opacity: 1;
   transform: translateY(0);
 }
-  .tool-box{
+.tool-box{
 display:none;
+}
+
+.tool-box.active{
+display:block;
 }
 </style>
 </head>
@@ -550,39 +554,52 @@ function showPrint(){
 }
 function showTool(){
   stopAllScanner();
+
   mainApp.classList.add("hidden");
   printApp.classList.add("hidden");
   toolApp.classList.remove("hidden");
+
+  backTool();   // reset tool
+
   toggleMenu();
 }
-  function openTool(type){
+ function openTool(type){
 
-document.getElementById("toolMenu").style.display="none";
+  const menu = document.getElementById("toolMenu");
+  const tools = document.querySelectorAll(".tool-box");
 
-document.querySelectorAll(".tool-box").forEach(e=>{
-e.style.display="none";
-});
+  // Ẩn menu
+  menu.style.display = "none";
 
-if(type==="profit")
-document.getElementById("toolProfit").style.display="block";
+  // Ẩn tất cả tool
+  tools.forEach(el=>{
+    el.classList.remove("active");
+  });
 
-if(type==="product")
-document.getElementById("toolProduct").style.display="block";
+  // Hiện tool được chọn
+  const map = {
+    profit: "toolProfit",
+    product: "toolProduct",
+    keep: "toolKeep",
+    inventory: "toolInventory"
+  };
 
-if(type==="keep")
-document.getElementById("toolKeep").style.display="block";
+  const target = document.getElementById(map[type]);
 
-if(type==="inventory")
-document.getElementById("toolInventory").style.display="block";
+  if(target){
+    target.classList.add("active");
+  }
 
 }
 function backTool(){
 
-document.querySelectorAll(".tool-box").forEach(e=>{
-e.style.display="none";
-});
+  const menu = document.getElementById("toolMenu");
 
-document.getElementById("toolMenu").style.display="grid";
+  document.querySelectorAll(".tool-box").forEach(el=>{
+    el.classList.remove("active");
+  });
+
+  menu.style.display="grid";
 
 }
 function changeCalcMode(){
