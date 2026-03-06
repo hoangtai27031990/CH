@@ -682,7 +682,37 @@ function addPeriod(date, value, unit){
 
   return d;
 }
+function changeCalcMode(){
 
+  const mode = document.getElementById("calcMode").value;
+
+  const nsxBlock = document.getElementById("nsxBlock");
+  const hsdBlock = document.getElementById("hsdBlock");
+  const beforeHsdBlock = document.getElementById("beforeHsdBlock");
+  const nsxPeriodBlock = document.getElementById("nsxPeriodBlock");
+
+  // reset
+  nsxBlock.classList.add("hidden");
+  hsdBlock.classList.add("hidden");
+  beforeHsdBlock.classList.add("hidden");
+  nsxPeriodBlock.classList.add("hidden");
+
+  if(mode === "full"){
+    nsxBlock.classList.remove("hidden");
+    hsdBlock.classList.remove("hidden");
+  }
+
+  if(mode === "hsdBack"){
+    hsdBlock.classList.remove("hidden");
+    beforeHsdBlock.classList.remove("hidden");
+  }
+
+  if(mode === "nsxPeriod"){
+    nsxBlock.classList.remove("hidden");
+    nsxPeriodBlock.classList.remove("hidden");
+  }
+
+}
 function calculate(){
 let nsxD, hsdD;
 const mode = calcMode.value;
@@ -1536,7 +1566,9 @@ if(el){
 el.addEventListener("blur",()=>formatInputMoney(el));
 }
 });
-  
+changeCalcMode();
+autoCleanExpired();
+renderHistory();
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
