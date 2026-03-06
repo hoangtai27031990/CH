@@ -327,7 +327,10 @@ Tính giá sản phẩm
 <button onclick="openTool('keep')" class="bg-slate-700 text-white py-2 rounded">
 Tính số lượng bán để giữ nguyên tỉ lệ lãi
 </button>
-
+  
+<button onclick="openTool('inventory')" class="bg-slate-700 text-white py-2 rounded">
+Tính vòng quay tồn kho
+</button>
 </div>
 </div>
 
@@ -435,7 +438,41 @@ Tính số lượng bán để giữ nguyên tỉ lệ lãi
 <div id="keepResult" class="mt-3 font-semibold"></div>
 
 </div>
+<!-- ================= VÒNG QUAY TỒN KHO ================= -->
+<div id="toolInventory" class="card p-4 tool-box">
 
+<button onclick="backTool()" class="text-sm text-blue-600 mb-2">
+← Quay lại
+</button>
+
+<label>Giá vốn hàng bán (COGS)</label>
+<input id="invCogs" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Tồn kho bình quân</label>
+<input id="invStock" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Chu kỳ tính</label>
+
+<select id="invPeriod" class="border p-2 rounded w-full">
+<option value="month">Theo tháng</option>
+<option value="year">Theo năm</option>
+</select>
+
+<div class="grid grid-cols-2 gap-2 mt-3">
+
+<button onclick="calcInventory()" class="brand-bg text-white py-2 rounded">
+TÍNH
+</button>
+
+<button onclick="resetInventory()" class="bg-gray-500 text-white py-2 rounded">
+TÍNH LẠI
+</button>
+
+</div>
+
+<div id="inventoryResult" class="mt-3 font-semibold"></div>
+
+</div>
 </div>
 <script>
   function isIOS(){
@@ -517,6 +554,27 @@ function showTool(){
   printApp.classList.add("hidden");
   toolApp.classList.remove("hidden");
   toggleMenu();
+}
+  function openTool(type){
+
+document.getElementById("toolMenu").style.display="none";
+
+document.querySelectorAll(".tool-box").forEach(e=>{
+e.style.display="none";
+});
+
+if(type==="profit")
+document.getElementById("toolProfit").style.display="block";
+
+if(type==="product")
+document.getElementById("toolProduct").style.display="block";
+
+if(type==="keep")
+document.getElementById("toolKeep").style.display="block";
+
+if(type==="inventory")
+document.getElementById("toolInventory").style.display="block";
+
 }
 function backTool(){
 
@@ -1283,6 +1341,46 @@ function formatMoneyInput(input){
 
     this.value = Number(v).toLocaleString("vi-VN");
   });
+
+}
+  /* ===== NGHIỆP VỤ VÒNG QUAY TỒN KHO ===== */
+
+function calcInventory(){
+
+const cogs = Number(invCogs.value);
+const stock = Number(invStock.value);
+const period = invPeriod.value;
+
+if(!cogs || !stock){
+alert("Nhập đầy đủ dữ liệu");
+return;
+}
+
+const turnover = cogs / stock;
+
+let days = 0;
+
+if(period==="year"){
+days = 365 / turnover;
+}
+
+if(period==="month"){
+days = 30 / turnover;
+}
+
+inventoryResult.innerHTML =
+`
+Vòng quay tồn kho: <b>${turnover.toFixed(2)} vòng</b><br>
+Thời gian hoàn thành 1 vòng: <b>${days.toFixed(1)} ngày</b>
+`;
+
+}
+
+function resetInventory(){
+
+invCogs.value="";
+invStock.value="";
+inventoryResult.innerHTML="";
 
 }
 </script>
