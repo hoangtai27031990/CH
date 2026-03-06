@@ -359,10 +359,10 @@ background:#e2e8f0;
 
 <h3 class="font-bold">Tính tỉ lệ lãi</h3>
 
-<input id="toolCost" placeholder="Giá vốn (VD: 8,000)" class="border p-2 rounded w-full">
+<input id="toolCost" placeholder="Giá vốn (VD: 8.000)" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
-<input id="toolPrice" placeholder="Giá bán (VD: 11,000)" class="border p-2 rounded w-full">
-
+<input id="toolPrice" placeholder="Giá bán (VD: 11.000)" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+  
 <select id="toolVat" class="border p-2 rounded w-full">
 <option value="0">VAT 0%</option>
 <option value="5">VAT 5%</option>
@@ -391,7 +391,7 @@ background:#e2e8f0;
 <option value="price">Nhập giá bán → tính giá vốn</option>
 </select>
 
-<input id="toolValue2" placeholder="Nhập giá" class="border p-2 rounded w-full">
+<input id="toolValue2" placeholder="Nhập giá" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
 <select id="toolVat2" class="border p-2 rounded w-full">
 <option value="0">VAT 0%</option>
@@ -413,7 +413,7 @@ background:#e2e8f0;
 
 <h3 class="font-bold">Giữ nguyên tỉ lệ lãi</h3>
 
-<input id="keepPrice" placeholder="Giá bán hiện tại" class="border p-2 rounded w-full">
+<input id="keepPrice" placeholder="Giá bán hiện tại" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
 <select id="keepVat" class="border p-2 rounded w-full">
 <option value="0">VAT 0%</option>
@@ -442,9 +442,9 @@ background:#e2e8f0;
 
 <h3 class="font-bold">Vòng quay tồn kho</h3>
 
-<input id="invSales" placeholder="Giá vốn hàng bán" class="border p-2 rounded w-full">
+<input id="invSales" placeholder="Giá vốn hàng bán" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
-<input id="invStock" placeholder="Tồn kho bình quân" class="border p-2 rounded w-full">
+<input id="invStock" placeholder="Tồn kho bình quân" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
 
 <select id="invPeriod" class="border p-2 rounded w-full">
 <option value="month">Theo tháng</option>
@@ -550,7 +550,17 @@ return Number(n).toLocaleString("vi-VN");
 }
 
 function num(v){
-return Number(String(v).replace(/,/g,""));
+return Number(String(v).replace(/[.,]/g,""));
+}
+/* ===== AUTO FORMAT MONEY INPUT ===== */
+function formatMoneyInput(el){
+
+  el.value = el.value.replace(/[^\d]/g,'');
+
+  if(!el.value) return;
+
+  el.value = Number(el.value).toLocaleString("vi-VN");
+
 }
 
 /* ================= SCAN CONFIG ================= */
