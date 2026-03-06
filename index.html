@@ -143,7 +143,7 @@ body{background:#f3f4f6}
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
- z-index: 9999;
+  z-index: 9999;
   pointer-events: none;
 }
 
@@ -197,7 +197,7 @@ body{background:#f3f4f6}
   <div class="p-3 space-y-2">
     <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
-    <button onclick="showBusiness()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
+    <button onclick="showTool()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -304,190 +304,103 @@ body{background:#f3f4f6}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
-<!-- ================= BUSINESS TOOL ================= -->
-<div id="businessApp" class="hidden card p-4 space-y-4">
-<h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
+<!-- ================= TOOL APP ================= -->
+<div id="toolApp" class="hidden space-y-4">
 
-<div class="grid grid-cols-2 gap-3">
-
-<button onclick="openMargin()" class="brand-bg text-white p-3 rounded">
-Tỉ lệ lãi
-</button>
-
-<button onclick="openPrice()" class="brand-bg text-white p-3 rounded">
-Tính giá SP
-</button>
-
-<button onclick="openDiscountTool()" class="brand-bg text-white p-3 rounded col-span-2">
-Giữ tỷ lệ lãi khi giảm giá
-</button>
-
-</div>
-
-<!-- ================= TỈ LỆ LÃI ================= -->
-
-<div id="marginBox" class="hidden mt-4 border p-3 rounded">
-
-<div class="font-semibold mb-2">Tỉ lệ lãi</div>
+<!-- ================= TÍNH TỈ LỆ LÃI ================= -->
+<div class="card p-4">
+<h2 class="font-bold brand-text mb-3">Tính tỉ lệ lãi</h2>
 
 <label>Giá vốn</label>
-<input id="costPrice" type="text" class="border p-2 rounded w-full"
-onkeyup="formatNumberInput(this)">
+<input id="toolCost" type="number" class="border p-2 rounded w-full">
 
 <label class="mt-2">Giá bán</label>
-<input id="sellPrice" type="text" class="border p-2 rounded w-full"
-onkeyup="formatNumberInput(this)">
+<input id="toolPrice" type="number" class="border p-2 rounded w-full">
 
 <label class="mt-2">VAT</label>
-<select id="vatRate" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
+<select id="toolVat" class="border p-2 rounded w-full">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
 </select>
 
-<button onclick="calcMargin()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-Tính
-</button>
-
-<div id="marginResult" class="mt-2 font-semibold"></div>
-
-<button onclick="resetMargin()" class="mt-3 w-full border p-2 rounded">
-Tính lại
-</button>
-
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button onclick="calcProfit()" class="brand-bg text-white py-2 rounded">TÍNH</button>
+<button onclick="resetProfit()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
 </div>
 
-<!-- ================= TÍNH GIÁ ================= -->
-
-<div id="priceBox" class="hidden mt-4 border p-3 rounded">
-
-<div class="font-semibold mb-2">Tính giá SP</div>
-
-<label>Tỷ lệ lãi (%)</label>
-<input id="marginPercent" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">Chọn loại tính</label>
-<select id="calcType" class="border p-2 rounded w-full">
-<option value="sell">Tính giá bán từ giá vốn</option>
-<option value="cost">Tính giá vốn từ giá bán</option>
-</select>
-
-<label class="mt-2">Nhập giá</label>
-<input id="priceInput" type="text" class="border p-2 rounded w-full"
-onkeyup="formatNumberInput(this)">
-
-<label class="mt-2">VAT</label>
-<select id="vatRate2" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
-</select>
-
-<button onclick="calcPrice()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-Tính
-</button>
-
-<div id="priceResult" class="mt-2 font-semibold"></div>
-
-<button onclick="resetPrice()" class="mt-3 w-full border p-2 rounded">
-Tính lại
-</button>
-
+<div id="profitResult" class="mt-3 font-semibold"></div>
 </div>
-  <!-- ================= DISCOUNT TOOL ================= -->
 
-<div id="discountBox" class="hidden mt-4 border p-3 rounded">
+<!-- ================= TÍNH SẢN PHẨM ================= -->
+<div class="card p-4">
+<h2 class="font-bold brand-text mb-3">Tính giá sản phẩm</h2>
 
-<div class="font-semibold mb-2">Giữ tỷ lệ lãi khi giảm giá</div>
+<label>Tỉ lệ lãi (%)</label>
+<input id="toolMargin" type="number" class="border p-2 rounded w-full">
 
-<label>Giá bán hiện tại</label>
-<input id="currentPrice" type="text"
-class="border p-2 rounded w-full"
-onkeyup="formatNumberInput(this)">
-
-<label class="mt-2">VAT</label>
-<select id="vatRate3" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
+<label class="mt-2">Chọn loại giá nhập</label>
+<select id="toolMode" class="border p-2 rounded w-full">
+<option value="cost">Nhập Giá vốn → Tính Giá bán</option>
+<option value="price">Nhập Giá bán → Tính Giá vốn</option>
 </select>
 
-<label class="mt-2">Số lượng hiện tại</label>
-<input id="currentQty" type="number"
-class="border p-2 rounded w-full">
+<label class="mt-2">Giá</label>
+<input id="toolValue" type="number" class="border p-2 rounded w-full">
 
-<label class="mt-2">Tỷ lệ lãi hiện tại (%)</label>
-<input id="currentMargin" type="number"
-class="border p-2 rounded w-full">
+<label class="mt-2">VAT</label>
+<select id="toolVat2" class="border p-2 rounded w-full">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
+</select>
 
-<label class="mt-2">Giảm giá (%)</label>
-<input id="discountPercent" type="number"
-class="border p-2 rounded w-full">
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button onclick="calcProduct()" class="brand-bg text-white py-2 rounded">TÍNH</button>
+<button onclick="resetProduct()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
+</div>
 
-<button onclick="calcDiscount()" 
-class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-Tính
-</button>
+<div id="productResult" class="mt-3 font-semibold"></div>
+</div>
 
-<div id="discountResult" class="mt-2 font-semibold"></div>
+<!-- ================= GIỮ NGUYÊN TỈ LỆ LÃI ================= -->
+<div class="card p-4">
+<h2 class="font-bold brand-text mb-3">Giữ nguyên tỉ lệ lãi</h2>
 
-<button onclick="resetDiscount()" 
-class="mt-3 w-full border p-2 rounded">
-Tính lại
-</button>
+<label>Giá bán</label>
+<input id="keepPrice" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">VAT</label>
+<select id="keepVat" class="border p-2 rounded w-full">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
+</select>
+
+<label class="mt-2">Tỉ lệ lãi (%)</label>
+<input id="keepMargin" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">% Giảm giá</label>
+<input id="keepDiscount" type="number" class="border p-2 rounded w-full">
+
+<div class="grid grid-cols-2 gap-2 mt-3">
+<button onclick="calcKeep()" class="brand-bg text-white py-2 rounded">TÍNH</button>
+<button onclick="resetKeep()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
+</div>
+
+<div id="keepResult" class="mt-3 font-semibold"></div>
+</div>
 
 </div>
 <script>
-function isIOS(){
+  function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
-</script>
-<div class="font-semibold mb-2">Giữ tỷ lệ lãi khi giảm giá</div>
-
-<label>Giá bán hiện tại</label>
-<input id="currentPrice" type="text"
-class="border p-2 rounded w-full"
-onkeyup="formatNumberInput(this)">
-
-<label class="mt-2">VAT</label>
-<select id="vatRate3" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
-</select>
-
-<label class="mt-2">Số lượng hiện tại</label>
-<input id="currentQty" type="number"
-class="border p-2 rounded w-full">
-
-<label class="mt-2">Tỷ lệ lãi hiện tại (%)</label>
-<input id="currentMargin" type="number"
-class="border p-2 rounded w-full">
-
-<label class="mt-2">Giảm giá (%)</label>
-<input id="discountPercent" type="number"
-class="border p-2 rounded w-full">
-
-<button onclick="calcDiscount()" 
-class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-Tính
-</button>
-
-<div id="discountResult" class="mt-2 font-semibold"></div>
-
-<button onclick="resetDiscount()" 
-class="mt-3 w-full border p-2 rounded">
-Tính lại
-</button>
-
-</div>
-  <script>
 /* ================= CORE ================= */
-  const historyKey="coop_hsd_history";
+const historyKey="coop_hsd_history";
   /* ================= AUTO CLEAN EXPIRED ================= */
 function autoCleanExpired(){
 
@@ -526,7 +439,7 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
-const businessApp = document.getElementById("businessApp");
+const toolApp=document.getElementById("toolApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function stopAllScanner(){
@@ -542,29 +455,25 @@ function stopAllScanner(){
 }
   
 function showMain(){
-
-stopAllScanner();
-
-mainApp.classList.remove("hidden");
-printApp.classList.add("hidden");
-businessApp.classList.add("hidden");
-
-toggleMenu();
-
+  stopAllScanner();
+  mainApp.classList.remove("hidden");
+  printApp.classList.add("hidden");
+  toggleMenu();
 }
 
 function showPrint(){
-
-stopAllScanner();
-
-mainApp.classList.add("hidden");
-printApp.classList.remove("hidden");
-businessApp.classList.add("hidden");
-
-toggleMenu();
-
+  stopAllScanner();
+  mainApp.classList.add("hidden");
+  printApp.classList.remove("hidden");
+  toggleMenu();
 }
-
+function showTool(){
+  stopAllScanner();
+  mainApp.classList.add("hidden");
+  printApp.classList.add("hidden");
+  toolApp.classList.remove("hidden");
+  toggleMenu();
+}
 function changeCalcMode(){
   const m = calcMode.value;
 
@@ -805,14 +714,10 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
 
 function setFilter(type){
-  currentFilter = type;
-
-  document.querySelectorAll(".filter-btn")
-    .forEach(b => b.classList.remove("active"));
-
-  document.getElementById("f-" + type).classList.add("active");
-
-  renderHistory();
+ currentFilter=type;
+ document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+ document.getElementById("f-"+type).classList.add("active");
+ renderHistory();
 }
 
 function renderHistory(){
@@ -1135,22 +1040,15 @@ function completeProduct(id){
   });
 
   // Render lại popup đúng dữ liệu mới
-showToast("✔ Đã xử lý sản phẩm");
-
-setTimeout(()=>{
-
-  isPopupShowing = false;
-
   if(warningProducts.length > 0){
     showCheckDatePopup(warningProducts);
   } else {
     closeCheckDatePopup();
   }
 
-},500);
-
-autoCleanExpired();
+ autoCleanExpired();
 renderHistory();
+showToast("Đã xử lý sản phẩm");
 }
 
 function closeCheckDatePopup(){
@@ -1166,221 +1064,109 @@ function closeCheckDatePopup(){
 function showToast(message = "Đã xử lý"){
 
   const toast = document.getElementById("toastBox");
-
-  if(!toast) return;
-
   toast.innerText = message;
 
   toast.classList.add("show");
 
-  setTimeout(()=>{
+  setTimeout(() => {
     toast.classList.remove("show");
-},3500);
-
+  }, 2500);
 }
-  /* ================= BUSINESS TAB ================= */
+ /* ================= TÍNH LÃI ================= */
 
-const businessApp = document.getElementById("businessApp");
+function calcProfit(){
 
-function showBusiness(){
-  stopAllScanner();
-  mainApp.classList.add("hidden");
-  printApp.classList.add("hidden");
-  businessApp.classList.remove("hidden");
-  toggleMenu();
-}
+let cost = Number(toolCost.value);
+let price = Number(toolPrice.value);
+let vat = Number(toolVat.value);
 
-
-/* ===== TÍNH TỶ LỆ LÃI ===== */
-
-function calcMargin(){
-
-const cost = getNumber(document.getElementById("costPrice"));
-const sell = getNumber(document.getElementById("sellPrice"));
-const vat = Number(document.getElementById("vatRate").value);
-
- if(!cost || !sell){
-   alert("Nhập đủ giá vốn và giá bán");
-   return;
- }
-
- const sellNoVat = sell / (1 + vat/100);
-
- const margin = ((sellNoVat - cost) / sellNoVat) * 100;
-
- marginResult.innerHTML =
- "Tỷ lệ lãi: <span class='text-green-700'>" +
- margin.toFixed(2) + "%</span>";
+if(!cost || !price){
+alert("Nhập giá vốn và giá bán");return;
 }
 
+let priceNoVat = price/(1+vat/100);
 
-/* ===== TÍNH GIÁ ===== */
+let profit = ((priceNoVat-cost)/cost)*100;
 
-function calcPrice(){
-
- const margin = Number(marginPercent.value)/100;
-const price = getNumber(document.getElementById("priceInput"));
- const vat = Number(vatRate2.value)/100;
- const type = calcType.value;
-
- if(!margin || !price){
-   alert("Nhập đủ dữ liệu");
-   return;
- }
-
- if(type === "sell"){
-
-   const sellNoVat = price / (1 - margin);
-   const sellVat = sellNoVat * (1 + vat);
-
-   priceResult.innerHTML =
-   "Giá bán (có VAT): <span class='text-green-700'>" +
-   sellVat.toLocaleString("vi-VN") + "</span>";
-
- }
-
- if(type === "cost"){
-
-   const sellNoVat = price / (1 + vat);
-   const cost = sellNoVat * (1 - margin);
-
-   priceResult.innerHTML =
-   "Giá vốn: <span class='text-green-700'>" +
-  cost.toLocaleString("vi-VN") + "</span>";
-
- }
-
+profitResult.innerHTML = `Tỉ lệ lãi: <span class="text-green-600">${profit.toFixed(2)}%</span>`;
 }
-  /* ===== BUSINESS TOOL ===== */
 
-const marginBox = document.getElementById("marginBox");
-const priceBox = document.getElementById("priceBox");
-const discountBox = document.getElementById("discountBox");
+function resetProfit(){
+toolCost.value="";
+toolPrice.value="";
+profitResult.innerHTML="";
+}
 
-function openMargin(){
+/* ================= TÍNH GIÁ ================= */
 
-marginBox.classList.remove("hidden");
-priceBox.classList.add("hidden");
+function calcProduct(){
+
+let margin = Number(toolMargin.value)/100;
+let value = Number(toolValue.value);
+let mode = toolMode.value;
+let vat = Number(toolVat2.value);
+
+if(!margin || !value){
+alert("Nhập đủ dữ liệu");return;
+}
+
+if(mode==="cost"){
+
+let price = value*(1+margin);
+let priceVat = price*(1+vat/100);
+
+productResult.innerHTML=`Giá bán: <span class="text-green-600">${priceVat.toFixed(0)}</span>`;
 
 }
 
-function openPrice(){
+else{
 
-priceBox.classList.remove("hidden");
-marginBox.classList.add("hidden");
+let priceNoVat=value/(1+vat/100);
+let cost=priceNoVat/(1+margin);
 
-}
-
-function openDiscountTool(){
-
-discountBox.classList.remove("hidden");
-marginBox.classList.add("hidden");
-priceBox.classList.add("hidden");
+productResult.innerHTML=`Giá vốn: <span class="text-blue-600">${cost.toFixed(0)}</span>`;
 
 }
-function resetMargin(){
-
-costPrice.value="";
-sellPrice.value="";
-marginResult.innerHTML="";
-marginBox.classList.add("hidden");
-
 }
 
-function resetPrice(){
-
-priceInput.value="";
-marginPercent.value="";
-priceResult.innerHTML="";
-priceBox.classList.add("hidden");
-
-}
-  function calcDiscount(){
-
-const price = getNumber(document.getElementById("currentPrice"));
-const vat = Number(vatRate3.value)/100;
-const qty = Number(currentQty.value);
-const margin = Number(currentMargin.value)/100;
-const discount = Number(discountPercent.value)/100;
-
-if(!price || !qty || !margin){
- alert("Nhập đủ dữ liệu");
- return;
+function resetProduct(){
+toolMargin.value="";
+toolValue.value="";
+productResult.innerHTML="";
 }
 
-const sellNoVat = price / (1 + vat);
+/* ================= GIỮ LÃI ================= */
 
-const cost = sellNoVat * (1 - margin);
+function calcKeep(){
 
-const newPrice = price * (1 - discount);
+let price=Number(keepPrice.value);
+let vat=Number(keepVat.value);
+let margin=Number(keepMargin.value)/100;
+let discount=Number(keepDiscount.value)/100;
 
-const newSellNoVat = newPrice / (1 + vat);
-
-const newProfit = newSellNoVat - cost;
-
-const oldProfit = sellNoVat - cost;
-
-const requiredQty = (qty * oldProfit) / newProfit;
-
-discountResult.innerHTML =
-"Cần bán khoảng <span class='text-red-600'>" +
-Math.ceil(requiredQty) +
-"</span> sản phẩm để giữ tỷ lệ lãi";
-
-}
-  function resetDiscount(){
-
-currentPrice.value="";
-currentQty.value="";
-currentMargin.value="";
-discountPercent.value="";
-discountResult.innerHTML="";
-discountBox.classList.add("hidden");
-
-}
-  /* ===== FORMAT NUMBER ===== */
-
-function formatNumberInput(input){
-
- let value = input.value.replace(/[^0-9]/g,'');
-
- if(!value){
-   input.value="";
-   return;
- }
-
- input.value = Number(value).toLocaleString("vi-VN");
-}
-function renderHistory(){}
-
-function showPopup(type){}
-
-function closePopup(){
-  document.getElementById("alertPopup").classList.add("hidden");
+if(!price||!margin){
+alert("Nhập đủ dữ liệu");return;
 }
 
-function exportExcel(){}
+let priceNoVat=price/(1+vat/100);
 
-function clearHistory(){
-  localStorage.removeItem(historyKey);
-  renderHistory();
+let cost=priceNoVat/(1+margin);
+
+let salePrice=price*(1-discount);
+
+let saleNoVat=salePrice/(1+vat/100);
+
+let qty=(cost/(saleNoVat-cost)).toFixed(2);
+
+keepResult.innerHTML=`Cần bán khoảng <span class="text-red-600">${qty}</span> sản phẩm để giữ tỉ lệ lãi`;
 }
 
-function addBarcode(code){
-  const box = document.getElementById("printHistory");
-  box.innerHTML += `<div class="chat-item">${code}</div>`;
-}
-
-function exportText(){}
-
-function clearPrintHistory(){
-  document.getElementById("printHistory").innerHTML="";
-}
-function getNumber(input){
- if(!input.value) return 0;
- return Number(input.value.replace(/,/g,''));
-}
-
+function resetKeep(){
+keepPrice.value="";
+keepMargin.value="";
+keepDiscount.value="";
+keepResult.innerHTML="";
+} 
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
@@ -1407,8 +1193,6 @@ function getNumber(input){
     </div>
   </div>
 </div>
- <div id="toastBox" class="toast"></div> 
-</script>
-
+<div id="toastBox" class="toast"></div>
 </body>
 </html>
