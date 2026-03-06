@@ -1073,13 +1073,15 @@ function showToast(message = "Đã xử lý"){
 
   const toast = document.getElementById("toastBox");
 
+  if(!toast) return;
+
   toast.innerText = message;
 
   toast.classList.add("show");
 
-  setTimeout(() => {
+  setTimeout(()=>{
     toast.classList.remove("show");
-  }, 3000);
+},3500);
 
 }
   /* ================= BUSINESS TAB ================= */
@@ -1101,7 +1103,7 @@ function calcMargin(){
 
 const cost = getNumber(document.getElementById("costPrice"));
 const sell = getNumber(document.getElementById("sellPrice"));
- const vat = Number(vatRate.value);
+const vat = Number(document.getElementById("vatRate").value);
 
  if(!cost || !sell){
    alert("Nhập đủ giá vốn và giá bán");
