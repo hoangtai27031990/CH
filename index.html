@@ -1335,8 +1335,103 @@ function formatMoneyInput(input){
   });
 
 }
+/* ================= TOOL APP ================= */
 
+function openTool(name){
 
+document.getElementById("toolMenu").style.display="none";
+
+document.querySelectorAll(".tool-box").forEach(el=>{
+el.classList.remove("active");
+});
+
+if(name==="profit") document.getElementById("toolProfit").classList.add("active");
+if(name==="product") document.getElementById("toolProduct").classList.add("active");
+if(name==="keep") document.getElementById("toolKeep").classList.add("active");
+if(name==="inventory") document.getElementById("toolInventory").classList.add("active");
+
+}
+
+function backTool(){
+
+document.getElementById("toolMenu").style.display="grid";
+
+document.querySelectorAll(".tool-box").forEach(el=>{
+el.classList.remove("active");
+});
+
+}
+
+/* ===== TÍNH LÃI ===== */
+function calcProfit(){
+
+const cost = Number(document.getElementById("toolCost").value);
+const price = Number(document.getElementById("toolPrice").value);
+
+if(!cost || !price){
+alert("Nhập đủ dữ liệu"); return;
+}
+
+const profit = ((price-cost)/price)*100;
+
+document.getElementById("profitResult").innerHTML =
+`<b>Tỉ lệ lãi:</b> ${profit.toFixed(2)} %`;
+
+}
+
+/* ===== TÍNH GIÁ BÁN ===== */
+function calcProduct(){
+
+const cost = Number(document.getElementById("toolCost2").value);
+const percent = Number(document.getElementById("toolProfit2").value);
+
+if(!cost || !percent){
+alert("Nhập đủ dữ liệu"); return;
+}
+
+const price = cost / (1 - percent/100);
+
+document.getElementById("productResult").innerHTML =
+`<b>Giá bán đề xuất:</b> ${price.toLocaleString("vi-VN")} đ`;
+
+}
+
+/* ===== GIỮ NGUYÊN LÃI ===== */
+function calcKeep(){
+
+const costOld = Number(document.getElementById("keepCost").value);
+const priceOld = Number(document.getElementById("keepPrice").value);
+const costNew = Number(document.getElementById("keepCostNew").value);
+
+if(!costOld || !priceOld || !costNew){
+alert("Nhập đủ dữ liệu"); return;
+}
+
+const percent = (priceOld-costOld)/priceOld;
+
+const newPrice = costNew / (1-percent);
+
+document.getElementById("keepResult").innerHTML =
+`<b>Giá bán mới:</b> ${newPrice.toLocaleString("vi-VN")} đ`;
+
+}
+
+/* ===== VÒNG QUAY TỒN ===== */
+function calcInventory(){
+
+const sales = Number(document.getElementById("invSales").value);
+const stock = Number(document.getElementById("invStock").value);
+
+if(!sales || !stock){
+alert("Nhập đủ dữ liệu"); return;
+}
+
+const turn = sales / stock;
+
+document.getElementById("inventoryResult").innerHTML =
+`<b>Vòng quay tồn:</b> ${turn.toFixed(2)} vòng / tháng`;
+
+}
 
 </script>
 <div id="confirmBox"
