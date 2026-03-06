@@ -304,7 +304,67 @@ body{background:#f3f4f6}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
+<!-- ================= BUSINESS TOOL ================= -->
+<div id="businessApp" class="hidden card p-4 space-y-4">
 
+<h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
+
+<div class="border p-3 rounded">
+<div class="font-semibold mb-2">1️⃣ Tính tỷ lệ lãi</div>
+
+<label>Giá vốn</label>
+<input id="costPrice" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Giá bán</label>
+<input id="sellPrice" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">VAT</label>
+<select id="vatRate" class="border p-2 rounded w-full">
+<option value="0">Không VAT</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<button onclick="calcMargin()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
+TÍNH TỶ LỆ LÃI
+</button>
+
+<div id="marginResult" class="mt-2 font-semibold"></div>
+</div>
+
+<div class="border p-3 rounded">
+
+<div class="font-semibold mb-2">2️⃣ Tính giá bán / giá vốn</div>
+
+<label>Tỷ lệ lãi (%)</label>
+<input id="marginPercent" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">Chọn loại tính</label>
+<select id="calcType" class="border p-2 rounded w-full">
+<option value="sell">Tính giá bán từ giá vốn</option>
+<option value="cost">Tính giá vốn từ giá bán</option>
+</select>
+
+<label class="mt-2">Nhập giá</label>
+<input id="priceInput" type="number" class="border p-2 rounded w-full">
+
+<label class="mt-2">VAT</label>
+<select id="vatRate2" class="border p-2 rounded w-full">
+<option value="0">Không VAT</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<button onclick="calcPrice()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
+TÍNH KẾT QUẢ
+</button>
+
+<div id="priceResult" class="mt-2 font-semibold"></div>
+
+</div>
+</div>
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -400,72 +460,7 @@ function changeCalcMode(){
     nsxPeriodBlock.classList.remove("hidden");
   }
 }
-<!-- ================= BUSINESS TOOL ================= -->
-<div id="businessApp" class="hidden card p-4 space-y-4">
 
-<h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
-
-<!-- TÍNH TỶ LỆ LÃI -->
-<div class="border p-3 rounded">
-<div class="font-semibold mb-2">1️⃣ Tính tỷ lệ lãi</div>
-
-<label>Giá vốn</label>
-<input id="costPrice" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">Giá bán</label>
-<input id="sellPrice" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">VAT</label>
-<select id="vatRate" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
-</select>
-
-<button onclick="calcMargin()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-TÍNH TỶ LỆ LÃI
-</button>
-
-<div id="marginResult" class="mt-2 font-semibold"></div>
-
-</div>
-
-
-<!-- TÍNH GIÁ BÁN / GIÁ VỐN -->
-<div class="border p-3 rounded">
-
-<div class="font-semibold mb-2">2️⃣ Tính giá bán / giá vốn</div>
-
-<label>Tỷ lệ lãi (%)</label>
-<input id="marginPercent" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">Chọn loại tính</label>
-<select id="calcType" class="border p-2 rounded w-full">
-<option value="sell">Tính giá bán từ giá vốn</option>
-<option value="cost">Tính giá vốn từ giá bán</option>
-</select>
-
-<label class="mt-2">Nhập giá</label>
-<input id="priceInput" type="number" class="border p-2 rounded w-full">
-
-<label class="mt-2">VAT</label>
-<select id="vatRate2" class="border p-2 rounded w-full">
-<option value="0">Không VAT</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
-</select>
-
-<button onclick="calcPrice()" class="brand-bg text-white px-3 py-2 rounded mt-3 w-full">
-TÍNH KẾT QUẢ
-</button>
-
-<div id="priceResult" class="mt-2 font-semibold"></div>
-
-</div>
-
-</div>
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 
