@@ -585,6 +585,35 @@ return Number(n).toLocaleString("vi-VN");
 function num(v){
 return Number(String(v).replace(/[.,]/g,""));
 }
+/* ================= BUSINESS ENGINE ================= */
+
+const engine = {
+
+priceNoVat(price, vat){
+return price/(1+vat/100);
+},
+
+margin(cost, priceNoVat){
+return ((priceNoVat-cost)/priceNoVat)*100;
+},
+
+priceFromCost(cost, margin){
+return cost/(1-margin/100);
+},
+
+costFromPrice(priceNoVat, margin){
+return priceNoVat*(1-margin/100);
+},
+
+priceAfterDiscount(price, discount){
+return price*(1-discount/100);
+},
+
+inventoryTurn(cogs, stock){
+return cogs/stock;
+}
+
+};
 /* ===== AUTO FORMAT MONEY INPUT ===== */
 function formatMoneyInput(el){
 
@@ -988,29 +1017,7 @@ function exportText(){
  renderPrint();
  showPopup("export");
 }
-function openTool(type){
 
-document.getElementById("toolMenu").style.display="none";
-
-document.querySelectorAll(".tool-box").forEach(e=>{
-e.classList.remove("active");
-});
-
-const map={
-profit:"toolProfit",
-product:"toolProduct",
-keep:"toolKeep",
-inventory:"toolInventory",
-promo:"toolPromo"
-};
-
-const target=document.getElementById(map[type]);
-
-if(target){
-target.classList.add("active");
-}
-
-}
 function showPopup(type){
 
  if(isPopupShowing) return; // chặn mở chồng
@@ -1056,14 +1063,6 @@ function closePopup(){
  popup.classList.add("hidden");
  popup.classList.remove("flex");
  isPopupShowing = false;
-}
-function formatMoneyInput(el){
-  let v = el.value.replace(/,/g,"").replace(/\D/g,"");
-  if(!v) {
-    el.value="";
-    return;
-  }
-  el.value = Number(v).toLocaleString("vi-VN");
 }
 
 function getMoneyValue(id){
@@ -1237,110 +1236,6 @@ function showToast(message = "Đã xử lý"){
     toast.classList.remove("show");
   }, 2500);
 }
-/* ================= TOOL DATA ================= */
-
-const toolTemplates = {
-
-profit:`
-<div class="card p-4 space-y-2">
-
-<label>Giá vốn</label>
-<input id="cost" type="number" class="border p-2 rounded w-full">
-
-<label>Giá bán</label>
-<input id="price" type="number" class="border p-2 rounded w-full">
-
-<label>VAT</label>
-<select id="vat" class="border p-2 rounded w-full">
-<option value="0">0%</option>
-<option value="5">5%</option>
-<option value="8">8%</option>
-<option value="10">10%</option>
-</select>
-
-<button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full mt-2">
-TÍNH
-</button>
-
-<div id="toolResult" class="mt-3 font-semibold"></div>
-
-</div>
-`,
-
-product:`
-<div class="card p-4 space-y-2">
-
-<label>Tỉ lệ lãi (%)</label>
-<input id="margin" type="number" class="border p-2 rounded w-full">
-
-<label>Giá vốn</label>
-<input id="cost" type="number" class="border p-2 rounded w-full">
-
-<button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full mt-2">
-TÍNH
-</button>
-
-<div id="toolResult" class="mt-3 font-semibold"></div>
-
-</div>
-`,
-
-keep:`
-<div class="card p-4 space-y-2">
-
-<label>Giá bán hiện tại</label>
-<input id="price" type="number" class="border p-2 rounded w-full">
-
-<label>Số lượng bán</label>
-<input id="qty" type="number" class="border p-2 rounded w-full">
-
-<label>% Giảm giá</label>
-<input id="discount" type="number" class="border p-2 rounded w-full">
-
-<label>Tỉ lệ lãi (%)</label>
-<input id="margin" type="number" class="border p-2 rounded w-full">
-
-<button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full mt-2">
-TÍNH
-</button>
-
-<div id="toolResult" class="mt-3 font-semibold"></div>
-
-</div>
-`,
-
-inventory:`
-<div class="card p-4 space-y-2">
-
-<label>Giá vốn hàng bán (COGS)</label>
-<input id="cogs" type="number" class="border p-2 rounded w-full">
-
-<label>Tồn kho bình quân</label>
-<input id="stock" type="number" class="border p-2 rounded w-full">
-
-<button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full mt-2">
-TÍNH
-</button>
-
-<div id="toolResult" class="mt-3 font-semibold"></div>
-
-</div>
-`
-
-};
-
-
-/* ================= OPEN TOOL ================= */
-
-function openTool(type){
-
-document.getElementById("toolMenu").classList.add("hidden");
-document.getElementById("toolContainer").classList.remove("hidden");
-
-document.getElementById("toolContent").innerHTML = toolTemplates[type];
-
-}
-
 
 /* ================= BACK TOOL ================= */
 
@@ -1354,79 +1249,7 @@ document.getElementById("toolMenu").style.display="grid";
 
 }
 
-/* ================= CALC ================= */
 
-function calcProfit(){
-
-const cost=Number(document.getElementById("cost").value);
-const price=Number(document.getElementById("price").value);
-const vat=Number(document.getElementById("vat").value)/100;
-
-const realPrice=price/(1+vat);
-const margin=((realPrice-cost)/realPrice)*100;
-
-toolResult.innerHTML=`Tỉ lệ lãi: ${margin.toFixed(2)}%`;
-
-}
-
-
-function calcProduct(){
-
-const margin=Number(document.getElementById("margin").value)/100;
-const cost=Number(document.getElementById("cost").value);
-
-const price=cost/(1-margin);
-
-toolResult.innerHTML=`Giá bán đề xuất: ${price.toFixed(0)}`;
-
-}
-
-
-function calcKeep(){
-
-const price=Number(document.getElementById("price").value);
-const qty=Number(document.getElementById("qty").value);
-const discount=Number(document.getElementById("discount").value)/100;
-const margin=Number(document.getElementById("margin").value)/100;
-
-const newPrice=price*(1-discount);
-
-const revenue=price*qty;
-const targetProfit=revenue*margin;
-
-const newQty=Math.ceil(targetProfit/(newPrice*margin));
-
-toolResult.innerHTML=`Cần bán: ${newQty} sản phẩm`;
-
-}
-
-
-function calcInventory(){
-
-const cogs=Number(document.getElementById("cogs").value);
-const stock=Number(document.getElementById("stock").value);
-
-const turn=cogs/stock;
-
-toolResult.innerHTML=`Vòng quay tồn kho: ${turn.toFixed(2)} vòng`;
-
-}
-
-function formatMoneyInput(input){
-
-  input.addEventListener("input", function(){
-
-    let v = this.value.replace(/\D/g,"");
-
-    if(!v){
-      this.value="";
-      return;
-    }
-
-    this.value = Number(v).toLocaleString("vi-VN");
-  });
-
-}
 /* ================= TOOL APP ================= */
 
 function openTool(name){
@@ -1456,9 +1279,9 @@ const vat=Number(toolVat.value);
 
 if(!cost||!price) return alert("Nhập dữ liệu");
 
-const priceNoVat=price/(1+vat/100);
+const priceNoVat=engine.priceNoVat(price,vat);
 
-const profit=((priceNoVat-cost)/priceNoVat)*100;
+const profit=engine.margin(cost,priceNoVat);
 
 profitResult.innerHTML=
 `<b>Tỉ lệ lãi:</b> ${profit.toFixed(2)} %`;
