@@ -340,11 +340,15 @@ background:#e2e8f0;
 <button onclick="openTool('product')" class="tool-btn">
 🧮 Tính giá sản phẩm
 </button>
+  
+<button onclick="openTool('discountRisk')" class="tool-btn">
+⚠️ Tính tỉ lệ lãi khi giảm giá và số lượng cần bán để giữ lãi
+</button>
 
 <button onclick="openTool('keep')" class="tool-btn">
 🔄 Tính số lượng bán ra để giữ nguyên tỉ lệ lãi
 </button>
-
+  
 <button onclick="openTool('inventory')" class="tool-btn">
 📦 Vòng quay tồn kho
 </button>
@@ -489,6 +493,35 @@ class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
 class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="promoResult"></div>
+
+</div>
+  <!-- TOOL DISCOUNT RISK -->
+<div id="toolDiscountRisk" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Giảm giá có nguy hiểm cho lợi nhuận?</h3>
+
+<input id="riskCost" 
+placeholder="Giá vốn (VD: 10.000)" 
+class="border p-2 rounded w-full" 
+oninput="formatMoneyInput(this)">
+
+<input id="riskMargin" 
+placeholder="Margin hiện tại (%)" 
+class="border p-2 rounded w-full">
+
+<input id="riskDiscount" 
+placeholder="Giảm giá (%)" 
+class="border p-2 rounded w-full">
+
+<button onclick="calcDiscountRisk()" 
+class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+
+<button onclick="resetDiscountRisk()" 
+class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="riskResult"></div>
 
 </div>
 </div>
@@ -1456,6 +1489,51 @@ promoCost.value="";
 promoDiscount.value="";
 promoPrice.value="";
 promoResult.innerHTML="";
+}
+  /* ===== PHÂN TÍCH NGUY CƠ GIẢM GIÁ ===== */
+
+function calcDiscountRisk(){
+
+const cost = num(riskCost.value);
+const margin = Number(riskMargin.value)/100;
+const discount = Number(riskDiscount.value)/100;
+
+if(!cost || !margin) return alert("Nhập dữ liệu");
+
+const price = cost/(1-margin);
+
+const priceAfter = price*(1-discount);
+
+const marginNew = (priceAfter-cost)/priceAfter;
+
+const needIncrease = margin/marginNew;
+
+let warn = "";
+
+if(marginNew < 0.1)
+warn = "<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM cho lợi nhuận</span>";
+
+else if(marginNew < 0.2)
+warn = "<span style='color:#f97316;font-weight:bold'>⚠️ Margin giảm mạnh</span>";
+
+else
+warn = "<span style='color:green'>An toàn</span>";
+
+riskResult.innerHTML = `
+Giá bán chuẩn: <b>${money(price)} đ</b><br>
+Giá sau giảm: <b>${money(priceAfter)} đ</b><br>
+Margin còn lại: <b>${(marginNew*100).toFixed(2)} %</b><br>
+Cần bán tăng: <b>${(needIncrease*100-100).toFixed(1)} %</b><br>
+${warn}
+`;
+
+}
+
+function resetDiscountRisk(){
+riskCost.value="";
+riskMargin.value="";
+riskDiscount.value="";
+riskResult.innerHTML="";
 }
 </script>
 <div id="confirmBox"
