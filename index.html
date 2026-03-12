@@ -324,11 +324,13 @@ background:#e2e8f0;
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
+<!-- ================= TOOL APP ================= -->
+<div id="toolApp" class="hidden space-y-4">
+
 <div class="card p-4">
 
 <h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
 
-<!-- MENU TOOL -->
 <div id="toolMenu" class="grid grid-cols-1 gap-2">
 
 <button onclick="openTool('profit')" class="tool-btn">
@@ -340,18 +342,16 @@ background:#e2e8f0;
 </button>
 
 <button onclick="openTool('keep')" class="tool-btn">
-🔄 Giữ nguyên tỉ lệ lãi khi giảm giá
+🔄 Tính số lượng bán ra để giữ nguyên tỉ lệ lãi
 </button>
 
 <button onclick="openTool('inventory')" class="tool-btn">
 📦 Vòng quay tồn kho
 </button>
-
-</div>
-
-<!-- TOOL CONTENT -->
-<div id="toolContent" class="hidden mt-4"></div>
-
+<button onclick="openTool('promo')" class="tool-btn">
+🏷 Tính lãi khi NCC giảm giá
+</button>
+  
 </div>
 </div>
 
@@ -458,9 +458,39 @@ background:#e2e8f0;
 <button onclick="resetInventory()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
 
 <div id="inventoryResult"></div>
+</div>
+<!-- TOOL PROMO PROFIT -->
+<div id="toolPromo" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Tính tỉ lệ lãi khi NCC giảm giá</h3>
+
+<input id="promoCost" placeholder="Giá vốn (chưa VAT)" 
+class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<input id="promoDiscount" placeholder="% NCC giảm giá" 
+class="border p-2 rounded w-full">
+
+<input id="promoPrice" placeholder="Giá bán (có VAT)" 
+class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<select id="promoVat" class="border p-2 rounded w-full">
+<option value="0">VAT 0%</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<button onclick="calcPromoProfit()" 
+class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+
+<button onclick="resetPromo()" 
+class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="promoResult"></div>
 
 </div>
-
 </div>
 <script>
   function isIOS(){
@@ -958,26 +988,27 @@ function exportText(){
  renderPrint();
  showPopup("export");
 }
-function openTool(name){
+function openTool(type){
 
 document.getElementById("toolMenu").style.display="none";
 
-const box=document.getElementById("toolContent");
+document.querySelectorAll(".tool-box").forEach(e=>{
+e.classList.remove("active");
+});
 
-box.classList.remove("hidden");
+const map={
+profit:"toolProfit",
+product:"toolProduct",
+keep:"toolKeep",
+inventory:"toolInventory",
+promo:"toolPromo"
+};
 
-box.innerHTML = toolTemplates[name];
+const target=document.getElementById(map[type]);
 
+if(target){
+target.classList.add("active");
 }
-  function backTool(){
-
-document.getElementById("toolMenu").style.display="grid";
-
-const box=document.getElementById("toolContent");
-
-box.classList.add("hidden");
-
-box.innerHTML="";
 
 }
 function showPopup(type){
@@ -1206,22 +1237,25 @@ function showToast(message = "Đã xử lý"){
     toast.classList.remove("show");
   }, 2500);
 }
+/* ================= TOOL DATA ================= */
+
 const toolTemplates = {
 
 profit:`
-<button onclick="backTool()" class="text-sm text-blue-600 mb-2">← Quay lại</button>
+<div class="card p-4 space-y-2">
 
-<h3 class="font-bold mb-2">Tính tỉ lệ lãi</h3>
+<label>Giá vốn</label>
+<input id="cost" type="number" class="border p-2 rounded w-full">
 
-<input id="cost" placeholder="Giá vốn" class="border p-2 rounded w-full">
+<label>Giá bán</label>
+<input id="price" type="number" class="border p-2 rounded w-full">
 
-<input id="price" placeholder="Giá bán (đã VAT)" class="border p-2 rounded w-full">
-
+<label>VAT</label>
 <select id="vat" class="border p-2 rounded w-full">
-<option value="0">VAT 0%</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
 </select>
 
 <button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full mt-2">
@@ -1229,66 +1263,83 @@ TÍNH
 </button>
 
 <div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
 `,
 
 product:`
-<button onclick="backTool()" class="text-sm text-blue-600 mb-2">← Quay lại</button>
+<div class="card p-4 space-y-2">
 
-<h3 class="font-bold mb-2">Tính giá sản phẩm</h3>
+<label>Tỉ lệ lãi (%)</label>
+<input id="margin" type="number" class="border p-2 rounded w-full">
 
-<input id="margin" placeholder="% tỉ lệ lãi" class="border p-2 rounded w-full">
-
-<input id="cost" placeholder="Giá vốn" class="border p-2 rounded w-full">
-
-<select id="vat" class="border p-2 rounded w-full">
-<option value="0">VAT 0%</option>
-<option value="5">VAT 5%</option>
-<option value="8">VAT 8%</option>
-<option value="10">VAT 10%</option>
-</select>
+<label>Giá vốn</label>
+<input id="cost" type="number" class="border p-2 rounded w-full">
 
 <button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full mt-2">
 TÍNH
 </button>
 
 <div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
 `,
 
 keep:`
-<button onclick="backTool()" class="text-sm text-blue-600 mb-2">← Quay lại</button>
+<div class="card p-4 space-y-2">
 
-<h3 class="font-bold mb-2">Giữ nguyên tỉ lệ lãi khi giảm giá</h3>
+<label>Giá bán hiện tại</label>
+<input id="price" type="number" class="border p-2 rounded w-full">
 
-<input id="price" placeholder="Giá bán hiện tại" class="border p-2 rounded w-full">
+<label>Số lượng bán</label>
+<input id="qty" type="number" class="border p-2 rounded w-full">
 
-<input id="qty" placeholder="Số lượng bán hiện tại" class="border p-2 rounded w-full">
+<label>% Giảm giá</label>
+<input id="discount" type="number" class="border p-2 rounded w-full">
 
-<input id="discount" placeholder="% giảm giá" class="border p-2 rounded w-full">
+<label>Tỉ lệ lãi (%)</label>
+<input id="margin" type="number" class="border p-2 rounded w-full">
 
 <button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full mt-2">
 TÍNH
 </button>
 
 <div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
 `,
 
 inventory:`
-<button onclick="backTool()" class="text-sm text-blue-600 mb-2">← Quay lại</button>
+<div class="card p-4 space-y-2">
 
-<h3 class="font-bold mb-2">Vòng quay tồn kho</h3>
+<label>Giá vốn hàng bán (COGS)</label>
+<input id="cogs" type="number" class="border p-2 rounded w-full">
 
-<input id="cogs" placeholder="Giá vốn hàng bán" class="border p-2 rounded w-full">
-
-<input id="stock" placeholder="Tồn kho bình quân" class="border p-2 rounded w-full">
+<label>Tồn kho bình quân</label>
+<input id="stock" type="number" class="border p-2 rounded w-full">
 
 <button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full mt-2">
 TÍNH
 </button>
 
 <div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
 `
 
 };
+
+
+/* ================= OPEN TOOL ================= */
+
+function openTool(type){
+
+document.getElementById("toolMenu").classList.add("hidden");
+document.getElementById("toolContainer").classList.remove("hidden");
+
+document.getElementById("toolContent").innerHTML = toolTemplates[type];
+
+}
 
 
 /* ================= BACK TOOL ================= */
@@ -1377,6 +1428,18 @@ function formatMoneyInput(input){
 
 }
 /* ================= TOOL APP ================= */
+
+function openTool(name){
+
+toolMenu.style.display="none";
+
+document.querySelectorAll(".tool-box")
+.forEach(e=>e.classList.remove("active"));
+
+document.getElementById("tool"+name.charAt(0).toUpperCase()+name.slice(1))
+.classList.add("active");
+
+}
 
 function backTool(){
 toolMenu.style.display="grid";
@@ -1540,6 +1603,37 @@ el.addEventListener("blur",()=>formatInputMoney(el));
 changeCalcMode();
 autoCleanExpired();
 renderHistory();
+  /* ===== LÃI KHI NCC GIẢM GIÁ ===== */
+
+function calcPromoProfit(){
+
+const cost = num(promoCost.value);
+const discount = Number(promoDiscount.value)/100;
+const price = num(promoPrice.value);
+const vat = Number(promoVat.value)/100;
+
+if(!cost || !price) return alert("Nhập dữ liệu");
+
+const costAfter = cost * (1 - discount);
+
+const priceNoVat = price / (1 + vat);
+
+const profit = ((priceNoVat - costAfter) / priceNoVat) * 100;
+
+promoResult.innerHTML = `
+Giá vốn sau KM: <b>${money(costAfter)} đ</b><br>
+Giá bán chưa VAT: <b>${money(priceNoVat)} đ</b><br>
+Tỉ lệ lãi: <b>${profit.toFixed(2)} %</b>
+`;
+
+}
+
+function resetPromo(){
+promoCost.value="";
+promoDiscount.value="";
+promoPrice.value="";
+promoResult.innerHTML="";
+}
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
