@@ -3,293 +3,828 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HỆ THỐNG QUẢN LÝ TỔNG HỢP – Saigon Co.op</title>
+<title>HỆ THỐNG QUẢN TRỊ NGHIỆP VỤ TỔNG HỢP – Saigon Co.op</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <style>
-body{background:#f3f4f6;font-family:system-ui,-apple-system,sans-serif}
-.card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.brand-bg{background:#c40018}
-.brand-text{color:#c40018}
-.blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
-@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800}100%{background:#fff3e0}}
-.blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
-@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
-#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
+:root{--coop-red:#c40018;--coop-blue:#0054a6}
+body{background:#f3f4f6;font-family:system-ui,-apple-system,sans-serif;color:#1f2937}
+.card{background:#fff;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1),0 8px 10px -6px rgba(0,0,0,0.1)}
+.brand-bg{background:var(--coop-red)}
+.brand-text{color:var(--coop-red)}
+/* Hiệu ứng nhấp nháy cảnh báo HSD */
+.blink30{animation:blink30 0.8s linear infinite;border:2px solid #fb923c}
+@keyframes blink30{0%{background:#fff3e0}50%{background:#ff9800;color:#fff}100%{background:#fff3e0}}
+.blink20{animation:blink20 0.6s linear infinite;border:2px solid #ef4444}
+@keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca;color:#b91c1c}100%{background:#fff1f2}}
+/* Sidebar */
+#sidebar{position:fixed;top:0;left:0;width:280px;height:100%;background:#fff;box-shadow:4px 0 20px rgba(0,0,0,0.2);transform:translateX(-100%);transition:0.3s cubic-bezier(0.4,0,0.2,1);z-index:1000}
 #sidebar.active{transform:translateX(0)}
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;z-index:900;backdrop-filter:blur(2px)}
 #overlay.active{display:block}
-.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
-.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
-.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
-.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
-#reader,#printReader{position:relative;width:100%;height:260px;background:#000}
-.train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;border-radius:14px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);width:100%}
-.train-role-btn:hover{border-color:#c40018;background:#fff5f5;transform:translateY(-2px)}
-.train-module-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s}
+/* Tiện ích */
+.chat-box{height:350px;overflow-y:auto;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px}
+.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;margin-bottom:8px;font-family:monospace;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.filter-btn{padding:8px 16px;border-radius:999px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:600;transition:0.2s}
+.filter-btn.active{background:var(--coop-red);color:white;border-color:var(--coop-red)}
+#reader,#printReader{position:relative;width:100%;height:280px;background:#000;border-radius:12px;overflow:hidden}
+.scan-frame{position:absolute;inset:15%;border:2px solid rgba(255,255,255,0.5);z-index:10;border-radius:8px}
+.scan-line{position:absolute;left:5%;width:90%;height:2px;background:red;box-shadow:0 0 15px red;animation:scanMove 1.5s linear infinite;z-index:20}
+@keyframes scanMove{0%{top:20%}50%{top:50%}100%{top:80%}}
+/* Stats */
+.stat-card{border-radius:12px;padding:12px;text-align:center;flex:1;min-width:80px;transition:0.2s}
+.stat-num{font-size:24px;font-weight:800;line-height:1}
+.stat-lbl{font-size:10px;margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+/* Training & Eval */
+.train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 16px;border-radius:20px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all 0.2s}
+.train-role-btn:hover{border-color:var(--coop-red);background:#fff5f5;transform:translateY(-4px)}
+.train-module-item{display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;margin-bottom:10px}
 .train-module-item.done{border-color:#16a34a;background:#f0fdf4}
-.train-badge{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.train-badge-todo{background:#f1f5f9;color:#64748b}
-.train-badge-done{background:#16a34a;color:#fff}
-.train-progress-bar{height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}
-.train-progress-fill{height:100%;background:linear-gradient(90deg,#c40018,#ff6b6b);border-radius:999px;transition:width .4s ease}
-.pdf-viewer-wrapper{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;flex-direction:column;}
-.pdf-viewer-header{background:#c40018;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-#signature-pad { border: 1px solid #ccc; background: #fff; width: 100%; height: 180px; touch-action: none; border-radius: 8px; }
-.eval-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.eval-table th, .eval-table td { border: 1px solid #000; padding: 5px; vertical-align: top; }
-.score-input { width: 40px; text-align: center; border: 1px solid #333; font-weight: bold; }
-.tool-box{display:none}
-.tool-box.active{display:block}
-.tool-btn{padding:10px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;font-weight:500;text-align:left;transition:.2s}
-.toast{position:fixed;right:20px;bottom:20px;background:#2e7d32;color:white;padding:12px 18px;border-radius:8px;font-size:14px;opacity:0;transform:translateY(20px);transition:all 0.3s ease;z-index:9999;pointer-events:none}
+.train-progress-bar{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden;margin:10px 0}
+.train-progress-fill{height:100%;background:linear-gradient(90deg,var(--coop-red),#ff6b6b);transition:width 0.5s ease}
+#signature-pad { border: 2px dashed #cbd5e1; background: #fff; width: 100%; height: 200px; touch-action: none; border-radius: 12px; }
+/* Bảng biểu đánh giá BM-74 */
+.eval-table { width: 100%; border-collapse: collapse; font-size: 11px; background: white; }
+.eval-table th, .eval-table td { border: 1px solid #334155; padding: 6px 4px; vertical-align: top; line-height: 1.4; }
+.eval-table th { background: #f1f5f9; font-weight: 800; text-transform: uppercase; color: #334155; }
+.score-input { width: 45px; text-align: center; border: 2px solid #94a3b8; font-weight: 900; color: #c40018; border-radius: 4px; padding: 2px; }
+.score-input:focus { border-color: var(--coop-red); outline: none; background: #fff1f2; }
+/* PDF Viewer */
+.pdf-viewer-wrapper{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:3000;display:none;flex-direction:column}
+.pdf-viewer-header{background:var(--coop-red);color:#fff;padding:16px;display:flex;align-items:center;justify-content:space-between}
+/* Tooltip/Toast */
+.toast{position:fixed;right:20px;bottom:20px;background:#1e293b;color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transform:translateY(20px);transition:0.3s;z-index:9999;pointer-events:none;box-shadow:0 10px 15px -3px rgba(0,0,0,0.3)}
 .toast.show{opacity:1;transform:translateY(0)}
-.stat-card{border-radius:10px;padding:10px 12px;text-align:center;flex:1;min-width:70px}
+.tool-box{display:none; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
-<body class="max-w-xl mx-auto p-3">
+<body class="max-w-2xl mx-auto p-4">
 
 <!-- SIDEBAR -->
 <div id="sidebar">
-  <div class="p-4 border-b text-center"><div class="font-bold brand-text italic">Saigon Co.op</div></div>
-  <div class="p-3 space-y-2">
-    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📦 Quản lý HSD</button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
-    <button onclick="showTool()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
-    <button onclick="showTraining()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🎓 Đào tạo thực hành</button>
-    <button onclick="showEval()" class="w-full text-left px-3 py-2 rounded bg-red-50 font-bold">📝 Đánh giá học viên</button>
+  <div class="p-6 border-b text-center brand-bg mb-4">
+    <div class="font-black text-2xl text-white italic tracking-tighter">Saigon Co.op</div>
+    <div class="text-white text-[10px] opacity-80 uppercase tracking-widest mt-1">Hệ thống Quản trị Nội bộ</div>
   </div>
+  <nav class="px-4 space-y-2">
+    <button onclick="showApp('mainApp', 'QUẢN LÝ HSD')" class="menu-item w-full text-left p-3 rounded-xl hover:bg-red-50 flex items-center gap-3 font-bold transition text-gray-700"><span class="text-xl">📦</span> Quản lý HSD</button>
+    <button onclick="showApp('printApp', 'IN BẢNG GIÁ')" class="menu-item w-full text-left p-3 rounded-xl hover:bg-red-50 flex items-center gap-3 font-bold transition text-gray-700"><span class="text-xl">🖨️</span> In bảng giá quầy</button>
+    <button onclick="showApp('toolApp', 'TRA CỨU NGHIỆP VỤ')" class="menu-item w-full text-left p-3 rounded-xl hover:bg-red-50 flex items-center gap-3 font-bold transition text-gray-700"><span class="text-xl">📊</span> Tra cứu nghiệp vụ</button>
+    <button onclick="showApp('trainingApp', 'ĐÀO TẠO THỰC HÀNH')" class="menu-item w-full text-left p-3 rounded-xl hover:bg-red-50 flex items-center gap-3 font-bold transition text-gray-700"><span class="text-xl">🎓</span> Đào tạo thực hành</button>
+    <button onclick="showApp('evalApp', 'ĐÁNH GIÁ HỌC VIÊN')" class="menu-item w-full text-left p-3 rounded-xl bg-red-50 text-red-700 flex items-center gap-3 font-bold transition"><span class="text-xl">📝</span> Đánh giá học viên</button>
+  </nav>
+  <div class="absolute bottom-6 w-full px-6 text-[10px] text-gray-400 font-medium">Phiên bản 4.0.2 (Build 2024)<br>© 2024 Trung tâm Đào tạo Nghiệp vụ</div>
 </div>
-<div id="overlay" onclick="toggleMenu()"></div>
+<div id="overlay" onclick="toggleSidebar()"></div>
 
 <!-- HEADER -->
-<div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white shadow-lg">
-  <div class="font-bold text-lg" id="headerTitle">HỆ THỐNG QUẢN LÝ HSD</div>
-  <button onclick="toggleMenu()" class="text-2xl">☰</button>
+<div class="flex justify-between items-center mb-6 p-4 rounded-2xl brand-bg text-white shadow-xl">
+  <div class="flex items-center gap-3">
+    <div class="bg-white p-2 rounded-lg"><span id="headerIcon">📝</span></div>
+    <div class="font-black text-lg tracking-tight uppercase" id="headerTitle">Hệ thống Quản lý</div>
+  </div>
+  <button onclick="toggleSidebar()" class="text-3xl p-1 active:scale-90 transition">☰</button>
 </div>
 
-<!-- ================= 1. QUẢN LÝ HSD ================= -->
+<!-- =========================================================================
+     APP 1: QUẢN LÝ HẠN SỬ DỤNG (HSD)
+     ========================================================================= -->
 <div id="mainApp" class="space-y-4">
-  <div class="card p-4 space-y-3">
-    <label class="font-semibold">Tên sản phẩm</label>
-    <input id="productName" class="border p-2 rounded w-full" placeholder="Ví dụ: Sữa tươi Vinamilk 1L">
-    <label class="font-semibold">Barcode sản phẩm</label>
-    <div class="flex gap-2"><input id="barcode" class="border p-2 rounded w-full"><button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button></div>
-    <div id="reader" class="hidden"></div>
-    <select id="calcMode" class="border p-2 rounded w-full" onchange="changeCalcMode()">
-      <option value="full">Có NSX & HSD</option><option value="hsdBack">Chỉ có HẠN SỬ DỤNG</option><option value="nsxPeriod">Chỉ có NGÀY SẢN XUẤT</option>
-    </select>
-    <div id="nsxBlock"><label class="font-semibold">Ngày sản xuất (NSX)</label><input type="text" id="nsx" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)"></div>
-    <div id="hsdBlock"><label class="font-semibold">Hạn sử dụng (HSD)</label><input type="text" id="hsd" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)"></div>
-    <div id="beforeHsdBlock" class="hidden"><label class="font-semibold">Thời gian trước HSD</label><div class="flex gap-2"><input type="number" id="beforeHsdValue" class="border p-2 rounded w-1/2"><select id="beforeHsdUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option></select></div></div>
-    <div id="nsxPeriodBlock" class="hidden"><label class="font-semibold">Thời gian sử dụng từ NSX</label><div class="flex gap-2"><input type="number" id="periodValue" class="border p-2 rounded w-1/2"><select id="periodUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option></select></div></div>
-    <button onclick="calculate()" class="w-full brand-bg text-white py-2 rounded font-bold">TÍNH KẾT QUẢ</button>
-    <div id="result"></div>
+  <div class="card p-5 space-y-4">
+    <div class="grid grid-cols-1 gap-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tên sản phẩm</label>
+        <input id="productName" class="w-full border-2 border-gray-100 p-3 rounded-xl focus:border-red-500 outline-none transition" placeholder="VD: Sữa tươi TH True Milk 1L">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mã Barcode</label>
+        <div class="flex gap-2">
+          <input id="barcode" class="flex-1 border-2 border-gray-100 p-3 rounded-xl outline-none" placeholder="Quét hoặc nhập mã">
+          <button onclick="startScanner('hsd')" class="brand-bg text-white px-5 rounded-xl font-bold">QUÉT</button>
+        </div>
+        <div id="reader" class="hidden mt-3"></div>
+      </div>
+    </div>
+    
+    <div class="bg-gray-50 p-4 rounded-xl space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Phương thức tính</label>
+          <select id="calcMode" class="w-full border-2 border-white p-3 rounded-xl outline-none shadow-sm" onchange="toggleHsdBlocks()">
+            <option value="full">Đầy đủ (NSX & HSD)</option>
+            <option value="hsdOnly">Chỉ có HẠN SỬ DỤNG</option>
+            <option value="nsxOnly">Chỉ có NGÀY SẢN XUẤT</option>
+          </select>
+        </div>
+        
+        <div id="block_nsx" class="grid grid-cols-1">
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ngày sản xuất (NSX)</label>
+          <input id="nsx" class="w-full border-2 border-white p-3 rounded-xl outline-none shadow-sm" placeholder="dd/mm/yyyy" oninput="dateMask(this)">
+        </div>
+
+        <div id="block_hsd" class="grid grid-cols-1">
+          <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Hạn sử dụng (HSD)</label>
+          <input id="hsd" class="w-full border-2 border-white p-3 rounded-xl outline-none shadow-sm" placeholder="dd/mm/yyyy" oninput="dateMask(this)">
+        </div>
+
+        <div id="block_period" class="hidden grid grid-cols-2 gap-2">
+          <div class="col-span-2 text-xs font-bold text-gray-500 uppercase">Thời hạn sử dụng</div>
+          <input id="periodValue" type="number" class="border-2 border-white p-3 rounded-xl outline-none shadow-sm" placeholder="Số lượng">
+          <select id="periodUnit" class="border-2 border-white p-3 rounded-xl outline-none shadow-sm">
+            <option value="day">Ngày</option><option value="month">Tháng</option><option value="year">Năm</option>
+          </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="calculateHsd()" class="brand-bg text-white py-4 rounded-2xl font-black shadow-lg shadow-red-200 active:scale-95 transition">TÍNH KẾT QUẢ</button>
+      <button onclick="resetHsdForm()" class="bg-gray-200 text-gray-700 py-4 rounded-2xl font-black active:scale-95 transition">LÀM MỚI</button>
+    </div>
+    
+    <div id="hsdResult" class="mt-2"></div>
+    
+    <div class="flex gap-2 pt-2 border-t mt-4">
+      <button onclick="exportHsdExcel()" class="flex-1 bg-slate-800 text-white py-3 rounded-xl text-xs font-bold">XUẤT EXCEL</button>
+      <button onclick="clearHsdHistory()" class="flex-1 border-2 border-red-100 text-red-500 py-3 rounded-xl text-xs font-bold">XÓA LỊCH SỬ</button>
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <h3 class="font-black brand-text text-sm mb-3 flex justify-between">
+      TỔNG QUAN TỒN KHO <span>📊</span>
+    </h3>
+    <div id="hsdDashboard" class="flex gap-2 overflow-x-auto pb-2"></div>
+  </div>
+
+  <div class="card p-4">
+    <h3 class="font-black brand-text text-sm mb-3">LỊCH SỬ TÍNH TOÁN</h3>
+    <div class="flex gap-2 mb-4">
+      <button onclick="filterHsd('all')" id="f_all" class="filter-btn active">Tất cả</button>
+      <button onclick="filterHsd('30')" id="f_30" class="filter-btn">Mốc 30%</button>
+      <button onclick="filterHsd('20')" id="f_20" class="filter-btn">Mốc 20%</button>
+    </div>
+    <div id="hsdHistory" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
   </div>
 </div>
 
-<!-- ================= 2. ĐÁNH GIÁ HỌC VIÊN (Staff) ================= -->
-<div id="evalApp" class="hidden space-y-4 pb-10">
-  <div id="evalRoleSelector" class="card p-4">
-    <h2 class="font-bold brand-text mb-4 text-center">CHỌN BIỂU MẪU ĐÁNH GIÁ</h2>
-    <div class="grid grid-cols-2 gap-3">
-      <button class="train-role-btn" onclick="openEval('staff')"><span class="train-role-icon">🛒</span><span>Nhân viên bán hàng</span></button>
-      <button class="train-role-btn" onclick="alert('Đang cập nhật...')"><span class="train-role-icon">👔</span><span>Cửa hàng trưởng</span></button>
+<!-- =========================================================================
+     APP 2: IN BẢNG GIÁ QUẦY
+     ========================================================================= -->
+<div id="printApp" class="hidden space-y-4">
+  <div class="card p-5">
+    <div class="flex gap-2 mb-4">
+      <button onclick="startScanner('print')" class="flex-1 brand-bg text-white p-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg">
+        <span>📷</span> QUÉT BARCODE
+      </button>
+      <button onclick="exportPrintTxt()" class="bg-slate-800 text-white px-6 rounded-2xl font-black">TXT</button>
+    </div>
+    <div id="printReader" class="hidden mb-4"></div>
+    
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-black text-gray-500 text-xs uppercase">Danh sách chờ in</h3>
+      <button onclick="clearPrintList()" class="text-xs text-red-500 font-bold underline">Xóa hết</button>
+    </div>
+    <div class="chat-box" id="printList"></div>
+    <p class="text-[10px] text-gray-400 mt-3 italic">* Lưu ý: Sau khi quét, danh sách sẽ được lưu tạm thời. Xuất file TXT để đưa vào hệ thống in bảng giá tập trung.</p>
+  </div>
+</div>
+
+<!-- =========================================================================
+     APP 3: TRA CỨU NGHIỆP VỤ (TOOLS)
+     ========================================================================= -->
+<div id="toolApp" class="hidden space-y-4">
+  <div class="card p-4">
+    <div id="toolMenu" class="grid grid-cols-1 gap-2">
+      <button onclick="openTool('profit')" class="tool-btn flex justify-between"><span>📈 Tính tỉ lệ lãi (Margin %)</span> <span>›</span></button>
+      <button onclick="openTool('pricing')" class="tool-btn flex justify-between"><span>🧮 Tính giá bán từ giá vốn</span> <span>›</span></button>
+      <button onclick="openTool('risk')" class="tool-btn flex justify-between"><span>⚠️ Rủi ro khi giảm giá</span> <span>›</span></button>
+      <button onclick="openTool('turnover')" class="tool-btn flex justify-between"><span>📦 Vòng quay tồn kho</span> <span>›</span></button>
+      <button onclick="openTool('promo')" class="tool-btn flex justify-between"><span>🏷️ Lãi khi NCC hỗ trợ KM</span> <span>›</span></button>
     </div>
   </div>
 
-  <div id="evalForm" class="hidden card p-3">
-    <button onclick="backToRoleSelector()" class="text-blue-600 mb-2">← Quay lại</button>
-    <h2 class="font-bold text-center text-red-700 text-lg">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH</h2>
-    
-    <div class="space-y-1 mb-3 text-[11px]">
-      <div class="flex gap-2"><span>Họ tên:</span><input id="ev_name" class="border-b w-full outline-none"><span>Mã số HV:</span><input id="ev_ms" class="border-b w-full outline-none"></div>
-      <div class="flex gap-2"><span>Chức danh:</span><input id="ev_pos" value="Nhân viên bán hàng" class="border-b w-full outline-none"><span>Ngày:</span><input type="date" id="ev_date" class="border-b outline-none"></div>
-      <div class="flex gap-2"><span>Đơn vị công tác:</span><input id="ev_unit" class="border-b w-full outline-none"></div>
-    </div>
+  <!-- TOOL: PROFIT -->
+  <div id="tool_profit" class="tool-box card p-5 space-y-4">
+    <button onclick="backToToolMenu()" class="text-blue-600 font-bold text-xs">← QUAY LẠI</button>
+    <h3 class="font-black brand-text">Tính tỉ lệ lãi Margin</h3>
+    <input id="p_cost" placeholder="Giá vốn (VND)" class="w-full border p-3 rounded-xl outline-none" oninput="formatCurrency(this)">
+    <input id="p_price" placeholder="Giá bán (VND)" class="w-full border p-3 rounded-xl outline-none" oninput="formatCurrency(this)">
+    <select id="p_vat" class="w-full border p-3 rounded-xl outline-none">
+      <option value="0">VAT 0%</option><option value="5">VAT 5%</option><option value="8">VAT 8%</option><option value="10">VAT 10%</option>
+    </select>
+    <button onclick="calcToolProfit()" class="w-full brand-bg text-white py-3 rounded-xl font-bold">TÍNH MARGIN</button>
+    <div id="p_res" class="p-4 bg-gray-50 rounded-xl"></div>
+  </div>
 
-    <div class="overflow-x-auto">
-      <table class="eval-table" id="evalTable">
-        <thead><tr class="bg-gray-100"><th>STT</th><th>NỘI DUNG</th><th>ĐIỂM CHUẨN</th><th>TỶ TRỌNG</th><th>ĐIỂM (0-10)</th></tr></thead>
-        <tbody id="evalTableBody">
-          <!-- Các tiêu chí sẽ được render bằng JS để đảm bảo văn bản đầy đủ -->
-        </tbody>
-      </table>
+  <!-- TOOL: PRICING -->
+  <div id="tool_pricing" class="tool-box card p-5 space-y-4">
+    <button onclick="backToToolMenu()" class="text-blue-600 font-bold text-xs">← QUAY LẠI</button>
+    <h3 class="font-black brand-text">Tính giá sản phẩm</h3>
+    <input id="pr_margin" placeholder="Tỷ lệ lãi mong muốn (%)" class="w-full border p-3 rounded-xl outline-none">
+    <select id="pr_mode" class="w-full border p-3 rounded-xl outline-none" onchange="togglePricingVat()">
+      <option value="cost">Nhập giá vốn → Tính giá bán</option>
+      <option value="price">Nhập giá bán → Tính giá vốn</option>
+    </select>
+    <input id="pr_val" placeholder="Số tiền (VND)" class="w-full border p-3 rounded-xl outline-none" oninput="formatCurrency(this)">
+    <div id="pr_cost_vat_block" class="p-3 bg-blue-50 rounded-xl space-y-2">
+      <label class="text-[10px] font-bold text-blue-600">GIÁ VỐN BẠN NHẬP ĐÃ CÓ VAT CHƯA?</label>
+      <select id="pr_cost_type" class="w-full border p-2 rounded-lg outline-none">
+        <option value="no">Chưa có VAT</option><option value="yes">Đã có VAT</option>
+      </select>
     </div>
+    <select id="pr_vat" class="w-full border p-3 rounded-xl outline-none">
+      <option value="0">VAT bán 0%</option><option value="5">VAT bán 5%</option><option value="8">VAT bán 8%</option><option value="10">VAT bán 10%</option>
+    </select>
+    <button onclick="calcToolPricing()" class="w-full brand-bg text-white py-3 rounded-xl font-bold">TÍNH GIÁ</button>
+    <div id="pr_res" class="p-4 bg-gray-50 rounded-xl"></div>
+  </div>
+  
+  <!-- Các tool Risk, Turnover, Promo logic cũng sẽ được tích hợp trong JS -->
+</div>
 
-    <div class="mt-4 space-y-3">
-      <div><label class="font-bold text-xs text-red-700">Ghi chú: Cần ghi rõ lý do chấm điểm < 6 và hướng khắc phục</label><textarea id="ev_note" class="w-full border rounded p-2 text-xs h-16"></textarea></div>
-      <div class="grid grid-cols-1 gap-4 border p-2 rounded bg-gray-50">
-        <div class="text-center">
-            <label class="font-bold text-sm block mb-1">Người hướng dẫn ký tên</label>
-            <canvas id="signature-pad" class="border bg-white rounded shadow-inner"></canvas>
-            <button onclick="clearSig()" class="text-[10px] text-red-600 mt-1 underline">Xóa chữ ký</button>
+<!-- =========================================================================
+     APP 4: ĐÀO TẠO THỰC HÀNH (TRAINING)
+     ========================================================================= -->
+<div id="trainingApp" class="hidden space-y-4">
+  <div id="trainRolePage" class="card p-6">
+    <h2 class="font-black brand-text text-lg text-center mb-2">LỘ TRÌNH ĐÀO TẠO</h2>
+    <p class="text-center text-xs text-gray-400 mb-6 font-medium">Vui lòng chọn vai trò để bắt đầu bài học</p>
+    <div class="grid grid-cols-2 gap-4">
+      <button class="train-role-btn shadow-md shadow-gray-100" onclick="openTrainRole('manager')">
+        <span class="text-4xl">👔</span>
+        <span class="font-black text-sm uppercase">Quản lý</span>
+      </button>
+      <button class="train-role-btn shadow-md shadow-gray-100 opacity-60" onclick="showToast('Chức năng cho Nhân viên sẽ ra mắt sớm!')">
+        <span class="text-4xl">🛒</span>
+        <span class="font-black text-sm uppercase">Nhân viên</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="trainManagerPage" class="hidden space-y-4">
+    <div class="card p-5">
+      <div class="flex justify-between items-center mb-6">
+        <button onclick="backToTrainRole()" class="text-blue-600 font-black text-xs tracking-tighter">← QUAY LẠI</button>
+        <button onclick="confirmResetTrain()" class="text-red-500 font-black text-xs tracking-tighter uppercase">Reset tiến độ</button>
+      </div>
+      
+      <div class="mb-6">
+        <div class="flex justify-between text-xs font-black mb-1 text-gray-500 uppercase">
+          <span>Tiến độ hoàn thành</span>
+          <span id="trainProgressText">0/14 Bài</span>
         </div>
-        <div class="flex flex-col gap-1">
-            <label class="font-bold text-sm">Họ tên người đánh giá:</label>
-            <input id="ev_evaluator_name" class="border p-2 rounded w-full font-bold uppercase" placeholder="Nhập tên người hướng dẫn">
+        <div class="train-progress-bar"><div id="trainProgressFill" class="train-progress-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <div class="text-[10px] font-black text-blue-500 uppercase mb-3 tracking-widest bg-blue-50 inline-block px-3 py-1 rounded-full">Giai đoạn 1: Nghiệp vụ cơ bản</div>
+          <div id="trainList1" class="space-y-2"></div>
+        </div>
+        <div>
+          <div class="text-[10px] font-black text-red-500 uppercase mb-3 tracking-widest bg-red-50 inline-block px-3 py-1 rounded-full">Giai đoạn 2: Nghiệp vụ quản trị</div>
+          <div id="trainList2" class="space-y-2"></div>
         </div>
       </div>
-      <button onclick="exportEvalToWord()" class="w-full brand-bg text-white py-3 rounded-lg font-bold shadow-lg mt-4">XUẤT FILE WORD (.DOC)</button>
-    </div>
-    
-    <!-- Footer cho file -->
-    <div class="text-[9px] mt-4 flex justify-between border-t pt-2 text-gray-500">
-      <span>BM-74.TTHLNV</span>
-      <span>Ban hành lần: 03</span>
-      <span>Trang 1/4</span>
     </div>
   </div>
 </div>
 
-<!-- ================= 3. IN BẢNG GIÁ ================= -->
-<div id="printApp" class="hidden card p-4">
-  <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
-  <div class="flex gap-2 mb-2"><button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét mã</button><button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button><button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button></div>
-  <div id="printReader" class="hidden rounded mb-3"></div>
-  <div class="chat-box" id="printHistory"></div>
+<!-- =========================================================================
+     APP 5: ĐÁNH GIÁ HỌC VIÊN (BM-74.TTHLNV)
+     ========================================================================= -->
+<div id="evalApp" class="hidden space-y-4 pb-20">
+  <div id="evalRolePage" class="card p-6 text-center">
+    <h2 class="font-black brand-text text-lg mb-4">BIỂU MẪU ĐÁNH GIÁ (BM-74)</h2>
+    <div class="grid grid-cols-1 gap-3">
+      <button class="train-role-btn" onclick="openEvalForm('staff')">
+        <span class="text-4xl">🛒</span>
+        <span class="font-black uppercase">Nhân viên bán hàng</span>
+        <span class="text-[9px] font-medium text-gray-400 mt-1 italic">Mã hiệu: BM-74.TTHLNV - Ban hành lần 03</span>
+      </button>
+      <button class="train-role-btn opacity-50 cursor-not-allowed">
+        <span class="text-4xl">👔</span>
+        <span class="font-black uppercase">Cửa hàng trưởng</span>
+        <span class="text-[9px] font-medium text-gray-400 mt-1 italic">(Đang cập nhật nội dung)</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="evalFormContainer" class="hidden space-y-4">
+    <div class="card p-4">
+        <button onclick="backToEvalRole()" class="text-blue-600 font-black text-xs mb-4 flex items-center gap-1">← QUAY LẠI CHỌN MẪU</button>
+        
+        <!-- Thông tin Header File Word -->
+        <div class="bg-gray-50 p-4 rounded-2xl mb-6 space-y-3 border border-gray-100">
+          <div class="grid grid-cols-1 gap-3">
+            <input id="ev_name" class="w-full border-b border-gray-300 bg-transparent p-2 outline-none font-bold text-gray-700" placeholder="HỌ TÊN HỌC VIÊN...">
+            <div class="flex gap-2">
+              <input id="ev_mshv" class="w-1/2 border-b border-gray-300 bg-transparent p-2 outline-none" placeholder="Mã số HV">
+              <input id="ev_date" type="date" class="w-1/2 border-b border-gray-300 bg-transparent p-2 outline-none text-xs">
+            </div>
+            <input id="ev_pos" class="w-full border-b border-gray-300 bg-transparent p-2 outline-none" placeholder="Chức danh thực tập" value="Nhân viên bán hàng">
+            <input id="ev_unit" class="w-full border-b border-gray-300 bg-transparent p-2 outline-none font-medium" placeholder="Đơn vị thực tập (Tên cửa hàng)...">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-200">
+          <table class="eval-table" id="staffTable">
+            <thead>
+              <tr>
+                <th width="5%">STT</th>
+                <th width="65%">Nội dung đánh giá</th>
+                <th width="10%">Điểm chuẩn</th>
+                <th width="10%">Tỷ trọng</th>
+                <th width="10%">Điểm (0-10)</th>
+              </tr>
+            </thead>
+            <tbody id="evalBody">
+              <!-- Render by JS for 11 criteria -->
+            </tbody>
+            <tfoot>
+              <tr class="brand-bg text-white">
+                <td colspan="4" class="text-right font-black p-3 uppercase">Tổng điểm quy đổi (Hệ 10)</td>
+                <td class="text-center font-black p-3" id="totalScore">0.0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="mt-6 space-y-6">
+          <div class="bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
+            <h4 class="font-black text-xs text-yellow-800 uppercase mb-2">Nhận xét của người hướng dẫn</h4>
+            <textarea id="ev_comment" rows="4" class="w-full border-2 border-white rounded-xl p-3 outline-none text-sm shadow-sm" placeholder="Ghi rõ lý do nếu điểm < 6 và các nội dung ưu/khuyết điểm..."></textarea>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-gray-200">
+            <h4 class="font-black text-xs text-gray-500 uppercase mb-3 text-center tracking-widest underline">Ký xác nhận (Người hướng dẫn)</h4>
+            <canvas id="signature-pad" class="shadow-inner"></canvas>
+            <div class="flex justify-between items-center mt-4">
+              <button onclick="clearSignature()" class="text-[10px] bg-gray-100 px-4 py-2 rounded-lg font-black text-gray-400 hover:bg-red-50 hover:text-red-500 transition">XÓA CHỮ KÝ</button>
+              <div class="w-1/2">
+                <input id="ev_evaluator" class="w-full border-b-2 border-gray-200 p-2 text-center font-black text-gray-700 outline-none uppercase text-sm" placeholder="Họ tên người đánh giá">
+              </div>
+            </div>
+          </div>
+
+          <button onclick="exportEvalDoc()" class="w-full brand-bg text-white py-5 rounded-2xl font-black shadow-xl flex items-center justify-center gap-3 active:scale-95 transition">
+            <span>📄</span> XUẤT PHIẾU ĐÁNH GIÁ (WORD)
+          </button>
+          
+          <!-- Footer Page Info (BM-74) -->
+          <div class="flex justify-between text-[8px] font-black text-gray-300 uppercase pt-4">
+            <span>Mã hiệu: BM-74.TTHLNV</span>
+            <span>Ban hành lần: 03</span>
+            <span>Trang 1/4</span>
+          </div>
+        </div>
+    </div>
+  </div>
 </div>
 
-<!-- ================= 4. TRA CỨU NGHIỆP VỤ ================= -->
-<div id="toolApp" class="hidden space-y-4">
-  <div class="card p-4"><h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2><div id="toolMenu" class="grid grid-cols-1 gap-2"><button onclick="openTool('profit')" class="tool-btn">📈 Tính tỉ lệ lãi</button><button onclick="openTool('product')" class="tool-btn">🧮 Tính giá bán</button></div></div>
-  <div id="toolProfit" class="tool-box card p-4 space-y-2"><button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button><h3>Tính lãi</h3><input id="toolCost" placeholder="Giá vốn" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)"><input id="toolPrice" placeholder="Giá bán" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)"><button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button><div id="profitResult"></div></div>
-</div>
-
-<!-- ================= 5. ĐÀO TẠO THỰC HÀNH ================= -->
-<div id="trainingApp" class="hidden space-y-4">
-  <div id="trainRolePage" class="card p-4"><h2 class="font-bold brand-text mb-1 text-center">ĐÀO TẠO NGHIỆP VỤ</h2><div class="grid grid-cols-1 gap-3 mt-4"><button class="train-role-btn" onclick="showTrainRole('manager')"><span class="train-role-icon">👔</span><span>Lộ trình Cửa hàng trưởng</span></button></div></div>
-  <div id="trainManagerPage" class="hidden space-y-4"><div class="card p-4"><button onclick="backToRolePage()" class="text-blue-600">← Quay lại</button><div id="trainModuleList1" class="space-y-2 mt-4"></div><div id="trainModuleList" class="space-y-2 mt-4"></div></div></div>
+<!-- =========================================================================
+     COMPONENTS: PDF VIEWER & TOAST
+     ========================================================================= -->
+<div id="pdfViewer" class="pdf-viewer-wrapper">
+  <div class="pdf-viewer-header">
+    <div class="flex items-center gap-2 overflow-hidden">
+      <span class="text-xl">📖</span>
+      <span id="pdfTitle" class="font-black text-sm truncate">Tài liệu đào tạo</span>
+    </div>
+    <button onclick="closePdfViewer()" class="text-3xl">&times;</button>
+  </div>
+  <div id="pdfArea" class="flex-1 overflow-y-auto p-2 flex flex-col items-center gap-3"></div>
+  <div class="p-4 bg-white border-t flex gap-3">
+    <button id="btnLearnDone" onclick="markLearnDone()" class="flex-1 brand-bg text-white py-4 rounded-xl font-black shadow-lg">XÁC NHẬN HOÀN THÀNH BÀI HỌC</button>
+  </div>
 </div>
 
 <div id="toastBox" class="toast"></div>
 
-<!-- PDF VIEWER -->
-<div id="pdfViewer" class="pdf-viewer-wrapper" style="display:none">
-  <div class="pdf-viewer-header"><span id="pdfViewerTitle" class="font-bold"></span><button onclick="closePdfViewer()" class="text-2xl">&times;</button></div>
-  <div id="pdfCanvasArea" class="flex-1 overflow-auto bg-gray-800"><div id="pdfPagesContainer" class="flex flex-col items-center gap-2 p-2"></div></div>
-  <div class="bg-white p-3"><button id="btnConfirmLearn" onclick="showLearnConfirm()" class="w-full brand-bg text-white py-3 rounded-lg font-bold">TÔI ĐÃ ĐỌC XONG</button></div>
-</div>
-
 <script>
-/* ===== CORE APP LOGIC ===== */
-function toggleMenu(){ document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
-function hideAll(){ ["mainApp","evalApp","printApp","toolApp","trainingApp"].forEach(id => document.getElementById(id).classList.add("hidden")); }
+/* =========================================================================
+   CORE & UTILITIES
+   ========================================================================= */
+function $(id){ return document.getElementById(id); }
+function toggleSidebar(){ $("sidebar").classList.toggle("active"); $("overlay").classList.toggle("active"); }
+function showToast(msg){ const b=$("toastBox"); b.innerText=msg; b.classList.add("show"); setTimeout(()=>b.classList.remove("show"), 2500); }
+function formatCurrency(el){ let v=el.value.replace(/\D/g,''); el.value=v?Number(v).toLocaleString("vi-VN"):''; }
+function getRawNum(id){ return Number($(id).value.replace(/\./g,'')) || 0; }
+function dateMask(el){
+    let v=el.value.replace(/\D/g,'');
+    if(v.length>8) v=v.substring(0,8);
+    if(v.length>4) el.value=v.substring(0,2)+'/'+v.substring(2,4)+'/'+v.substring(4);
+    else if(v.length>2) el.value=v.substring(0,2)+'/'+v.substring(2);
+    else el.value=v;
+}
+function parseDMY(str){
+    if(!str || str.length<10) return null;
+    let p=str.split('/');
+    let d=parseInt(p[0]), m=parseInt(p[1])-1, y=parseInt(p[2]);
+    let date=new Date(y,m,d);
+    return (date.getDate()===d && date.getMonth()===m) ? date : null;
+}
 
-function showMain(){ hideAll(); document.getElementById("mainApp").classList.remove("hidden"); headerTitle.innerText="QUẢN LÝ HSD"; toggleMenu(); }
-function showEval(){ hideAll(); document.getElementById("evalApp").classList.remove("hidden"); headerTitle.innerText="ĐÁNH GIÁ HỌC VIÊN"; toggleMenu(); renderEvalTable(); }
-function showPrint(){ hideAll(); document.getElementById("printApp").classList.remove("hidden"); headerTitle.innerText="IN BẢNG GIÁ"; toggleMenu(); }
-function showTool(){ hideAll(); document.getElementById("toolApp").classList.remove("hidden"); headerTitle.innerText="TRA CỨU NGHIỆP VỤ"; toggleMenu(); }
-function showTraining(){ hideAll(); document.getElementById("trainingApp").classList.remove("hidden"); headerTitle.innerText="ĐÀO TẠO THỰC HÀNH"; toggleMenu(); }
+function showApp(id, title){
+    ["mainApp","printApp","toolApp","trainingApp","evalApp"].forEach(a => $(a).classList.add("hidden"));
+    $(id).classList.remove("hidden");
+    $("headerTitle").innerText = title;
+    const icons = {mainApp:'📦', printApp:'🖨️', toolApp:'📊', trainingApp:'🎓', evalApp:'📝'};
+    $("headerIcon").innerText = icons[id];
+    if(id==='evalApp') initSignaturePad();
+    toggleSidebar();
+}
 
-/* ===== EVALUATION LOGIC (11 Criteria) ===== */
-const evalCriteria = [
-  {id:1, text:"<b>Kiểm tra hạn sử dụng:</b><br>- Kiểm tra hạn sử dụng đủ điều kiện kinh doanh.", weight:0.1},
-  {id:2, text:"<b>Bổ sung hàng ra quầy và loại bỏ hàng không phù hợp:</b><br>- Xác định mặt hàng cần bổ sung.<br>- Đảm bảo hàng đầy đủ và không có hàng cận hạn sử dụng, hết hạn sử dụng trên quầy kệ.<br>- Kiểm soát và bảo quản hàng đổi/trả nhà cung cấp.<br>- Loại bỏ hàng không phù hợp (hàng kém chất lượng, hư hỏng, rách bao bì...) ra khỏi quầy, ghi nhận đúng biểu mẫu và lưu trữ hàng đúng nơi quy định.<br>- Lập phiếu đề xuất hủy hàng đảm bảo tính chính xác trong ngày phát sinh.", weight:0.1},
-  {id:3, text:"<b>Kiểm nhận hàng hoá và thực hiện chất xếp hàng hóa trong kho:</b><br>- Kiểm tra hóa đơn chứng từ đảm bảo chính xác.<br>- Thực hiện đối chiếu hóa đơn chứng từ.<br>- Kiểm tra hàng hoá đầu vào (số lượng, chất lượng, quy cách, nhiệt độ hàng trữ đông/mát, nhãn hàng hoá...).<br>- Ký nhận hóa đơn và ghi nhận biểu mẫu theo quy định.<br>- Đảm bảo nguyên tắc chất xếp hàng hóa trong kho: khoảng cách chất xếp, theo định vị...<br>- Thực hiện xếp hàng hóa tại kho theo đúng quy định ở một số nhóm hàng cơ bản: nui mì, sữa, nước giải khát...", weight:0.1},
-  {id:4, text:"<b>Trưng bày hàng hóa:</b><br>- Kiểm tra hàng hóa trước khi trưng bày lên quầy (bao bì, hạn sử dụng).<br>- Thực hiện trưng bày theo đúng nguyên tắc và kỹ thuật trưng bày (line hàng, ụ KM), nguyên tắc 1 chiều tại khu vực tủ mát/tủ đông.<br>- Thực hiện dàn hàng đúng qui định.<br>- Kiểm tra bảng giá, bảng khuyến mãi (loại bỏ bảng khuyến mãi hết hạn).", weight:0.1},
-  {id:5, text:"<b>Kiến thức hàng hóa và tư vấn bán hàng:</b><br>- Nắm đặc tính, công dụng của ngành hàng thực phẩm công nghệ và phi thực phẩm và vận dụng để tư vấn, lựa chọn hàng hóa cho khách.<br>- Chủ động tiếp xúc, tư vấn khách hàng.<br>- Nắm bắt các chương trình khuyến mãi để giới thiệu cho khách hàng và tư vấn bán thêm, bán chéo để gia tăng doanh số.", weight:0.1},
-  {id:6, text:"<b>Nghiệp vụ thu ngân:</b><br>- Thực hiện các công việc đầu ca, cuối ca làm việc của nhân viên thu ngân: công tác chuẩn bị tại quầy thu ngân, nhận tiền lẻ từ TQHC, thực hiện kê tiền bán hàng tại cash và nộp tiền đúng theo quy định....<br>- Thực hiện các bước tính tiền và trả tiền thừa cho khách hàng theo quy định để đảm bảo tiền hàng.<br>- Lựa chọn bao bì phù hợp và đóng gói hàng hóa theo đúng quy định (nặng lớn ở dưới, nhẹ nhỏ ở trên; đảm bảo tính thương phẩm của hàng hóa; đóng gói tách biệt các mặt hàng TPTS dễ bị chảy dịch...)", weight:0.1},
-  {id:7, text:"<b>Chương trình tính tiền:</b><br>- Thực hiện chức năng cơ bản của chương trình tính tiền TOPOS: nhập mã thẻ khách hàng (Quét mã thẻ, số điện thoại); nhập mã hàng hóa; phân biệt được mã lốc mã lẻ hàng hóa; các chức năng cơ bản thường sử dụng: tính số lượng, in lại hóa đơn...<br>- Thực hiện các hình thức thanh toán tại cửa hàng thường sử dụng: tiền mặt; PMH; thẻ ngân hàng; Momo...<br>- Giải quyết các tình huống trong quá trình tính tiền tại quầy thu ngân.", weight:0.1},
-  {id:8, text:"<b>Thực hiện sơ chế biến:</b><br>- Thực hiện sơ chế các sản phẩm theo đúng quy định, các sản phẩm theo công thức Setcode, điều chỉnh tồn kho.<br>- Thao tác sơ chế, đóng gói màng co gọn gàng, căng và đẹp.<br>- Đảm bảo tuân thủ bảo hộ lao động trong quá trình làm việc và khi sơ chế biến.<br>- Sử dụng vật dụng/dụng cụ theo màu sắc quy định.<br>- Tuân thủ nguyên tắc 1 chiều trong khu vực sơ chế biến, trưng bày.", weight:0.1},
-  {id:9, text:"<b>Cân hàng và bảo quản xử lý hàng tồn TPTS cuối ngày:</b><br>- Thuộc mã cân hàng thực phẩm tươi sống: rau, củ, quả, thủy hải sản...<br>- Cân và dán tem chính xác hàng TPTS.<br>- Phân loại và xử lý hàng tồn đúng quy định.<br>- Bảo quản hàng hóa phù hợp với từng nhóm hàng.", weight:0.05},
-  {id:10, text:"<b>Thái độ giao tiếp và hỗ trợ:</b><br>- Thực hành Quy tắc ứng xử (5C) trong giao tiếp và phục vụ.<br>- Chủ động nhiệt tình hỗ trợ khách hàng khi khách hàng cần.<br>- Giao tiếp hòa nhã với đồng nghiệp, không gây mất đoàn kết nội bộ.<br>- Thao tác nhanh nhẹn, linh hoạt.", weight:0.1},
-  {id:11, text:"<b>Chấp hành nội quy, quy định đơn vị:</b><br>- Tuân thủ ca/giờ làm việc, nghỉ giữa ca theo phân công.<br>- Đảm bảo số ngày công làm việc.<br>- Tác phong nghiêm túc, đồng phục đúng quy định.", weight:0.05}
+/* =========================================================================
+   HSD LOGIC
+   ========================================================================= */
+const HSD_KEY = "coop_hsd_v4";
+function toggleHsdBlocks(){
+    let mode=$("calcMode").value;
+    $("block_nsx").classList.toggle("hidden", mode==='hsdOnly');
+    $("block_hsd").classList.toggle("hidden", mode==='nsxOnly');
+    $("block_period").classList.toggle("hidden", mode==='full');
+}
+function calculateHsd(){
+    let mode=$("calcMode").value, nsxD, hsdD;
+    if(mode==='full'){
+        nsxD=parseDMY($("nsx").value); hsdD=parseDMY($("hsd").value);
+    } else if(mode==='hsdOnly'){
+        hsdD=parseDMY($("hsd").value);
+        if(hsdD) { nsxD=new Date(hsdD); let v=Number($("periodValue").value), u=$("periodUnit").value;
+        if(u==='day') nsxD.setDate(nsxD.getDate()-v); else if(u==='month') nsxD.setMonth(nsxD.getMonth()-v); else nsxD.setFullYear(nsxD.getFullYear()-v); }
+    } else {
+        nsxD=parseDMY($("nsx").value);
+        if(nsxD) { hsdD=new Date(nsxD); let v=Number($("periodValue").value), u=$("periodUnit").value;
+        if(u==='day') hsdD.setDate(hsdD.getDate()+v); else if(u==='month') hsdD.setMonth(hsdD.getMonth()+v); else hsdD.setFullYear(hsdD.getFullYear()+v); }
+    }
+    if(!nsxD || !hsdD || hsdD <= nsxD){ alert("Dữ liệu ngày không hợp lệ hoặc HSD nhỏ hơn NSX"); return; }
+    
+    let totalTime = (hsdD - nsxD) / 86400000;
+    let m30 = new Date(nsxD.getTime() + (totalTime * 0.7 * 86400000));
+    let m20 = new Date(nsxD.getTime() + (totalTime * 0.8 * 86400000));
+    let today = new Date(); today.setHours(0,0,0,0);
+
+    let b30 = today >= m30 ? "blink30" : "bg-green-50 border-green-200 text-green-700";
+    let b20 = today >= m20 ? "blink20" : "bg-green-50 border-green-200 text-green-700";
+
+    $("hsdResult").innerHTML = `
+        <div class="p-4 rounded-2xl border-2 mb-2 ${b30}">
+            <div class="text-[10px] font-black uppercase mb-1">Mốc 30% (Giải tồn)</div>
+            <div class="text-lg font-black">📅 ${m30.toLocaleDateString('vi-VN')}</div>
+            <div class="text-[10px] italic mt-1 font-bold">${today >= m30 ? "⚠️ CẦN LẬP BÁO CÁO GIẢI TỒN NGAY!" : "✓ Vẫn trong ngưỡng an toàn."}</div>
+        </div>
+        <div class="p-4 rounded-2xl border-2 ${b20}">
+            <div class="text-[10px] font-black uppercase mb-1">Mốc 20% (Rút hàng)</div>
+            <div class="text-lg font-black">📅 ${m20.toLocaleDateString('vi-VN')}</div>
+            <div class="text-[10px] italic mt-1 font-bold">${today >= m20 ? "❌ RÚT HÀNG KHỎI QUẦY NGAY LẬP TỨC!" : "✓ Vẫn trong ngưỡng an toàn."}</div>
+        </div>
+    `;
+
+    // Save history
+    let history = JSON.parse(localStorage.getItem(HSD_KEY) || "[]");
+    history.unshift({
+        id: Date.now(),
+        name: $("productName").value || "Sản phẩm không tên",
+        barcode: $("barcode").value || "-",
+        m30: m30.toISOString(),
+        m20: m20.toISOString(),
+        hsd: hsdD.toISOString(),
+        status30: today >= m30 ? 'warn' : 'ok',
+        status20: today >= m20 ? 'danger' : 'ok'
+    });
+    localStorage.setItem(HSD_KEY, JSON.stringify(history.slice(0, 100)));
+    renderHsdHistory();
+}
+
+function renderHsdHistory(filter='all'){
+    let data = JSON.parse(localStorage.getItem(HSD_KEY) || "[]");
+    let today = new Date(); today.setHours(0,0,0,0);
+    
+    if(filter==='30') data = data.filter(i => i.status30==='warn');
+    if(filter==='20') data = data.filter(i => i.status20==='danger');
+
+    $("hsdHistory").innerHTML = data.map(i => {
+        let diff = Math.ceil((new Date(i.hsd) - today) / 86400000);
+        let color = diff <= 0 ? 'bg-black text-white' : (diff <= 7 ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700');
+        return `
+        <div class="bg-white border p-3 rounded-xl shadow-sm">
+            <div class="font-black text-sm text-gray-800">${i.name}</div>
+            <div class="text-[10px] text-gray-400 mb-2">Mã: ${i.barcode}</div>
+            <div class="flex gap-2 flex-wrap">
+                <span class="text-[9px] px-2 py-1 rounded-md font-bold uppercase ${i.status30==='warn' ? 'bg-orange-500 text-white' : 'bg-green-100 text-green-600'}">Mốc 30%: ${new Date(i.m30).toLocaleDateString('vi-VN')}</span>
+                <span class="text-[9px] px-2 py-1 rounded-md font-bold uppercase ${i.status20==='danger' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-600'}">Mốc 20%: ${new Date(i.m20).toLocaleDateString('vi-VN')}</span>
+                <span class="text-[9px] px-2 py-1 rounded-md font-bold uppercase ${color}">HSD còn ${diff} ngày</span>
+            </div>
+        </div>`;
+    }).join('') || '<div class="text-center py-10 text-gray-300 italic text-xs">Chưa có lịch sử tính toán</div>';
+    
+    // Render Dashboard
+    let stats = {total: data.length, w30: 0, d20: 0, ok: 0};
+    JSON.parse(localStorage.getItem(HSD_KEY) || "[]").forEach(i => {
+        if(i.status20==='danger') stats.d20++;
+        else if(i.status30==='warn') stats.w30++;
+        else stats.ok++;
+    });
+    $("hsdDashboard").innerHTML = `
+        <div class="stat-card bg-slate-100 text-slate-700"><div class="stat-num">${stats.total}</div><div class="stat-lbl">Tổng</div></div>
+        <div class="stat-card bg-green-100 text-green-700"><div class="stat-num">${stats.ok}</div><div class="stat-lbl">An toàn</div></div>
+        <div class="stat-card bg-orange-100 text-orange-700"><div class="stat-num">${stats.w30}</div><div class="stat-lbl">30%</div></div>
+        <div class="stat-card bg-red-100 text-red-700"><div class="stat-num">${stats.d20}</div><div class="stat-lbl">20%</div></div>
+    `;
+}
+
+function filterHsd(f){
+    ["f_all","f_30","f_20"].forEach(id => $(id).classList.remove("active"));
+    $("f_"+f).classList.add("active");
+    renderHsdHistory(f);
+}
+
+/* =========================================================================
+   PRINTING APP
+   ========================================================================= */
+const PRINT_KEY = "coop_print_v4";
+function renderPrint(){
+    let data = JSON.parse(localStorage.getItem(PRINT_KEY) || "{}");
+    $("printList").innerHTML = Object.entries(data).map(([code, qty]) => `
+        <div class="chat-item flex justify-between items-center">
+            <span>${code}</span>
+            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">x${qty}</span>
+        </div>
+    `).reverse().join('') || '<div class="text-center py-20 text-gray-300 italic text-xs">Danh sách trống</div>';
+}
+function addPrint(code){
+    let data = JSON.parse(localStorage.getItem(PRINT_KEY) || "{}");
+    data[code] = (data[code] || 0) + 1;
+    localStorage.setItem(PRINT_KEY, JSON.stringify(data));
+    renderPrint();
+    showToast("Đã thêm Barcode: " + code);
+}
+function clearPrintList(){ if(confirm("Xóa toàn bộ danh sách chờ in?")){ localStorage.removeItem(PRINT_KEY); renderPrint(); } }
+function exportPrintTxt(){
+    let data = JSON.parse(localStorage.getItem(PRINT_KEY) || "{}");
+    let txt = Object.entries(data).map(([c, q]) => c + "," + q).join("\n");
+    if(!txt) return alert("Danh sách trống");
+    let blob = new Blob([txt], {type: "text/plain"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "barcode_print_" + Date.now() + ".txt";
+    a.click();
+    showToast("Đã xuất file thành công!");
+}
+
+/* =========================================================================
+   SCANNER CORE
+   ========================================================================= */
+let html5QrCode;
+async function startScanner(target){
+    const containerId = target === 'hsd' ? 'reader' : 'printReader';
+    $(containerId).classList.remove("hidden");
+    html5QrCode = new Html5Qrcode(containerId);
+    const config = { fps: 15, qrbox: { width: 250, height: 150 } };
+    
+    try {
+        await html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+            if(target==='hsd') { $("barcode").value = decodedText; showToast("Đã nhận mã: " + decodedText); }
+            else { addPrint(decodedText); }
+            stopScanner(containerId);
+        });
+    } catch (err) {
+        alert("Không thể khởi động Camera. Hãy cấp quyền truy cập.");
+        $(containerId).classList.add("hidden");
+    }
+}
+function stopScanner(id){ if(html5QrCode){ html5QrCode.stop().then(()=>{ $(id).classList.add("hidden"); }).catch(()=>{}); } }
+
+/* =========================================================================
+   TRA CỨU NGHIỆP VỤ (TOOLS)
+   ========================================================================= */
+function openTool(id){
+    $("toolMenu").classList.add("hidden");
+    $("tool_"+id).classList.add("active");
+}
+function backToToolMenu(){
+    ["profit","pricing","risk","turnover","promo"].forEach(id => { if($("tool_"+id)) $("tool_"+id).classList.remove("active"); });
+    $("toolMenu").classList.remove("hidden");
+}
+function calcToolProfit(){
+    let cost = getRawNum("p_cost"), price = getRawNum("p_price"), vat = Number($("p_vat").value);
+    if(!cost || !price) return;
+    let priceNoVat = price / (1 + vat/100);
+    let margin = ((priceNoVat - cost) / priceNoVat) * 100;
+    $("p_res").innerHTML = `<div class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-widest text-center">Tỉ lệ lãi Margin</div><div class="text-4xl font-black text-center ${margin < 15 ? 'text-red-600' : 'text-green-600'}">${margin.toFixed(2)}%</div>`;
+}
+function calcToolPricing(){
+    let margin = Number($("pr_margin").value)/100, mode = $("pr_mode").value, val = getRawNum("pr_val"), vat = Number($("pr_vat").value);
+    if(!margin || !val) return;
+    if(mode==='cost'){
+        let costNoVat = $("pr_cost_type").value==='yes' ? val/(1.1) : val; // Giả định vat đầu vào là 10% nếu có
+        let priceNoVat = costNoVat / (1 - margin);
+        let priceWithVat = priceNoVat * (1 + vat/100);
+        $("pr_res").innerHTML = `<div class="text-[10px] font-bold text-gray-400 uppercase text-center">Giá bán niêm yết (Có VAT)</div><div class="text-3xl font-black text-center text-red-600">${Math.round(priceWithVat).toLocaleString('vi-VN')} VND</div>`;
+    }
+}
+
+/* =========================================================================
+   TRAINING APP
+   ========================================================================= */
+const TRAIN_KEY = "coop_training_v4";
+const modules1 = [
+    {id:'m1_1', title:'Trưng bày, bổ sung hàng lên quầy', icon:'🛍️', pdf:'bai1-1.pdf'},
+    {id:'m1_2', title:'Kiểm soát và chăm sóc hàng hóa', icon:'✅', pdf:'bai1-2.pdf'},
+    {id:'m1_3', title:'Nghiệp vụ thu ngân - tính tiền', icon:'🖥️', pdf:'bai1-3.pdf'},
+    {id:'m1_4', title:'Sơ chế và xử lý tồn cuối ngày', icon:'🔪', pdf:'bai1-4.pdf'},
+    {id:'m1_5', title:'Kiểm nhận và chất xếp kho', icon:'📥', pdf:'bai1-5.pdf'}
+];
+const modules2 = [
+    {id:'m2_1', title:'Các thao tác BĐH tại quầy Cash', icon:'🖥️', pdf:'bai1.pdf'},
+    {id:'m2_2', title:'Công tác dự báo và đặt hàng', icon:'📋', pdf:'bai2.pdf'},
+    {id:'m2_3', title:'Xử lý hóa đơn chứng từ', icon:'🧾', pdf:'bai3.pdf'},
+    {id:'m2_4', title:'Kiểm soát nghiệp vụ tồn kho', icon:'📦', pdf:'bai4.pdf'},
+    {id:'m2_5', title:'Kiểm soát tiền hàng', icon:'💰', pdf:'bai5.pdf'}
 ];
 
+function openTrainRole(r){ $("trainRolePage").classList.add("hidden"); $("trainManagerPage").classList.remove("hidden"); renderTrainLists(); }
+function backToTrainRole(){ $("trainManagerPage").classList.add("hidden"); $("trainRolePage").classList.remove("hidden"); }
+
+function renderTrainLists(){
+    let done = JSON.parse(localStorage.getItem(TRAIN_KEY) || "[]");
+    const render = (list, id) => {
+        $(id).innerHTML = list.map(m => {
+            let isDone = done.includes(m.id);
+            return `
+            <div class="train-module-item ${isDone ? 'done' : ''}" onclick="openPdf('${m.pdf}', '${m.title}', '${m.id}')">
+                <div class="w-10 h-10 flex items-center justify-center rounded-full ${isDone ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'} font-black text-sm">
+                    ${isDone ? '✓' : list.indexOf(m)+1}
+                </div>
+                <div class="flex-1">
+                    <div class="text-xs font-black text-gray-700 leading-tight">${m.icon} ${m.title}</div>
+                    <div class="text-[9px] ${isDone ? 'text-green-600' : 'text-gray-400'} font-bold uppercase mt-1">${isDone ? 'Đã hoàn thành' : 'Chưa học'}</div>
+                </div>
+                <div class="text-gray-300 font-black text-xl">›</div>
+            </div>`;
+        }).join('');
+    };
+    render(modules1, "trainList1");
+    render(modules2, "trainList2");
+    
+    let total = modules1.length + modules2.length;
+    let pct = Math.round((done.length / total) * 100);
+    $("trainProgressText").innerText = `${done.length}/${total} Bài học`;
+    $("trainProgressFill").style.width = pct + "%";
+}
+
+let activeModuleId;
+async function openPdf(file, title, id){
+    activeModuleId = id;
+    $("pdfTitle").innerText = title;
+    $("pdfArea").innerHTML = '<div class="py-20 text-white font-black animate-pulse">ĐANG TẢI TÀI LIỆU...</div>';
+    $("pdfViewer").style.display = "flex";
+    
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    try {
+        const pdf = await pdfjsLib.getDocument(file).promise;
+        $("pdfArea").innerHTML = "";
+        for(let i=1; i<=pdf.numPages; i++){
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            canvas.className = "max-w-full shadow-2xl rounded-lg mb-4";
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height; canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            $("pdfArea").appendChild(canvas);
+        }
+    } catch (e) {
+        $("pdfArea").innerHTML = '<div class="py-20 text-red-400 font-black">LỖI: KHÔNG THỂ TẢI FILE. VUI LÒNG KIỂM TRA LẠI FILE TRÊN HOSTING.</div>';
+    }
+}
+function markLearnDone(){
+    let done = JSON.parse(localStorage.getItem(TRAIN_KEY) || "[]");
+    if(!done.includes(activeModuleId)) done.push(activeModuleId);
+    localStorage.setItem(TRAIN_KEY, JSON.stringify(done));
+    closePdfViewer();
+    renderTrainLists();
+    showToast("Chúc mừng! Bạn đã hoàn thành bài học.");
+}
+function closePdfViewer(){ $("pdfViewer").style.display = "none"; }
+function confirmResetTrain(){ if(confirm("Xóa toàn bộ tiến độ học tập?")){ localStorage.removeItem(TRAIN_KEY); renderTrainLists(); } }
+
+/* =========================================================================
+   EVALUATION APP (BM-74.TTHLNV)
+   ========================================================================= */
+const criteriaStaff = [
+    {stt:1, title:"Kiểm tra hạn sử dụng", content:"Kiểm tra hạn sử dụng đủ điều kiện kinh doanh.", weight:0.1},
+    {stt:2, title:"Bổ sung hàng ra quầy và loại bỏ hàng không phù hợp", content:"Xác định mặt hàng cần bổ sung. Đảm bảo hàng đầy đủ và không cận date. Kiểm soát hàng đổi trả. Loại bỏ hàng kém chất lượng, rách bao bì và lập phiếu hủy hàng chính xác.", weight:0.1},
+    {stt:3, title:"Kiểm nhận hàng hóa và chất xếp trong kho", content:"Kiểm tra hóa đơn chứng từ. Đối chiếu hàng thực tế. Kiểm tra chất lượng, nhiệt độ bảo quản. Ký nhận biểu mẫu và chất xếp đúng định vị, nguyên tắc.", weight:0.1},
+    {stt:4, title:"Trưng bày hàng hóa", content:"Kiểm tra hàng trước khi trưng bày. Thực hiện đúng kỹ thuật trưng bày (Line hàng, ụ KM). Tuân thủ nguyên tắc 1 chiều khu tủ mát. Kiểm tra bảng giá, khuyến mãi.", weight:0.1},
+    {stt:5, title:"Kiến thức hàng hóa và tư vấn bán hàng", content:"Nắm đặc tính, công dụng sản phẩm. Chủ động tiếp xúc, tư vấn khách hàng. Giới thiệu chương trình khuyến mãi, bán thêm, bán chéo gia tăng doanh số.", weight:0.1},
+    {stt:6, title:"Nghiệp vụ thu ngân", content:"Chuẩn bị đầu ca, nhận tiền lẻ, kê tiền và nộp tiền đúng quy định. Thực hiện tính tiền, trả tiền thừa chính xác. Đóng gói hàng hóa đúng quy cách.", weight:0.1},
+    {stt:7, title:"Chương trình tính tiền TOPOS", content:"Sử dụng thành thạo các chức năng: quét thẻ, mã hàng, in lại hóa đơn. Các hình thức thanh toán: tiền mặt, PMH, thẻ ngân hàng, ví điện tử Momo.", weight:0.1},
+    {stt:8, title:"Thực hiện sơ chế biến", content:"Sơ chế theo công thức Setcode, điều chỉnh tồn. Thao tác đóng gói màng co đẹp. Tuân thủ bảo hộ lao động và nguyên tắc 1 chiều khu sơ chế.", weight:0.1},
+    {stt:9, title:"Cân hàng và xử lý hàng tồn cuối ngày", content:"Thuộc mã cân thực phẩm tươi sống. Cân và dán tem chính xác. Phân loại và xử lý tồn hàng TPTS đúng quy định.", weight:0.05},
+    {stt:10, title:"Thái độ giao tiếp và hỗ trợ", content:"Thực hành quy tắc 5C. Chủ động hỗ trợ khách hàng. Hòa nhã với đồng nghiệp. Thao tác nhanh nhẹn, linh hoạt.", weight:0.1},
+    {stt:11, title:"Chấp hành nội quy, quy định đơn vị", content:"Tuân thủ ca kíp, giờ làm việc. Đảm bảo ngày công. Tác phong nghiêm túc, đồng phục đúng quy định.", weight:0.05}
+];
+
+function openEvalForm(type){
+    $("evalRolePage").classList.add("hidden");
+    $("evalFormContainer").classList.remove("hidden");
+    renderEvalCriteria();
+}
+function backToEvalRole(){ $("evalFormContainer").classList.add("hidden"); $("evalRolePage").classList.remove("hidden"); }
+
+function renderEvalCriteria(){
+    $("evalBody").innerHTML = criteriaStaff.map(c => `
+        <tr>
+            <td class="text-center font-bold">${c.stt}</td>
+            <td><div class="font-bold text-blue-800">${c.title}</div><div class="text-[9px] text-gray-400 italic">${c.content}</div></td>
+            <td class="text-center">10</td>
+            <td class="text-center font-bold">${c.weight*100}%</td>
+            <td class="text-center"><input type="number" step="0.5" min="0" max="10" class="score-input" data-weight="${c.weight}" oninput="calcTotalScore()"></td>
+        </tr>
+    `).join('');
+}
+
+function calcTotalScore(){
+    let total = 0;
+    document.querySelectorAll(".score-input").forEach(inp => {
+        let val = Number(inp.value) || 0;
+        let w = Number(inp.getAttribute("data-weight"));
+        total += (val * w);
+    });
+    $("totalScore").innerText = total.toFixed(2);
+}
+
 let signaturePad;
-function initSig() {
-  const canvas = document.getElementById("signature-pad");
-  signaturePad = new SignaturePad(canvas);
-  const ratio = Math.max(window.devicePixelRatio || 1, 1);
-  canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
-  canvas.getContext("2d").scale(ratio, ratio);
+function initSignaturePad(){
+    const canvas = $("signature-pad");
+    signaturePad = new SignaturePad(canvas);
+    function resizeCanvas(){
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+    window.addEventListener("resize", resizeCanvas); resizeCanvas();
 }
-function clearSig(){ if(signaturePad) signaturePad.clear(); }
+function clearSignature(){ signaturePad.clear(); }
 
-function renderEvalTable() {
-  const tbody = document.getElementById("evalTableBody");
-  tbody.innerHTML = evalCriteria.map(c => `
-    <tr><td class="text-center">${c.id}</td><td>${c.text}</td><td class="text-center">10</td><td class="text-center">${c.weight*100}%</td><td><input type="number" class="score-input" data-w="${c.weight}" onchange="updateTotalEval()"></td></tr>
-  `).join("");
-  initSig();
-}
+function exportEvalDoc(){
+    if(!$("ev_name").value || !$("ev_evaluator").value) return alert("Vui lòng nhập đầy đủ tên Học viên và tên Người đánh giá!");
+    if(signaturePad.isEmpty()) return alert("Vui lòng ký xác nhận trước khi xuất file!");
+    
+    const sigImage = signaturePad.toDataURL();
+    const criteriaRows = criteriaStaff.map(c => {
+        let score = document.querySelectorAll(".score-input")[criteriaStaff.indexOf(c)].value || 0;
+        return `<tr><td align="center">${c.stt}</td><td><b>${c.title}</b><br>${c.content}</td><td align="center">10</td><td align="center">${c.weight*100}%</td><td align="center">${score}</td></tr>`;
+    }).join('');
 
-function updateTotalEval() {
-  let total = 0;
-  document.querySelectorAll(".score-input").forEach(i => total += (parseFloat(i.value)||0) * parseFloat(i.getAttribute("data-w")));
-  document.getElementById("totalEvalResult").innerText = total.toFixed(2);
-}
-
-function openEval(role){ document.getElementById("evalRoleSelector").classList.add("hidden"); document.getElementById("evalForm").classList.remove("hidden"); }
-function backToRoleSelector(){ document.getElementById("evalForm").classList.add("hidden"); document.getElementById("evalRoleSelector").classList.remove("hidden"); }
-
-function exportEvalToWord() {
-  const name = document.getElementById("ev_name").value;
-  const mshv = document.getElementById("ev_ms").value;
-  const ngay = document.getElementById("ev_date").value;
-  const unit = document.getElementById("ev_unit").value;
-  const note = document.getElementById("ev_note").value;
-  const evaluator = document.getElementById("ev_evaluator_name").value;
-  const tong = document.getElementById("totalEvalResult").innerText;
-
-  if(!evaluator) { alert("Vui lòng nhập tên người đánh giá!"); return; }
-  if(!signaturePad || signaturePad.isEmpty()){ alert("Vui lòng ký tên xác nhận!"); return; }
-
-  const sigBase64 = signaturePad.toDataURL();
-
-  const content = `
+    const html = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head><meta charset='utf-8'></head>
-    <body style="font-family:'Times New Roman', serif; font-size: 11pt;">
-      <table style="width:100%; border:none;">
-        <tr><td style="width:60%"><b>Liên hiệp HTX TM Tp. Hồ Chí Minh<br>Trung tâm Huấn luyện Nghiệp vụ</b></td><td style="text-align:right"><b>ĐGTT: CF-NVBH</b></td></tr>
-      </table>
-      <h2 style="text-align:center; color:#c40018;">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP</h2>
-      <p>Họ tên học viên: ${name} ............................ Mã số HV: ${mshv}<br>Chức danh thực tập: Nhân viên bán hàng ................. Ngày thực tập: ${ngay}<br>Đơn vị thực tập: ${unit}</p>
-      <table border="1" style="width:100%; border-collapse:collapse; font-size:10pt;">
-        <tr style="background:#f2f2f2"><th width="40">STT</th><th>NỘI DUNG ĐÁNH GIÁ</th><th width="60">ĐIỂM CHUẨN</th><th width="60">TỶ TRỌNG</th><th width="60">ĐIỂM</th></tr>
-        ${Array.from(document.querySelectorAll("#evalTableBody tr")).map((tr, i) => `
-          <tr><td align="center">${i+1}</td><td>${evalCriteria[i].text}</td><td align="center">10</td><td align="center">${evalCriteria[i].weight*100}%</td><td align="center"><b>${tr.cells[4].querySelector('input').value || 0}</b></td></tr>
-        `).join('')}
-        <tr style="background:#eee; font-weight:bold;"><td colspan="4" align="right">TỔNG ĐIỂM QUY ĐỔI (HỆ 10):</td><td align="center">${tong}</td></tr>
-      </table>
-      <div style="margin-top:10px"><b>GHI CHÚ / NHẬN XÉT:</b><br><div style="border:1px solid #000; padding:10px; min-height:80px">${note}</div></div>
-      <table style="width:100%; margin-top:30px">
-        <tr><td width="60%"></td><td align="center"><i>Ngày ..... tháng ..... năm 20....</i><br><b>NGƯỜI ĐÁNH GIÁ</b><br><br><img src="${sigBase64}" width="150"><br><b>${evaluator}</b></td></tr>
-      </table>
-      <br><br>
-      <table style="width:100%; font-size: 9pt; border-top: 1px solid #ccc; color: #666;">
-        <tr><td>BM-74.TTHLNV</td><td align="center">Ban hành lần: 03</td><td align="right">Trang 1/4</td></tr>
-      </table>
-    </body></html>
-  `;
+    <body style="font-family:'Times New Roman', serif;">
+        <table width="100%"><tr><td><b>Liên hiệp HTX TM Tp. Hồ Chí Minh</b><br>Trung tâm Huấn luyện Nghiệp vụ</td><td align="right"><b>ĐGTT: CF-NVBH</b></td></tr></table>
+        <h2 align="center" style="color:#c40018;">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH</h2>
+        <p><b>Họ tên học viên:</b> ${$("ev_name").value} &nbsp;&nbsp;&nbsp; <b>Mã số HV:</b> ${$("ev_mshv").value}<br>
+        <b>Chức danh:</b> ${$("ev_pos").value} &nbsp;&nbsp;&nbsp; <b>Ngày thực tập:</b> ${$("ev_date").value}<br>
+        <b>Đơn vị:</b> ${$("ev_unit").value}</p>
+        <table border="1" style="border-collapse:collapse; width:100%; font-size:10pt;">
+            <tr style="background:#f2f2f2"><th>STT</th><th>Nội dung</th><th>Điểm chuẩn</th><th>Tỷ trọng</th><th>Điểm</th></tr>
+            ${criteriaRows}
+            <tr style="background:#c40018; color:white">
+                <td colspan="4" align="right"><b>TỔNG ĐIỂM QUY ĐỔI (HỆ 10):</b></td>
+                <td align="center"><b>${$("totalScore").innerText}</b></td>
+            </tr>
+        </table>
+        <p><b>Nhận xét:</b> ${$("ev_comment").value}</p>
+        <table width="100%" style="margin-top:30px">
+            <tr><td width="60%"></td><td align="center"><i>Ngày ..... tháng ..... năm 202...</i><br><b>NGƯỜI ĐÁNH GIÁ</b><br><br>
+            <img src="${sigImage}" width="150" /><br><b>${$("ev_evaluator").value}</b></td></tr>
+        </table>
+        <div style="margin-top:50px; font-size:8pt; border-top:1px solid #ccc">Mã hiệu: BM-74.TTHLNV - Ban hành lần: 03 - Trang 1/1</div>
+    </body></html>`;
 
-  const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `PhieuDanhGia_${mshv||'HocVien'}.doc`; a.click();
+    let blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "BM74_" + $("ev_name").value.replace(/\s/g,'_') + ".doc";
+    a.click();
+    showToast("Đã xuất file Word thành công!");
 }
 
-/* ===== CORE HSD LOGIC (GIỮ NGUYÊN) ===== */
-function dateMask(el){ let v=el.value.replace(/\D/g,''); if(v.length>8)v=v.substring(0,8); if(v.length<=2)el.value=v; else if(v.length<=4)el.value=v.substring(0,2)+'/'+v.substring(2); else el.value=v.substring(0,2)+'/'+v.substring(2,4)+'/'+v.substring(4); }
-function num(v){ return Number(String(v).replace(/\./g,"")) || 0; }
-function calculate(){
-  const m=calcMode.value; let nsxD, hsdD;
-  const pNsx=document.getElementById("nsx").value, pHsd=document.getElementById("hsd").value;
-  if(m==='full'){ nsxD=parseDMY(pNsx); hsdD=parseDMY(pHsd); }
-  else if(m==='hsdBack'){ hsdD=parseDMY(pHsd); nsxD=new Date(hsdD); nsxD.setDate(nsxD.getDate()-num(beforeHsdValue.value)); }
-  else { nsxD=parseDMY(pNsx); hsdD=new Date(nsxD); hsdD.setDate(hsdD.getDate()+num(periodValue.value)); }
-  if(!nsxD||!hsdD||isNaN(nsxD)||isNaN(hsdD)){alert("Ngày nhập sai!");return;}
-  const diff=(hsdD-nsxD)/86400000, m30=new Date(nsxD.getTime()+diff*0.7*86400000), m20=new Date(nsxD.getTime()+diff*0.8*86400000), today=new Date(); today.setHours(0,0,0,0);
-  result.innerHTML=`<div class="p-3 border rounded mb-2 ${today>=m30?'blink30':''}">Mốc 30%: ${m30.toLocaleDateString('vi-VN')}</div><div class="p-3 border rounded ${today>=m20?'blink20':''}">Mốc 20%: ${m20.toLocaleDateString('vi-VN')}</div>`;
-}
-function parseDMY(s){ const p=s.split('/'); return new Date(p[2],p[1]-1,p[0]); }
-function changeCalcMode(){ ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(id=>document.getElementById(id).classList.add("hidden")); const m=calcMode.value; if(m==='full'){nsxBlock.classList.remove("hidden");hsdBlock.classList.remove("hidden");} else if(m==='hsdBack'){hsdBlock.classList.remove("hidden");beforeHsdBlock.classList.remove("hidden");} else {nsxBlock.classList.remove("hidden");nsxPeriodBlock.classList.remove("hidden");} }
-function formatMoneyInput(el){ let v=el.value.replace(/\D/g,''); el.value=v?Number(v).toLocaleString("vi-VN"):''; }
-
-// Các chức năng khác (In barcode, PDF Đào tạo...) tích hợp sẵn tương ứng các hàm cũ
+/* =========================================================================
+   INITIALIZATION
+   ========================================================================= */
+window.onload = () => {
+    toggleHsdBlocks();
+    renderHsdHistory();
+    renderPrint();
+    showApp('evalApp', 'ĐÁNH GIÁ HỌC VIÊN'); // Mặc định mở tab đánh giá như yêu cầu
+};
 </script>
 </body>
 </html>
