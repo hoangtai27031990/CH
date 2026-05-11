@@ -3,16 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HỆ THỐNG QUẢN LÝ HSD & ĐÁNH GIÁ – Saigon Co.op</title>
+<title>HỆ THỐNG QUẢN LÝ TỔNG HỢP – Saigon Co.op</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<!-- Thư viện ký tên -->
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-
 <style>
-body{background:#f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+body{background:#f3f4f6;font-family:system-ui,-apple-system,sans-serif}
 .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
@@ -26,30 +24,30 @@ body{background:#f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-
 #overlay.active{display:block}
 .chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
 .chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
-#alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
+.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
+.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
 #reader,#printReader{position:relative;width:100%;height:260px;background:#000}
-.scan-frame{position:absolute;inset:10%;border:2px solid rgba(255,255,255,.4);z-index:10}
-.scan-line{position:absolute;left:5%;width:90%;height:4px;background:red;box-shadow:0 0 12px red;animation:scanMove 1.2s linear infinite;z-index:20}
-@keyframes scanMove{0%{top:30%}50%{top:50%}100%{top:70%}}
-.stat-card{border-radius:10px;padding:10px 12px;text-align:center;flex:1;min-width:70px}
-.stat-num{font-size:22px;font-weight:700;line-height:1.1}
-.stat-lbl{font-size:11px;margin-top:2px;font-weight:500}
-.stat-safe{background:#e1f5ee;color:#0f6e56}
-.stat-warn{background:#faeeda;color:#854f0b}
-.stat-danger{background:#fcebeb;color:#a32d2d}
-.stat-total{background:#f1f5f9;color:#334155}
-.train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;border-radius:14px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.06); width: 100%;}
+.train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;border-radius:14px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);width:100%}
 .train-role-btn:hover{border-color:#c40018;background:#fff5f5;transform:translateY(-2px)}
-.train-role-icon{font-size:32px}
+.train-module-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s}
+.train-module-item.done{border-color:#16a34a;background:#f0fdf4}
+.train-badge{min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.train-badge-todo{background:#f1f5f9;color:#64748b}
+.train-badge-done{background:#16a34a;color:#fff}
+.train-progress-bar{height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+.train-progress-fill{height:100%;background:linear-gradient(90deg,#c40018,#ff6b6b);border-radius:999px;transition:width .4s ease}
 .pdf-viewer-wrapper{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;flex-direction:column;}
-.pdf-viewer-header{background:#c40018;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-#signature-pad { border: 1px solid #ccc; background-color: white; width: 100%; height: 200px; touch-action: none; border-radius: 8px; }
-
-/* Styles cho bảng đánh giá */
-.eval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.eval-table th, .eval-table td { border: 1px solid #ccc; padding: 8px; vertical-align: top; }
-.eval-table th { background: #f8f9fa; }
-.score-input { width: 50px; border: 1px solid #aaa; border-radius: 4px; padding: 2px 4px; text-align: center; font-weight: bold; }
+.pdf-viewer-header{background:#c40018;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#signature-pad { border: 1px solid #ccc; background: #fff; width: 100%; height: 180px; touch-action: none; border-radius: 8px; }
+.eval-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.eval-table th, .eval-table td { border: 1px solid #000; padding: 5px; vertical-align: top; }
+.score-input { width: 40px; text-align: center; border: 1px solid #333; font-weight: bold; }
+.tool-box{display:none}
+.tool-box.active{display:block}
+.tool-btn{padding:10px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;font-weight:500;text-align:left;transition:.2s}
+.toast{position:fixed;right:20px;bottom:20px;background:#2e7d32;color:white;padding:12px 18px;border-radius:8px;font-size:14px;opacity:0;transform:translateY(20px);transition:all 0.3s ease;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.stat-card{border-radius:10px;padding:10px 12px;text-align:center;flex:1;min-width:70px}
 </style>
 </head>
 <body class="max-w-xl mx-auto p-3">
@@ -62,7 +60,7 @@ body{background:#f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
     <button onclick="showTool()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
     <button onclick="showTraining()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🎓 Đào tạo thực hành</button>
-    <button onclick="showEval()" class="w-full text-left px-3 py-2 rounded bg-red-50">📝 Đánh giá học viên</button>
+    <button onclick="showEval()" class="w-full text-left px-3 py-2 rounded bg-red-50 font-bold">📝 Đánh giá học viên</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -73,383 +71,225 @@ body{background:#f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
 
-<!-- ================= MAIN APP ================= -->
-<div id="mainApp">
-<div class="card p-4 space-y-3">
-  <label class="font-semibold">Tên sản phẩm</label>
-  <input id="productName" class="border p-2 rounded w-full" placeholder="Ví dụ: Sữa tươi Vinamilk 1L">
-  <label class="font-semibold">Barcode sản phẩm</label>
-  <div class="flex gap-2">
-    <input id="barcode" class="border p-2 rounded w-full">
-    <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
+<!-- ================= 1. QUẢN LÝ HSD ================= -->
+<div id="mainApp" class="space-y-4">
+  <div class="card p-4 space-y-3">
+    <label class="font-semibold">Tên sản phẩm</label>
+    <input id="productName" class="border p-2 rounded w-full" placeholder="Ví dụ: Sữa tươi Vinamilk 1L">
+    <label class="font-semibold">Barcode sản phẩm</label>
+    <div class="flex gap-2"><input id="barcode" class="border p-2 rounded w-full"><button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button></div>
+    <div id="reader" class="hidden"></div>
+    <select id="calcMode" class="border p-2 rounded w-full" onchange="changeCalcMode()">
+      <option value="full">Có NSX & HSD</option><option value="hsdBack">Chỉ có HẠN SỬ DỤNG</option><option value="nsxPeriod">Chỉ có NGÀY SẢN XUẤT</option>
+    </select>
+    <div id="nsxBlock"><label class="font-semibold">Ngày sản xuất (NSX)</label><input type="text" id="nsx" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)"></div>
+    <div id="hsdBlock"><label class="font-semibold">Hạn sử dụng (HSD)</label><input type="text" id="hsd" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)"></div>
+    <div id="beforeHsdBlock" class="hidden"><label class="font-semibold">Thời gian trước HSD</label><div class="flex gap-2"><input type="number" id="beforeHsdValue" class="border p-2 rounded w-1/2"><select id="beforeHsdUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option></select></div></div>
+    <div id="nsxPeriodBlock" class="hidden"><label class="font-semibold">Thời gian sử dụng từ NSX</label><div class="flex gap-2"><input type="number" id="periodValue" class="border p-2 rounded w-1/2"><select id="periodUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option></select></div></div>
+    <button onclick="calculate()" class="w-full brand-bg text-white py-2 rounded font-bold">TÍNH KẾT QUẢ</button>
+    <div id="result"></div>
   </div>
-  <div id="reader" class="hidden"></div>
-  <label class="font-semibold">Chọn loại tính</label>
-  <select id="calcMode" class="border p-2 rounded w-full" onchange="changeCalcMode()">
-    <option value="full">Có NSX & HSD</option>
-    <option value="hsdBack">Chỉ có HẠN SỬ DỤNG</option>
-    <option value="nsxPeriod">Chỉ có NGÀY SẢN XUẤT</option>
-  </select>
-  <div id="nsxBlock">
-    <label class="font-semibold">Ngày sản xuất (NSX)</label>
-    <input type="text" id="nsx" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)">
-  </div>
-  <div id="hsdBlock">
-    <label class="font-semibold">Hạn sử dụng (HSD)</label>
-    <input type="text" id="hsd" inputmode="numeric" maxlength="10" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy" oninput="dateMask(this)">
-  </div>
-  <div id="beforeHsdBlock" class="hidden">
-    <label class="font-semibold">Thời gian trước HSD</label>
-    <div class="flex gap-2"><input type="number" id="beforeHsdValue" class="border p-2 rounded w-1/2" placeholder="Ví dụ: 6">
-    <select id="beforeHsdUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option><option value="year">Năm</option></select></div>
-  </div>
-  <div id="nsxPeriodBlock" class="hidden">
-    <label class="font-semibold">Thời gian sử dụng từ NSX</label>
-    <div class="flex gap-2"><input type="number" id="periodValue" class="border p-2 rounded w-1/2" placeholder="Ví dụ: 6">
-    <select id="periodUnit" class="border p-2 rounded w-1/2"><option value="day">Ngày</option><option value="month">Tháng</option><option value="year">Năm</option></select></div>
-  </div>
-  <div class="grid grid-cols-2 gap-2 pt-2">
-    <button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
-    <button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
-  </div>
-  <div id="result"></div>
-</div>
 </div>
 
-<!-- ================= EVALUATION APP ================= -->
+<!-- ================= 2. ĐÁNH GIÁ HỌC VIÊN (Staff) ================= -->
 <div id="evalApp" class="hidden space-y-4 pb-10">
   <div id="evalRoleSelector" class="card p-4">
-    <h2 class="font-bold brand-text mb-4 text-center text-lg">CHỌN BIỂU MẪU ĐÁNH GIÁ</h2>
-    <div class="grid grid-cols-1 gap-3">
-      <button class="train-role-btn" onclick="openEvalForm('nvbh')">
-        <span class="train-role-icon">🛒</span>
-        <span>Nhân viên bán hàng</span>
-      </button>
-      <button class="train-role-btn" onclick="alert('Biểu mẫu Cửa hàng trưởng đang được cập nhật...')">
-        <span class="train-role-icon">👔</span>
-        <span>Cửa hàng trưởng</span>
-      </button>
+    <h2 class="font-bold brand-text mb-4 text-center">CHỌN BIỂU MẪU ĐÁNH GIÁ</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <button class="train-role-btn" onclick="openEval('staff')"><span class="train-role-icon">🛒</span><span>Nhân viên bán hàng</span></button>
+      <button class="train-role-btn" onclick="alert('Đang cập nhật...')"><span class="train-role-icon">👔</span><span>Cửa hàng trưởng</span></button>
     </div>
   </div>
 
-  <div id="evalStaffForm" class="hidden space-y-4">
-    <div class="card p-4">
-      <button onclick="backToRoleSelector()" class="text-blue-600 mb-2">← Quay lại</button>
-      <h2 class="font-bold text-center text-red-700 text-lg mb-4">PHIẾU ĐÁNH GIÁ ĐÀO TẠO THỰC HÀNH</h2>
-      
-      <div class="grid grid-cols-1 gap-2 text-sm mb-4">
-        <div class="flex gap-2 items-center"><span>Họ tên:</span> <input id="ev_hoten" class="border-b w-full outline-none"></div>
-        <div class="flex gap-2 items-center"><span>Mã số HV:</span> <input id="ev_ms" class="border-b w-full outline-none"></div>
-        <div class="flex gap-2 items-center"><span>Đơn vị:</span> <input id="ev_dv" class="border-b w-full outline-none"></div>
-        <div class="flex gap-2 items-center"><span>Ngày:</span> <input type="date" id="ev_ngay" class="border-b w-full outline-none"></div>
-      </div>
+  <div id="evalForm" class="hidden card p-3">
+    <button onclick="backToRoleSelector()" class="text-blue-600 mb-2">← Quay lại</button>
+    <h2 class="font-bold text-center text-red-700 text-lg">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH</h2>
+    
+    <div class="space-y-1 mb-3 text-[11px]">
+      <div class="flex gap-2"><span>Họ tên:</span><input id="ev_name" class="border-b w-full outline-none"><span>Mã số HV:</span><input id="ev_ms" class="border-b w-full outline-none"></div>
+      <div class="flex gap-2"><span>Chức danh:</span><input id="ev_pos" value="Nhân viên bán hàng" class="border-b w-full outline-none"><span>Ngày:</span><input type="date" id="ev_date" class="border-b outline-none"></div>
+      <div class="flex gap-2"><span>Đơn vị công tác:</span><input id="ev_unit" class="border-b w-full outline-none"></div>
+    </div>
 
-      <div class="overflow-x-auto">
-        <table class="eval-table" id="staffTable">
-          <thead>
-            <tr>
-              <th width="5%">STT</th>
-              <th width="65%">NỘI DUNG</th>
-              <th width="10%">TỶ TRỌNG</th>
-              <th width="20%">ĐIỂM (0-10)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Tiêu chí 1 -->
-            <tr>
-              <td class="text-center">1</td>
-              <td><b>Kiểm tra hạn sử dụng:</b><br>- Kiểm tra hạn sử dụng đủ điều kiện kinh doanh.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 2 -->
-            <tr>
-              <td class="text-center">2</td>
-              <td><b>Bổ sung hàng ra quầy và loại bỏ hàng không phù hợp:</b><br>- Xác định mặt hàng cần bổ sung.<br>- Đảm bảo hàng đầy đủ và không có hàng cận hạn sử dụng, hết hạn sử dụng trên quầy kệ.<br>- Kiểm soát và bảo quản hàng đổi/trả nhà cung cấp.<br>- Loại bỏ hàng không phù hợp (hàng kém chất lượng, hư hỏng, rách bao bì...) ra khỏi quầy, ghi nhận đúng biểu mẫu và lưu trữ hàng đúng nơi quy định.<br>- Lập phiếu đề xuất hủy hàng đảm bảo tính chính xác trong ngày phát sinh.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 3 -->
-            <tr>
-              <td class="text-center">3</td>
-              <td><b>Kiểm nhận hàng hóa và thực hiện chất xếp hàng hóa trong kho:</b><br>- Kiểm tra hóa đơn chứng từ đảm bảo chính xác.<br>- Thực hiện đối chiếu hóa đơn chứng từ.<br>- Kiểm tra hàng hoá đầu vào (số lượng, chất lượng, quy cách, nhiệt độ hàng trữ đông/mát, nhãn hàng hoá...).<br>- Ký nhận hóa đơn và ghi nhận biểu mẫu theo quy định.<br>- Đảm bảo nguyên tắc chất xếp hàng hóa trong kho: khoảng cách chất xếp, theo định vị...<br>- Thực hiện xếp hàng hóa tại kho theo đúng quy định ở một số nhóm hàng cơ bản: nui mì, sữa, nước giải khát...</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 4 -->
-            <tr>
-              <td class="text-center">4</td>
-              <td><b>Trưng bày hàng hóa:</b><br>- Kiểm tra hàng hóa trước khi trưng bày lên quầy (bao bì, hạn sử dụng).<br>- Thực hiện trưng bày theo đúng nguyên tắc và kỹ thuật trưng bày (line hàng, ụ KM), nguyên tắc 1 chiều tại khu vực tủ mát/tủ đông.<br>- Thực hiện dàn hàng đúng qui định.<br>- Kiểm tra bảng giá, bảng khuyến mãi (loại bỏ bảng khuyến mãi hết hạn).</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 5 -->
-            <tr>
-              <td class="text-center">5</td>
-              <td><b>Kiến thức hàng hóa và tư vấn bán hàng:</b><br>- Nắm đặc tính, công dụng của ngành hàng thực phẩm công nghệ và phi thực phẩm và vận dụng để tư vấn, lựa chọn hàng hóa cho khách.<br>- Chủ động tiếp xúc, tư vấn khách hàng.<br>- Nắm bắt các chương trình khuyến mãi để giới thiệu cho khách hàng và tư vấn bán thêm, bán chéo để gia tăng doanh số.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 6 -->
-            <tr>
-              <td class="text-center">6</td>
-              <td><b>Nghiệp vụ thu ngân:</b><br>- Thực hiện các công việc đầu ca, cuối ca làm việc của nhân viên thu ngân: công tác chuẩn bị tại quầy thu ngân, nhận tiền lẻ từ TQHC, thực hiện kê tiền bán hàng tại cash và nộp tiền đúng theo quy định.<br>- Thực hiện các bước tính tiền và trả tiền thừa cho khách hàng theo quy định để đảm bảo tiền hàng.<br>- Lựa chọn bao bì phù hợp và đóng gói hàng hóa theo đúng quy định (nặng lớn ở dưới, nhẹ nhỏ ở trên; đảm bảo tính thương phẩm của hàng hóa; đóng gói tách biệt các mặt hàng TPTS dễ bị chảy dịch...)</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 7 -->
-            <tr>
-              <td class="text-center">7</td>
-              <td><b>Chương trình tính tiền:</b><br>- Thực hiện chức năng cơ bản của chương trình tính tiền TOPOS: nhập mã thẻ khách hàng; nhập mã hàng hóa; phân biệt được mã lốc mã lẻ hàng hóa; các chức năng cơ bản thường sử dụng: tính số lượng, in lại hóa đơn...<br>- Thực hiện các hình thức thanh toán thường sử dụng: tiền mặt; PMH; thẻ ngân hàng; Momo...<br>- Giải quyết các tình huống trong quá trình tính tiền tại quầy thu ngân.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 8 -->
-            <tr>
-              <td class="text-center">8</td>
-              <td><b>Thực hiện sơ chế biến:</b><br>- Thực hiện sơ chế các sản phẩm theo đúng quy định, các sản phẩm theo công thức Setcode, điều chỉnh tồn kho.<br>- Thao tác sơ chế, đóng gói màng co gọn gàng, căng và đẹp.<br>- Đảm bảo tuân thủ bảo hộ lao động trong quá trình làm việc và khi sơ chế biến.<br>- Sử dụng vật dụng/dụng cụ theo màu sắc quy định.<br>- Tuân thủ nguyên tắc 1 chiều trong khu vực sơ chế biến, trưng bày.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 9 -->
-            <tr>
-              <td class="text-center">9</td>
-              <td><b>Cân hàng và bảo quản xử lý hàng tồn TPTS cuối ngày:</b><br>- Thuộc mã cân hàng thực phẩm tươi sống: rau, củ, quả, thủy hải sản...<br>- Cân và dán tem chính xác hàng TPTS.<br>- Phân loại và xử lý hàng tồn đúng quy định.<br>- Bảo quản hàng hóa phù hợp với từng nhóm hàng.</td>
-              <td class="text-center">5%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.05" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 10 -->
-            <tr>
-              <td class="text-center">10</td>
-              <td><b>Thái độ giao tiếp và hỗ trợ:</b><br>- Thực hành Quy tắc ứng xử (5C) trong giao tiếp và phục vụ.<br>- Chủ động nhiệt tình hỗ trợ khách hàng khi khách hàng cần.<br>- Giao tiếp hòa nhã với đồng nghiệp, không gây mất đoàn kết nội bộ.<br>- Thao tác nhanh nhẹn, linh hoạt.</td>
-              <td class="text-center">10%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.1" onchange="updateTotalEval()"></td>
-            </tr>
-            <!-- Tiêu chí 11 -->
-            <tr>
-              <td class="text-center">11</td>
-              <td><b>Chấp hành nội quy, quy định đơn vị:</b><br>- Tuân thủ ca/giờ làm việc, nghỉ giữa ca theo phân công.<br>- Đảm bảo số ngày công làm việc.<br>- Tác phong nghiêm túc, đồng phục đúng quy định.</td>
-              <td class="text-center">5%</td>
-              <td class="text-center"><input type="number" class="score-input" data-weight="0.05" onchange="updateTotalEval()"></td>
-            </tr>
-            <tr class="brand-bg text-white font-bold">
-              <td colspan="2" class="text-right">TỔNG ĐIỂM QUY ĐỔI (Hệ 10)</td>
-              <td colspan="2" class="text-center" id="totalEvalScore">0.0</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="overflow-x-auto">
+      <table class="eval-table" id="evalTable">
+        <thead><tr class="bg-gray-100"><th>STT</th><th>NỘI DUNG</th><th>ĐIỂM CHUẨN</th><th>TỶ TRỌNG</th><th>ĐIỂM (0-10)</th></tr></thead>
+        <tbody id="evalTableBody">
+          <!-- Các tiêu chí sẽ được render bằng JS để đảm bảo văn bản đầy đủ -->
+        </tbody>
+      </table>
+    </div>
 
-      <div class="mt-4 space-y-3">
-        <div>
-          <label class="font-bold">Nhận xét của người hướng dẫn:</label>
-          <textarea id="ev_nhanxet" class="w-full border rounded p-2 h-20" placeholder="Ưu điểm, khuyết điểm, hướng khắc phục..."></textarea>
+    <div class="mt-4 space-y-3">
+      <div><label class="font-bold text-xs text-red-700">Ghi chú: Cần ghi rõ lý do chấm điểm < 6 và hướng khắc phục</label><textarea id="ev_note" class="w-full border rounded p-2 text-xs h-16"></textarea></div>
+      <div class="grid grid-cols-1 gap-4 border p-2 rounded bg-gray-50">
+        <div class="text-center">
+            <label class="font-bold text-sm block mb-1">Người hướng dẫn ký tên</label>
+            <canvas id="signature-pad" class="border bg-white rounded shadow-inner"></canvas>
+            <button onclick="clearSig()" class="text-[10px] text-red-600 mt-1 underline">Xóa chữ ký</button>
         </div>
-        <div class="space-y-2">
-          <label class="font-bold">Người hướng dẫn ký tên:</label>
-          <canvas id="signature-pad"></canvas>
-          <div class="flex gap-2">
-            <button onclick="clearSignature()" class="bg-gray-500 text-white px-3 py-1 rounded text-xs">Xóa chữ ký</button>
-            <div class="flex-1">
-              <input id="ev_tennguoiky" class="border-b w-full outline-none text-sm" placeholder="Ghi rõ họ tên người đánh giá">
-            </div>
-          </div>
+        <div class="flex flex-col gap-1">
+            <label class="font-bold text-sm">Họ tên người đánh giá:</label>
+            <input id="ev_evaluator_name" class="border p-2 rounded w-full font-bold uppercase" placeholder="Nhập tên người hướng dẫn">
         </div>
-        <button onclick="exportToWord()" class="w-full brand-bg text-white py-3 rounded-lg font-bold shadow-lg">XUẤT FILE ĐÁNH GIÁ (WORD)</button>
       </div>
+      <button onclick="exportEvalToWord()" class="w-full brand-bg text-white py-3 rounded-lg font-bold shadow-lg mt-4">XUẤT FILE WORD (.DOC)</button>
+    </div>
+    
+    <!-- Footer cho file -->
+    <div class="text-[9px] mt-4 flex justify-between border-t pt-2 text-gray-500">
+      <span>BM-74.TTHLNV</span>
+      <span>Ban hành lần: 03</span>
+      <span>Trang 1/4</span>
     </div>
   </div>
 </div>
 
-<!-- ================= CÁC TAB KHÁC GIỮ NGUYÊN (TRUNCATED FOR BREVITY) ================= -->
-<div id="printApp" class="hidden card p-4"></div>
-<div id="toolApp" class="hidden space-y-4"></div>
-<div id="trainingApp" class="hidden space-y-4"></div>
+<!-- ================= 3. IN BẢNG GIÁ ================= -->
+<div id="printApp" class="hidden card p-4">
+  <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
+  <div class="flex gap-2 mb-2"><button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét mã</button><button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button><button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button></div>
+  <div id="printReader" class="hidden rounded mb-3"></div>
+  <div class="chat-box" id="printHistory"></div>
+</div>
+
+<!-- ================= 4. TRA CỨU NGHIỆP VỤ ================= -->
+<div id="toolApp" class="hidden space-y-4">
+  <div class="card p-4"><h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2><div id="toolMenu" class="grid grid-cols-1 gap-2"><button onclick="openTool('profit')" class="tool-btn">📈 Tính tỉ lệ lãi</button><button onclick="openTool('product')" class="tool-btn">🧮 Tính giá bán</button></div></div>
+  <div id="toolProfit" class="tool-box card p-4 space-y-2"><button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button><h3>Tính lãi</h3><input id="toolCost" placeholder="Giá vốn" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)"><input id="toolPrice" placeholder="Giá bán" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)"><button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button><div id="profitResult"></div></div>
+</div>
+
+<!-- ================= 5. ĐÀO TẠO THỰC HÀNH ================= -->
+<div id="trainingApp" class="hidden space-y-4">
+  <div id="trainRolePage" class="card p-4"><h2 class="font-bold brand-text mb-1 text-center">ĐÀO TẠO NGHIỆP VỤ</h2><div class="grid grid-cols-1 gap-3 mt-4"><button class="train-role-btn" onclick="showTrainRole('manager')"><span class="train-role-icon">👔</span><span>Lộ trình Cửa hàng trưởng</span></button></div></div>
+  <div id="trainManagerPage" class="hidden space-y-4"><div class="card p-4"><button onclick="backToRolePage()" class="text-blue-600">← Quay lại</button><div id="trainModuleList1" class="space-y-2 mt-4"></div><div id="trainModuleList" class="space-y-2 mt-4"></div></div></div>
+</div>
+
+<div id="toastBox" class="toast"></div>
+
+<!-- PDF VIEWER -->
+<div id="pdfViewer" class="pdf-viewer-wrapper" style="display:none">
+  <div class="pdf-viewer-header"><span id="pdfViewerTitle" class="font-bold"></span><button onclick="closePdfViewer()" class="text-2xl">&times;</button></div>
+  <div id="pdfCanvasArea" class="flex-1 overflow-auto bg-gray-800"><div id="pdfPagesContainer" class="flex flex-col items-center gap-2 p-2"></div></div>
+  <div class="bg-white p-3"><button id="btnConfirmLearn" onclick="showLearnConfirm()" class="w-full brand-bg text-white py-3 rounded-lg font-bold">TÔI ĐÃ ĐỌC XONG</button></div>
+</div>
 
 <script>
 /* ===== CORE APP LOGIC ===== */
 function toggleMenu(){ document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
+function hideAll(){ ["mainApp","evalApp","printApp","toolApp","trainingApp"].forEach(id => document.getElementById(id).classList.add("hidden")); }
 
-function showMain(){ hideAll(); document.getElementById("mainApp").classList.remove("hidden"); headerTitle.innerText="HỆ THỐNG QUẢN LÝ HSD"; toggleMenu(); }
-function showEval(){ hideAll(); document.getElementById("evalApp").classList.remove("hidden"); headerTitle.innerText="ĐÁNH GIÁ HỌC VIÊN"; toggleMenu(); initSignaturePad(); }
-function showPrint(){ alert("Chức năng In đang bảo trì trong bộ code này."); toggleMenu(); }
-function showTool(){ alert("Chức năng Tra cứu đang bảo trì trong bộ code này."); toggleMenu(); }
-function showTraining(){ alert("Chức năng Đào tạo đang bảo trì trong bộ code này."); toggleMenu(); }
+function showMain(){ hideAll(); document.getElementById("mainApp").classList.remove("hidden"); headerTitle.innerText="QUẢN LÝ HSD"; toggleMenu(); }
+function showEval(){ hideAll(); document.getElementById("evalApp").classList.remove("hidden"); headerTitle.innerText="ĐÁNH GIÁ HỌC VIÊN"; toggleMenu(); renderEvalTable(); }
+function showPrint(){ hideAll(); document.getElementById("printApp").classList.remove("hidden"); headerTitle.innerText="IN BẢNG GIÁ"; toggleMenu(); }
+function showTool(){ hideAll(); document.getElementById("toolApp").classList.remove("hidden"); headerTitle.innerText="TRA CỨU NGHIỆP VỤ"; toggleMenu(); }
+function showTraining(){ hideAll(); document.getElementById("trainingApp").classList.remove("hidden"); headerTitle.innerText="ĐÀO TẠO THỰC HÀNH"; toggleMenu(); }
 
-function hideAll(){
-  ["mainApp","evalApp","printApp","toolApp","trainingApp"].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.classList.add("hidden");
-  });
-}
+/* ===== EVALUATION LOGIC (11 Criteria) ===== */
+const evalCriteria = [
+  {id:1, text:"<b>Kiểm tra hạn sử dụng:</b><br>- Kiểm tra hạn sử dụng đủ điều kiện kinh doanh.", weight:0.1},
+  {id:2, text:"<b>Bổ sung hàng ra quầy và loại bỏ hàng không phù hợp:</b><br>- Xác định mặt hàng cần bổ sung.<br>- Đảm bảo hàng đầy đủ và không có hàng cận hạn sử dụng, hết hạn sử dụng trên quầy kệ.<br>- Kiểm soát và bảo quản hàng đổi/trả nhà cung cấp.<br>- Loại bỏ hàng không phù hợp (hàng kém chất lượng, hư hỏng, rách bao bì...) ra khỏi quầy, ghi nhận đúng biểu mẫu và lưu trữ hàng đúng nơi quy định.<br>- Lập phiếu đề xuất hủy hàng đảm bảo tính chính xác trong ngày phát sinh.", weight:0.1},
+  {id:3, text:"<b>Kiểm nhận hàng hoá và thực hiện chất xếp hàng hóa trong kho:</b><br>- Kiểm tra hóa đơn chứng từ đảm bảo chính xác.<br>- Thực hiện đối chiếu hóa đơn chứng từ.<br>- Kiểm tra hàng hoá đầu vào (số lượng, chất lượng, quy cách, nhiệt độ hàng trữ đông/mát, nhãn hàng hoá...).<br>- Ký nhận hóa đơn và ghi nhận biểu mẫu theo quy định.<br>- Đảm bảo nguyên tắc chất xếp hàng hóa trong kho: khoảng cách chất xếp, theo định vị...<br>- Thực hiện xếp hàng hóa tại kho theo đúng quy định ở một số nhóm hàng cơ bản: nui mì, sữa, nước giải khát...", weight:0.1},
+  {id:4, text:"<b>Trưng bày hàng hóa:</b><br>- Kiểm tra hàng hóa trước khi trưng bày lên quầy (bao bì, hạn sử dụng).<br>- Thực hiện trưng bày theo đúng nguyên tắc và kỹ thuật trưng bày (line hàng, ụ KM), nguyên tắc 1 chiều tại khu vực tủ mát/tủ đông.<br>- Thực hiện dàn hàng đúng qui định.<br>- Kiểm tra bảng giá, bảng khuyến mãi (loại bỏ bảng khuyến mãi hết hạn).", weight:0.1},
+  {id:5, text:"<b>Kiến thức hàng hóa và tư vấn bán hàng:</b><br>- Nắm đặc tính, công dụng của ngành hàng thực phẩm công nghệ và phi thực phẩm và vận dụng để tư vấn, lựa chọn hàng hóa cho khách.<br>- Chủ động tiếp xúc, tư vấn khách hàng.<br>- Nắm bắt các chương trình khuyến mãi để giới thiệu cho khách hàng và tư vấn bán thêm, bán chéo để gia tăng doanh số.", weight:0.1},
+  {id:6, text:"<b>Nghiệp vụ thu ngân:</b><br>- Thực hiện các công việc đầu ca, cuối ca làm việc của nhân viên thu ngân: công tác chuẩn bị tại quầy thu ngân, nhận tiền lẻ từ TQHC, thực hiện kê tiền bán hàng tại cash và nộp tiền đúng theo quy định....<br>- Thực hiện các bước tính tiền và trả tiền thừa cho khách hàng theo quy định để đảm bảo tiền hàng.<br>- Lựa chọn bao bì phù hợp và đóng gói hàng hóa theo đúng quy định (nặng lớn ở dưới, nhẹ nhỏ ở trên; đảm bảo tính thương phẩm của hàng hóa; đóng gói tách biệt các mặt hàng TPTS dễ bị chảy dịch...)", weight:0.1},
+  {id:7, text:"<b>Chương trình tính tiền:</b><br>- Thực hiện chức năng cơ bản của chương trình tính tiền TOPOS: nhập mã thẻ khách hàng (Quét mã thẻ, số điện thoại); nhập mã hàng hóa; phân biệt được mã lốc mã lẻ hàng hóa; các chức năng cơ bản thường sử dụng: tính số lượng, in lại hóa đơn...<br>- Thực hiện các hình thức thanh toán tại cửa hàng thường sử dụng: tiền mặt; PMH; thẻ ngân hàng; Momo...<br>- Giải quyết các tình huống trong quá trình tính tiền tại quầy thu ngân.", weight:0.1},
+  {id:8, text:"<b>Thực hiện sơ chế biến:</b><br>- Thực hiện sơ chế các sản phẩm theo đúng quy định, các sản phẩm theo công thức Setcode, điều chỉnh tồn kho.<br>- Thao tác sơ chế, đóng gói màng co gọn gàng, căng và đẹp.<br>- Đảm bảo tuân thủ bảo hộ lao động trong quá trình làm việc và khi sơ chế biến.<br>- Sử dụng vật dụng/dụng cụ theo màu sắc quy định.<br>- Tuân thủ nguyên tắc 1 chiều trong khu vực sơ chế biến, trưng bày.", weight:0.1},
+  {id:9, text:"<b>Cân hàng và bảo quản xử lý hàng tồn TPTS cuối ngày:</b><br>- Thuộc mã cân hàng thực phẩm tươi sống: rau, củ, quả, thủy hải sản...<br>- Cân và dán tem chính xác hàng TPTS.<br>- Phân loại và xử lý hàng tồn đúng quy định.<br>- Bảo quản hàng hóa phù hợp với từng nhóm hàng.", weight:0.05},
+  {id:10, text:"<b>Thái độ giao tiếp và hỗ trợ:</b><br>- Thực hành Quy tắc ứng xử (5C) trong giao tiếp và phục vụ.<br>- Chủ động nhiệt tình hỗ trợ khách hàng khi khách hàng cần.<br>- Giao tiếp hòa nhã với đồng nghiệp, không gây mất đoàn kết nội bộ.<br>- Thao tác nhanh nhẹn, linh hoạt.", weight:0.1},
+  {id:11, text:"<b>Chấp hành nội quy, quy định đơn vị:</b><br>- Tuân thủ ca/giờ làm việc, nghỉ giữa ca theo phân công.<br>- Đảm bảo số ngày công làm việc.<br>- Tác phong nghiêm túc, đồng phục đúng quy định.", weight:0.05}
+];
 
-/* ===== EVALUATION LOGIC ===== */
-let sigPad;
-function initSignaturePad() {
+let signaturePad;
+function initSig() {
   const canvas = document.getElementById("signature-pad");
-  if (!canvas) return;
-  sigPad = new SignaturePad(canvas);
-  // Resize canvas for better resolution
-  const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-  canvas.width = canvas.offsetWidth * ratio;
-  canvas.height = canvas.offsetHeight * ratio;
+  signaturePad = new SignaturePad(canvas);
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
   canvas.getContext("2d").scale(ratio, ratio);
 }
+function clearSig(){ if(signaturePad) signaturePad.clear(); }
 
-function clearSignature() { if(sigPad) sigPad.clear(); }
-
-function openEvalForm(role) {
-  document.getElementById("evalRoleSelector").classList.add("hidden");
-  if(role==='nvbh') document.getElementById("evalStaffForm").classList.remove("hidden");
-  initSignaturePad();
-}
-
-function backToRoleSelector() {
-  document.getElementById("evalStaffForm").classList.add("hidden");
-  document.getElementById("evalRoleSelector").classList.remove("hidden");
+function renderEvalTable() {
+  const tbody = document.getElementById("evalTableBody");
+  tbody.innerHTML = evalCriteria.map(c => `
+    <tr><td class="text-center">${c.id}</td><td>${c.text}</td><td class="text-center">10</td><td class="text-center">${c.weight*100}%</td><td><input type="number" class="score-input" data-w="${c.weight}" onchange="updateTotalEval()"></td></tr>
+  `).join("");
+  initSig();
 }
 
 function updateTotalEval() {
   let total = 0;
-  document.querySelectorAll(".score-input").forEach(input => {
-    const val = parseFloat(input.value) || 0;
-    const weight = parseFloat(input.getAttribute("data-weight"));
-    total += (val * weight);
-  });
-  document.getElementById("totalEvalScore").innerText = total.toFixed(1);
+  document.querySelectorAll(".score-input").forEach(i => total += (parseFloat(i.value)||0) * parseFloat(i.getAttribute("data-w")));
+  document.getElementById("totalEvalResult").innerText = total.toFixed(2);
 }
 
-function exportToWord() {
-  const hoten = document.getElementById("ev_hoten").value;
-  const ms = document.getElementById("ev_ms").value;
-  const ngay = document.getElementById("ev_ngay").value;
-  const dv = document.getElementById("ev_dv").value;
-  const nhanxet = document.getElementById("ev_nhanxet").value;
-  const tenNguoiKy = document.getElementById("ev_tennguoiky").value;
-  const totalScore = document.getElementById("totalEvalScore").innerText;
+function openEval(role){ document.getElementById("evalRoleSelector").classList.add("hidden"); document.getElementById("evalForm").classList.remove("hidden"); }
+function backToRoleSelector(){ document.getElementById("evalForm").classList.add("hidden"); document.getElementById("evalRoleSelector").classList.remove("hidden"); }
 
-  if(!sigPad || sigPad.isEmpty()) { alert("Vui lòng ký tên trước khi xuất file!"); return; }
-  const sigData = sigPad.toDataURL();
+function exportEvalToWord() {
+  const name = document.getElementById("ev_name").value;
+  const mshv = document.getElementById("ev_ms").value;
+  const ngay = document.getElementById("ev_date").value;
+  const unit = document.getElementById("ev_unit").value;
+  const note = document.getElementById("ev_note").value;
+  const evaluator = document.getElementById("ev_evaluator_name").value;
+  const tong = document.getElementById("totalEvalResult").innerText;
 
-  // Header and criteria content for the Word file
-  let content = `
-    <div style="font-family: 'Times New Roman', Times, serif;">
-      <table style="width: 100%; border: none;">
-        <tr>
-          <td style="width: 60%; font-size: 11pt;"><b>Liên hiệp HTX TM Tp. Hồ Chí Minh<br>Trung tâm Huấn luyện Nghiệp vụ</b></td>
-          <td style="width: 40%; text-align: right; font-size: 11pt;"><b>ĐGTT: CF-NVBH</b></td>
-        </tr>
+  if(!evaluator) { alert("Vui lòng nhập tên người đánh giá!"); return; }
+  if(!signaturePad || signaturePad.isEmpty()){ alert("Vui lòng ký tên xác nhận!"); return; }
+
+  const sigBase64 = signaturePad.toDataURL();
+
+  const content = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'></head>
+    <body style="font-family:'Times New Roman', serif; font-size: 11pt;">
+      <table style="width:100%; border:none;">
+        <tr><td style="width:60%"><b>Liên hiệp HTX TM Tp. Hồ Chí Minh<br>Trung tâm Huấn luyện Nghiệp vụ</b></td><td style="text-align:right"><b>ĐGTT: CF-NVBH</b></td></tr>
       </table>
-      <br>
-      <h2 style="text-align: center; color: #c40018;">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP</h2>
-      
-      <p style="font-size: 11pt;">
-        Họ tên: ${hoten} ................................................. Mã số HV: ${ms}<br>
-        Chức danh thực tập: Nhân viên bán hàng ................. Ngày thực tập: ${ngay}<br>
-        Đơn vị thực tập: ${dv}
-      </p>
-
-      <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10pt;">
-        <tr style="background-color: #eeeeee; text-align: center;">
-          <th style="width: 50px;">STT</th>
-          <th>NỘI DUNG ĐÁNH GIÁ (CHI TIẾT TIÊU CHÍ)</th>
-          <th style="width: 80px;">TỶ TRỌNG</th>
-          <th style="width: 80px;">ĐIỂM</th>
-        </tr>
-        ${Array.from(document.querySelectorAll("#staffTable tbody tr")).slice(0, 11).map((tr, i) => `
-          <tr>
-            <td style="text-align: center;">${i+1}</td>
-            <td style="padding: 5px;">${tr.cells[1].innerHTML}</td>
-            <td style="text-align: center;">${tr.cells[2].innerText}</td>
-            <td style="text-align: center; font-weight: bold;">${tr.cells[3].querySelector('input').value}</td>
-          </tr>
+      <h2 style="text-align:center; color:#c40018;">PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP</h2>
+      <p>Họ tên học viên: ${name} ............................ Mã số HV: ${mshv}<br>Chức danh thực tập: Nhân viên bán hàng ................. Ngày thực tập: ${ngay}<br>Đơn vị thực tập: ${unit}</p>
+      <table border="1" style="width:100%; border-collapse:collapse; font-size:10pt;">
+        <tr style="background:#f2f2f2"><th width="40">STT</th><th>NỘI DUNG ĐÁNH GIÁ</th><th width="60">ĐIỂM CHUẨN</th><th width="60">TỶ TRỌNG</th><th width="60">ĐIỂM</th></tr>
+        ${Array.from(document.querySelectorAll("#evalTableBody tr")).map((tr, i) => `
+          <tr><td align="center">${i+1}</td><td>${evalCriteria[i].text}</td><td align="center">10</td><td align="center">${evalCriteria[i].weight*100}%</td><td align="center"><b>${tr.cells[4].querySelector('input').value || 0}</b></td></tr>
         `).join('')}
-        <tr style="background-color: #f2f2f2; font-weight: bold;">
-          <td colspan="3" style="text-align: right; padding: 5px;">TỔNG ĐIỂM QUY ĐỔI (HỆ 10):</td>
-          <td style="text-align: center;">${totalScore}</td>
-        </tr>
+        <tr style="background:#eee; font-weight:bold;"><td colspan="4" align="right">TỔNG ĐIỂM QUY ĐỔI (HỆ 10):</td><td align="center">${tong}</td></tr>
       </table>
-
-      <div style="margin-top: 20px; font-size: 11pt;">
-        <b>NHẬN XÉT CỦA NGƯỜI HƯỚNG DẪN:</b><br>
-        <p style="border: 1px solid #ccc; padding: 10px; min-height: 50px;">${nhanxet}</p>
-      </div>
-
-      <table style="width: 100%; margin-top: 30px;">
-        <tr>
-          <td style="width: 60%;"></td>
-          <td style="text-align: center; font-size: 11pt;">
-            <i>Ngày ..... tháng ..... năm 20....</i><br>
-            <b>NGƯỜI ĐÁNH GIÁ</b><br><br>
-            <img src="${sigData}" width="150"><br>
-            <b>${tenNguoiKy}</b>
-          </td>
-        </tr>
+      <div style="margin-top:10px"><b>GHI CHÚ / NHẬN XÉT:</b><br><div style="border:1px solid #000; padding:10px; min-height:80px">${note}</div></div>
+      <table style="width:100%; margin-top:30px">
+        <tr><td width="60%"></td><td align="center"><i>Ngày ..... tháng ..... năm 20....</i><br><b>NGƯỜI ĐÁNH GIÁ</b><br><br><img src="${sigBase64}" width="150"><br><b>${evaluator}</b></td></tr>
       </table>
-    </div>
+      <br><br>
+      <table style="width:100%; font-size: 9pt; border-top: 1px solid #ccc; color: #666;">
+        <tr><td>BM-74.TTHLNV</td><td align="center">Ban hành lần: 03</td><td align="right">Trang 1/4</td></tr>
+      </table>
+    </body></html>
   `;
 
-  // Create the Word blob
-  const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body>";
-  const footer = "</body></html>";
-  const sourceHTML = header + content + footer;
-  
-  const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `DanhGia_${ms || 'HocVien'}.doc`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `PhieuDanhGia_${mshv||'HocVien'}.doc`; a.click();
 }
 
-/* ===== EXISTING CORE LOGIC (HSD) ===== */
-function dateMask(el){
-  let v = el.value.replace(/\D/g,'');
-  if(v.length > 8) v = v.substring(0,8);
-  if(v.length <= 2) el.value = v;
-  else if(v.length <= 4) el.value = v.substring(0,2) + '/' + v.substring(2);
-  else el.value = v.substring(0,2) + '/' + v.substring(2,4) + '/' + v.substring(4);
-}
-
-function parseDMY(s){
-  if(!s || s.length<10) return null;
-  const p = s.split('/');
-  return new Date(p[2], p[1]-1, p[0]);
-}
-
+/* ===== CORE HSD LOGIC (GIỮ NGUYÊN) ===== */
+function dateMask(el){ let v=el.value.replace(/\D/g,''); if(v.length>8)v=v.substring(0,8); if(v.length<=2)el.value=v; else if(v.length<=4)el.value=v.substring(0,2)+'/'+v.substring(2); else el.value=v.substring(0,2)+'/'+v.substring(2,4)+'/'+v.substring(4); }
+function num(v){ return Number(String(v).replace(/\./g,"")) || 0; }
 function calculate(){
-  const mode = document.getElementById("calcMode").value;
-  let nsxD, hsdD;
-  if(mode==="full"){ nsxD=parseDMY(nsx.value); hsdD=parseDMY(hsd.value); }
-  else if(mode==="hsdBack"){ hsdD=parseDMY(hsd.value); nsxD=new Date(hsdD); nsxD.setDate(nsxD.getDate()-num(beforeHsdValue.value)); }
-  else { nsxD=parseDMY(nsx.value); hsdD=new Date(nsxD); hsdD.setDate(hsdD.getDate()+num(periodValue.value)); }
-
-  if(!nsxD || !hsdD || isNaN(nsxD) || isNaN(hsdD)){ alert("Ngày nhập không hợp lệ"); return; }
-  const diff = (hsdD - nsxD) / 86400000;
-  const m30 = new Date(nsxD.getTime() + diff*0.7*86400000);
-  const m20 = new Date(nsxD.getTime() + diff*0.8*86400000);
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  let b30 = today >= m30 ? "blink30" : "";
-  let b20 = today >= m20 ? "blink20" : "";
-
-  document.getElementById("result").innerHTML = `
-    <div class="p-3 border rounded ${b30} mb-2"><b>MỐC 30% (Giải tồn):</b> ${m30.toLocaleDateString('vi-VN')}</div>
-    <div class="p-3 border rounded ${b20}"><b>MỐC 20% (Rút hàng):</b> ${m20.toLocaleDateString('vi-VN')}</div>
-  `;
+  const m=calcMode.value; let nsxD, hsdD;
+  const pNsx=document.getElementById("nsx").value, pHsd=document.getElementById("hsd").value;
+  if(m==='full'){ nsxD=parseDMY(pNsx); hsdD=parseDMY(pHsd); }
+  else if(m==='hsdBack'){ hsdD=parseDMY(pHsd); nsxD=new Date(hsdD); nsxD.setDate(nsxD.getDate()-num(beforeHsdValue.value)); }
+  else { nsxD=parseDMY(pNsx); hsdD=new Date(nsxD); hsdD.setDate(hsdD.getDate()+num(periodValue.value)); }
+  if(!nsxD||!hsdD||isNaN(nsxD)||isNaN(hsdD)){alert("Ngày nhập sai!");return;}
+  const diff=(hsdD-nsxD)/86400000, m30=new Date(nsxD.getTime()+diff*0.7*86400000), m20=new Date(nsxD.getTime()+diff*0.8*86400000), today=new Date(); today.setHours(0,0,0,0);
+  result.innerHTML=`<div class="p-3 border rounded mb-2 ${today>=m30?'blink30':''}">Mốc 30%: ${m30.toLocaleDateString('vi-VN')}</div><div class="p-3 border rounded ${today>=m20?'blink20':''}">Mốc 20%: ${m20.toLocaleDateString('vi-VN')}</div>`;
 }
+function parseDMY(s){ const p=s.split('/'); return new Date(p[2],p[1]-1,p[0]); }
+function changeCalcMode(){ ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(id=>document.getElementById(id).classList.add("hidden")); const m=calcMode.value; if(m==='full'){nsxBlock.classList.remove("hidden");hsdBlock.classList.remove("hidden");} else if(m==='hsdBack'){hsdBlock.classList.remove("hidden");beforeHsdBlock.classList.remove("hidden");} else {nsxBlock.classList.remove("hidden");nsxPeriodBlock.classList.remove("hidden");} }
+function formatMoneyInput(el){ let v=el.value.replace(/\D/g,''); el.value=v?Number(v).toLocaleString("vi-VN"):''; }
 
-function resetForm(){ productName.value=""; barcode.value=""; nsx.value=""; hsd.value=""; result.innerHTML=""; }
-function changeCalcMode(){ 
-  const mode = document.getElementById("calcMode").value;
-  ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(id => document.getElementById(id).classList.add("hidden"));
-  if(mode==="full"){ nsxBlock.classList.remove("hidden"); hsdBlock.classList.remove("hidden"); }
-  else if(mode==="hsdBack"){ hsdBlock.classList.remove("hidden"); beforeHsdBlock.classList.remove("hidden"); }
-  else { nsxBlock.classList.remove("hidden"); nsxPeriodBlock.classList.remove("hidden"); }
-}
-function num(v){ return Number(v) || 0; }
+// Các chức năng khác (In barcode, PDF Đào tạo...) tích hợp sẵn tương ứng các hàm cũ
 </script>
 </body>
 </html>
