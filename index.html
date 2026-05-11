@@ -1103,12 +1103,12 @@ function loadEvalForm(type){
 
       <div>
         <label class="eval-label">Họ tên học viên</label>
-        <input class="border p-2 rounded w-full">
+      <input id="evalStudent" class="border p-2 rounded w-full">
       </div>
 
       <div>
         <label class="eval-label">Người đánh giá</label>
-        <input class="border p-2 rounded w-full">
+       <input id="evalTeacher" class="border p-2 rounded w-full">
       </div>
 
     </div>
@@ -1340,37 +1340,267 @@ function clearSignature(){
 }
   async function exportEvaluationPDF(){
 
-  const element =
-    document.getElementById("evalExportArea");
-
-  const canvas =
-    await html2canvas(element,{
-      scale:2
-    });
-
-  const imgData =
-    canvas.toDataURL("image/png");
-
   const { jsPDF } = window.jspdf;
 
-  const pdf =
-    new jsPDF("p","mm","a4");
+  const pdf = new jsPDF({
+    orientation:"portrait",
+    unit:"mm",
+    format:"a4"
+  });
 
-  const width = 190;
+  let pageWidth = 210;
+  let pageHeight = 297;
 
-  const height =
-    canvas.height * width / canvas.width;
+  let margin = 12;
 
-  pdf.addImage(
-    imgData,
-    "PNG",
-    10,
-    10,
-    width,
-    height
+  let y = 15;
+
+  /* =========================
+     HEADER
+  ========================= */
+
+  pdf.setFont("helvetica","bold");
+
+  pdf.setFontSize(14);
+
+  pdf.text(
+    "PHIẾU ĐÁNH GIÁ THỰC HÀNH NHÂN VIÊN BÁN HÀNG",
+    pageWidth/2,
+    y,
+    {align:"center"}
   );
 
-  pdf.save("DanhGiaHocVien.pdf");
+  y += 10;
+
+  pdf.setFontSize(11);
+
+  pdf.setFont("helvetica","normal");
+
+  const student =
+    document.getElementById("evalStudent")?.value || "";
+
+  const teacher =
+    document.getElementById("evalTeacher")?.value || "";
+
+  pdf.text(`Họ tên học viên: ${student}`,margin,y);
+
+  y += 7;
+
+  pdf.text(`Người đánh giá: ${teacher}`,margin,y);
+
+  y += 10;
+
+  /* =========================
+     TABLE HEADER
+  ========================= */
+
+  drawTableHeader();
+
+  /* =========================
+     TABLE CONTENT
+  ========================= */
+
+  evalStaffCriteria.forEach((item,index)=>{
+
+    let contentLines = [];
+
+    item.content.forEach(c=>{
+
+      const split =
+        pdf.splitTextToSize(
+          "• " + c,
+          105
+        );
+
+      contentLines.push(...split);
+
+    });
+
+    let rowHeight =
+      Math.max(
+        12,
+        contentLines.length * 5 + 8
+      );
+
+    /* PAGE BREAK */
+
+    if(y + rowHeight > 270){
+
+      pdf.addPage();
+
+      y = 15;
+
+      drawTableHeader();
+    }
+
+    /* STT */
+
+    pdf.rect(12,y,12,rowHeight);
+
+    pdf.text(
+      String(item.id),
+      18,
+      y+8,
+      {align:"center"}
+    );
+
+    /* NỘI DUNG */
+
+    pdf.rect(24,y,110,rowHeight);
+
+    pdf.setFont("helvetica","bold");
+
+    pdf.text(
+      item.title,
+      26,
+      y+6
+    );
+
+    pdf.setFont("helvetica","normal");
+
+    let textY = y + 12;
+
+    contentLines.forEach(line=>{
+
+      pdf.text(line,28,textY);
+
+      textY += 5;
+    });
+
+    /* TỶ TRỌNG */
+
+    pdf.rect(134,y,25,rowHeight);
+
+    pdf.text(
+      item.weight,
+      146,
+      y+8,
+      {align:"center"}
+    );
+
+    /* ĐIỂM */
+
+    pdf.rect(159,y,25,rowHeight);
+
+    const scoreInputs =
+      document.querySelectorAll(".eval-score");
+
+    const score =
+      scoreInputs[index]?.value || "";
+
+    pdf.text(
+      score,
+      171,
+      y+8,
+      {align:"center"}
+    );
+
+    y += rowHeight;
+
+  });
+
+  /* =========================
+     TỔNG ĐIỂM
+  ========================= */
+
+  y += 8;
+
+  const total =
+    document.getElementById("evalTotal").innerText;
+
+  pdf.setFont("helvetica","bold");
+
+  pdf.text(
+    `TỔNG ĐIỂM: ${total}`,
+    140,
+    y
+  );
+
+  y += 15;
+
+  /* =========================
+     CHỮ KÝ
+  ========================= */
+
+  pdf.setFont("helvetica","normal");
+
+  pdf.text(
+    "Người đánh giá",
+    145,
+    y
+  );
+
+  y += 5;
+
+  const signCanvas =
+    document.getElementById("signaturePad");
+
+  const signImage =
+    signCanvas.toDataURL("image/png");
+
+  pdf.addImage(
+    signImage,
+    "PNG",
+    135,
+    y,
+    50,
+    25
+  );
+
+  y += 32;
+
+  pdf.text(
+    teacher,
+    150,
+    y
+  );
+
+  /* =========================
+     SAVE
+  ========================= */
+
+  pdf.save(
+    "BM-74.TTHLNV.pdf"
+  );
+
+  /* =========================
+     FUNCTION
+  ========================= */
+
+  function drawTableHeader(){
+
+    pdf.setFont("helvetica","bold");
+
+    pdf.rect(12,y,12,10);
+    pdf.rect(24,y,110,10);
+    pdf.rect(134,y,25,10);
+    pdf.rect(159,y,25,10);
+
+    pdf.text("STT",18,y+6,{align:"center"});
+
+    pdf.text(
+      "NỘI DUNG ĐÁNH GIÁ",
+      79,
+      y+6,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "TỶ TRỌNG",
+      146,
+      y+6,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "ĐIỂM",
+      171,
+      y+6,
+      {align:"center"}
+    );
+
+    y += 10;
+  }
 }
   async function exportEvaluationWord(){
 
