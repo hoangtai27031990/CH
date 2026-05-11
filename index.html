@@ -6,6 +6,7 @@
 <title>HỆ THỐNG QUẢN LÝ HSD – Saigon Co.op</title>
 <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -1338,7 +1339,7 @@ function clearSignature(){
     signCanvas.height
   );
 }
-  async function exportEvaluationPDF(){
+ async function exportEvaluationPDF(){
 
   const { jsPDF } = window.jspdf;
 
@@ -1348,189 +1349,366 @@ function clearSignature(){
     format:"a4"
   });
 
-  let pageWidth = 210;
-  let pageHeight = 297;
+  const pageWidth = 210;
+  const pageHeight = 297;
 
-  let margin = 12;
+  const marginLeft = 10;
 
-  let y = 15;
-
-  /* =========================
-     HEADER
-  ========================= */
-
-  pdf.setFont("helvetica","bold");
-
-  pdf.setFontSize(14);
-
-  pdf.text(
-    "PHIẾU ĐÁNH GIÁ THỰC HÀNH NHÂN VIÊN BÁN HÀNG",
-    pageWidth/2,
-    y,
-    {align:"center"}
-  );
-
-  y += 10;
-
-  pdf.setFontSize(11);
-
-  pdf.setFont("helvetica","normal");
+  let currentY = 10;
 
   const student =
-    document.getElementById("evalStudent")?.value || "";
+    document.getElementById("evalStudent").value;
 
   const teacher =
-    document.getElementById("evalTeacher")?.value || "";
+    document.getElementById("evalTeacher").value;
 
-  pdf.text(`Họ tên học viên: ${student}`,margin,y);
+  const scoreInputs =
+    document.querySelectorAll(".eval-score");
 
-  y += 7;
+  /* =====================================
+     HEADER
+  ===================================== */
 
-  pdf.text(`Người đánh giá: ${teacher}`,margin,y);
+  function drawHeader(page){
 
-  y += 10;
+    pdf.setFont("times","normal");
 
-  /* =========================
+    pdf.setFontSize(10);
+
+    pdf.text(
+      "Liên hiệp HTX TM Tp. Hồ Chí Minh",
+      10,
+      10
+    );
+
+    pdf.text(
+      "Trung tâm Huấn luyện Nghiệp vụ",
+      10,
+      15
+    );
+
+    pdf.text(
+      "ĐGTT: CF-NVBH",
+      170,
+      10
+    );
+
+    pdf.setFontSize(14);
+
+    pdf.setFont("times","bold");
+
+    pdf.text(
+      "PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP",
+      pageWidth/2,
+      25,
+      {align:"center"}
+    );
+
+    pdf.setFont("times","normal");
+
+    pdf.setFontSize(10);
+
+    pdf.text(
+      `Họ tên: ${student}`,
+      10,
+      35
+    );
+
+    pdf.text(
+      "Mã số HV: ....................",
+      120,
+      35
+    );
+
+    pdf.text(
+      "Chức danh thực tập: ................................",
+      10,
+      42
+    );
+
+    pdf.text(
+      "Ngày thực tập: ........................",
+      120,
+      42
+    );
+
+    pdf.text(
+      "Đơn vị công tác (dự kiến): ................................",
+      10,
+      49
+    );
+
+    pdf.text(
+      "Đơn vị thực tập: ........................",
+      120,
+      49
+    );
+
+    currentY = 58;
+
+    pdf.setFontSize(9);
+
+    pdf.text("Tiêu chuẩn",10,currentY);
+
+    pdf.text("Hoàn thành xuất sắc tiêu chí nhận xét",40,currentY);
+
+    currentY += 5;
+
+    pdf.text("Hoàn thành tốt tiêu chí nhận xét",40,currentY);
+
+    currentY += 5;
+
+    pdf.text("Hoàn thành khá tiêu chí nhận xét",40,currentY);
+
+    currentY += 5;
+
+    pdf.text("Hoàn thành tiêu chí nhận xét",40,currentY);
+
+    currentY += 5;
+
+    pdf.text("Không hoàn thành tiêu chí nhận xét",40,currentY);
+
+    currentY += 10;
+
+    drawTableHeader();
+  }
+
+  /* =====================================
      TABLE HEADER
-  ========================= */
+  ===================================== */
 
-  drawTableHeader();
+  function drawTableHeader(){
 
-  /* =========================
-     TABLE CONTENT
-  ========================= */
+    pdf.setFont("times","bold");
+
+    pdf.setFontSize(9);
+
+    pdf.rect(10,currentY,10,12);
+    pdf.rect(20,currentY,95,12);
+    pdf.rect(115,currentY,15,12);
+    pdf.rect(130,currentY,20,12);
+    pdf.rect(150,currentY,20,12);
+    pdf.rect(170,currentY,20,12);
+    pdf.rect(190,currentY,10,12);
+
+    pdf.text("STT",15,currentY+7,{align:"center"});
+
+    pdf.text(
+      "NỘI DUNG",
+      67,
+      currentY+7,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "ĐIỂM\nCHUẨN",
+      122,
+      currentY+5,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "TỶ\nTRỌNG",
+      140,
+      currentY+5,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "ĐIỂM\n(1)",
+      160,
+      currentY+5,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "NGƯỜI\nHƯỚNG DẪN",
+      180,
+      currentY+5,
+      {align:"center"}
+    );
+
+    pdf.text(
+      "(3)",
+      195,
+      currentY+7,
+      {align:"center"}
+    );
+
+    currentY += 12;
+  }
+
+  /* =====================================
+     START PAGE 1
+  ===================================== */
+
+  drawHeader(1);
+
+  pdf.setFont("times","normal");
+
+  pdf.setFontSize(9);
 
   evalStaffCriteria.forEach((item,index)=>{
 
-    let contentLines = [];
+    let text = item.title + "\n";
 
     item.content.forEach(c=>{
-
-      const split =
-        pdf.splitTextToSize(
-          "• " + c,
-          105
-        );
-
-      contentLines.push(...split);
-
+      text += "• " + c + "\n";
     });
 
-    let rowHeight =
-      Math.max(
-        12,
-        contentLines.length * 5 + 8
-      );
+    const split =
+      pdf.splitTextToSize(text,90);
+
+    const rowHeight =
+      split.length * 5 + 8;
 
     /* PAGE BREAK */
 
-    if(y + rowHeight > 270){
+    if(currentY + rowHeight > 250){
 
       pdf.addPage();
 
-      y = 15;
+      currentY = 10;
 
-      drawTableHeader();
+      drawHeader();
     }
 
-    /* STT */
+    pdf.rect(10,currentY,10,rowHeight);
 
-    pdf.rect(12,y,12,rowHeight);
+    pdf.rect(20,currentY,95,rowHeight);
+
+    pdf.rect(115,currentY,15,rowHeight);
+
+    pdf.rect(130,currentY,20,rowHeight);
+
+    pdf.rect(150,currentY,20,rowHeight);
+
+    pdf.rect(170,currentY,20,rowHeight);
+
+    pdf.rect(190,currentY,10,rowHeight);
 
     pdf.text(
       String(item.id),
-      18,
-      y+8,
+      15,
+      currentY+7,
       {align:"center"}
     );
 
-    /* NỘI DUNG */
-
-    pdf.rect(24,y,110,rowHeight);
-
-    pdf.setFont("helvetica","bold");
-
     pdf.text(
-      item.title,
-      26,
-      y+6
+      split,
+      22,
+      currentY+6
     );
 
-    pdf.setFont("helvetica","normal");
-
-    let textY = y + 12;
-
-    contentLines.forEach(line=>{
-
-      pdf.text(line,28,textY);
-
-      textY += 5;
-    });
-
-    /* TỶ TRỌNG */
-
-    pdf.rect(134,y,25,rowHeight);
+    pdf.text(
+      "10",
+      122,
+      currentY+7,
+      {align:"center"}
+    );
 
     pdf.text(
       item.weight,
-      146,
-      y+8,
+      140,
+      currentY+7,
       {align:"center"}
     );
-
-    /* ĐIỂM */
-
-    pdf.rect(159,y,25,rowHeight);
-
-    const scoreInputs =
-      document.querySelectorAll(".eval-score");
 
     const score =
       scoreInputs[index]?.value || "";
 
     pdf.text(
       score,
-      171,
-      y+8,
+      160,
+      currentY+7,
       {align:"center"}
     );
 
-    y += rowHeight;
+    currentY += rowHeight;
 
   });
 
-  /* =========================
-     TỔNG ĐIỂM
-  ========================= */
+  /* =====================================
+     TOTAL
+  ===================================== */
 
-  y += 8;
+  currentY += 5;
 
-  const total =
-    document.getElementById("evalTotal").innerText;
-
-  pdf.setFont("helvetica","bold");
+  pdf.setFont("times","bold");
 
   pdf.text(
-    `TỔNG ĐIỂM: ${total}`,
-    140,
-    y
+    "TỔNG ĐIỂM",
+    120,
+    currentY
   );
 
-  y += 15;
+  pdf.text(
+    document.getElementById("evalTotal").innerText,
+    160,
+    currentY
+  );
 
-  /* =========================
+  /* =====================================
+     NHẬN XÉT
+  ===================================== */
+
+  currentY += 15;
+
+  pdf.setFont("times","bold");
+
+  pdf.text(
+    "NHẬN XÉT CỦA NGƯỜI HƯỚNG DẪN:",
+    10,
+    currentY
+  );
+
+  currentY += 10;
+
+  pdf.setFont("times","normal");
+
+  pdf.text(
+    "a. Ưu điểm:",
+    10,
+    currentY
+  );
+
+  currentY += 20;
+
+  pdf.text(
+    "b. Khuyết điểm:",
+    10,
+    currentY
+  );
+
+  currentY += 20;
+
+  pdf.text(
+    "c. Hướng khắc phục:",
+    10,
+    currentY
+  );
+
+  /* =====================================
      CHỮ KÝ
-  ========================= */
+  ===================================== */
 
-  pdf.setFont("helvetica","normal");
+  currentY += 30;
 
   pdf.text(
-    "Người đánh giá",
-    145,
-    y
+    "Ngày ..... tháng ..... năm .........",
+    130,
+    currentY
   );
 
-  y += 5;
+  currentY += 10;
+
+  pdf.setFont("times","bold");
+
+  pdf.text(
+    "NGƯỜI ĐÁNH GIÁ",
+    145,
+    currentY
+  );
 
   const signCanvas =
     document.getElementById("signaturePad");
@@ -1542,65 +1720,48 @@ function clearSignature(){
     signImage,
     "PNG",
     135,
-    y,
-    50,
-    25
+    currentY + 5,
+    45,
+    20
   );
 
-  y += 32;
+  currentY += 30;
+
+  pdf.setFont("times","normal");
 
   pdf.text(
     teacher,
     150,
-    y
+    currentY
   );
 
-  /* =========================
+  /* =====================================
+     FOOTER
+  ===================================== */
+
+  const pageCount =
+    pdf.internal.getNumberOfPages();
+
+  for(let i=1;i<=pageCount;i++){
+
+    pdf.setPage(i);
+
+    pdf.setFontSize(9);
+
+    pdf.text(
+      `BM-74.TTHLNV Ban hành lần: 03 Trang ${i}/${pageCount}`,
+      140,
+      290
+    );
+  }
+
+  /* =====================================
      SAVE
-  ========================= */
+  ===================================== */
 
   pdf.save(
     "BM-74.TTHLNV.pdf"
   );
-
-  /* =========================
-     FUNCTION
-  ========================= */
-
-  function drawTableHeader(){
-
-    pdf.setFont("helvetica","bold");
-
-    pdf.rect(12,y,12,10);
-    pdf.rect(24,y,110,10);
-    pdf.rect(134,y,25,10);
-    pdf.rect(159,y,25,10);
-
-    pdf.text("STT",18,y+6,{align:"center"});
-
-    pdf.text(
-      "NỘI DUNG ĐÁNH GIÁ",
-      79,
-      y+6,
-      {align:"center"}
-    );
-
-    pdf.text(
-      "TỶ TRỌNG",
-      146,
-      y+6,
-      {align:"center"}
-    );
-
-    pdf.text(
-      "ĐIỂM",
-      171,
-      y+6,
-      {align:"center"}
-    );
-
-    y += 10;
-  }
 }
   async function exportEvaluationWord(){
 
