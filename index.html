@@ -69,7 +69,7 @@ body{background:#f3f4f6}
 <body class="max-w-xl mx-auto p-3">
 
 <!-- POPUP CẢNH BÁO -->
-<div id="alertPopup" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2000]">
+<div id="alertPopup" style="display:none" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[2000]">
   <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
     <div id="popupTitle" class="font-bold text-lg mb-2"></div>
     <div id="popupMsg" class="mb-4"></div>
@@ -78,7 +78,7 @@ body{background:#f3f4f6}
 </div>
 
 <!-- POPUP KIỂM DATE -->
-<div id="checkDateBox" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2100]">
+<div id="checkDateBox" style="display:none" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[2100]">
   <div id="checkDateInner" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
     <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
     <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
@@ -112,7 +112,7 @@ body{background:#f3f4f6}
 </div>
 
 <!-- POPUP XÁC NHẬN ĐÃ HỌC ĐẦY ĐỦ -->
-<div id="learnConfirmPopup" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-60 z-[3100]">
+<div id="learnConfirmPopup" style="display:none" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-[3100]">
   <div style="background:#fff;border-radius:16px;padding:24px;width:90%;max-width:360px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)">
     <div style="font-size:40px;margin-bottom:8px">📖</div>
     <div style="font-weight:700;font-size:17px;margin-bottom:8px;color:#111">Xác nhận hoàn thành bài học</div>
@@ -345,7 +345,7 @@ body{background:#f3f4f6}
 </div>
 
 <!-- POPUP XÁC NHẬN RESET TIẾN TRÌNH -->
-<div id="trainResetConfirm" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2300]">
+<div id="trainResetConfirm" style="display:none" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[2300]">
   <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
     <div style="font-size:28px;margin-bottom:8px">🔄</div>
     <div class="font-bold text-lg mb-2 text-red-600">Xác nhận Reset tiến trình</div>
@@ -450,7 +450,7 @@ body{background:#f3f4f6}
 </div>
 
 <!-- CONFIRM XÓA -->
-<div id="confirmBox" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
+<div id="confirmBox" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[2200]" style="display:none">
   <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
     <div class="font-bold text-lg mb-3 text-red-600">XÁC NHẬN XÓA LỊCH SỬ</div>
     <div class="mb-4 text-sm">Thao tác này sẽ xóa toàn bộ dữ liệu và không thể khôi phục.</div>
@@ -551,7 +551,8 @@ function renderTrainModules(){
 
 /* ===== TRAINING: MỞ FILE PDF bằng PDF.js (đa trang, mobile-friendly) ===== */
 let currentModuleId = null;
-let pdfRenderTask = null;
+let pdfRenderAborted = false;
+let currentPdfDoc = null;
 
 // Cấu hình PDF.js worker
 if(typeof pdfjsLib !== 'undefined'){
@@ -563,6 +564,11 @@ function openModule(moduleId){
   const allModules = trainModules1.concat(trainModules);
   const m = allModules.find(function(x){ return x.id === moduleId; });
   if(!m) return;
+  // Huỷ render PDF cũ nếu đang chạy
+  pdfRenderAborted = true;
+  if(currentPdfDoc){ try{ currentPdfDoc.destroy(); }catch(e){} currentPdfDoc = null; }
+  pdfRenderAborted = false;
+
   currentModuleId = moduleId;
 
   document.getElementById("pdfViewerTitle").textContent = m.icon + " " + m.title;
@@ -589,14 +595,17 @@ function openModule(moduleId){
   const dpr = Math.min(window.devicePixelRatio || 1, 3); // giới hạn 3x tránh quá nặng
 
   pdfjsLib.getDocument({ url: m.pdf, cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/', cMapPacked: true }).promise.then(function(pdf){
+    currentPdfDoc = pdf;
     document.getElementById("pdfLoading").style.display = "none";
     document.getElementById("pdfPageInfo").textContent = "1 / " + pdf.numPages + " trang";
     const container = document.getElementById("pdfPagesContainer");
 
     // Render từng trang tuần tự
     function renderPage(pageNum){
+      if(pdfRenderAborted) return; // dừng nếu đã bị huỷ
       if(pageNum > pdf.numPages) return;
       pdf.getPage(pageNum).then(function(page){
+        if(pdfRenderAborted) return;
         const viewport = page.getViewport({ scale: 1 });
         // scale vừa khớp chiều rộng hiển thị
         const baseScale = displayWidth / viewport.width;
@@ -659,6 +668,8 @@ function confirmLearnDone(){
 }
 
 function closePdfViewer(){
+  pdfRenderAborted = true;
+  if(currentPdfDoc){ try{ currentPdfDoc.destroy(); }catch(e){} currentPdfDoc = null; }
   document.getElementById("pdfViewer").style.display = "none";
   document.getElementById("pdfPagesContainer").innerHTML = "";
   document.getElementById("pdfLoading").style.display = "none";
@@ -853,17 +864,17 @@ function calculate(){
   autoCleanExpired();
   if(today>=date20) showPopup("20"); else if(today>=date30) showPopup("30");
 }
-function saveHistory(nsxD,hsdD,date30,date20,f30,f20){ const h=JSON.parse(localStorage.getItem(historyKey))||[]; h.unshift({id:Date.now(),TenSP:productName.value.trim()||"",Barcode:barcode.value.trim()||"",NSX:nsxD.toISOString(),HSD:hsdD.toISOString(),M30:date30.toISOString(),M20:date20.toISOString(),CanhBao30:f30,CanhBao20:f20,ThoiGian:new Date().toLocaleString("vi-VN")}); localStorage.setItem(historyKey,JSON.stringify(h)); renderHistory(); }
+function saveHistory(nsxD,hsdD,date30,date20,f30,f20){ const h=JSON.parse(localStorage.getItem(historyKey)||"[]"); h.unshift({id:Date.now(),TenSP:document.getElementById("productName").value.trim()||"",Barcode:document.getElementById("barcode").value.trim()||"",NSX:nsxD.toISOString(),HSD:hsdD.toISOString(),M30:date30.toISOString(),M20:date20.toISOString(),CanhBao30:f30,CanhBao20:f20,ThoiGian:new Date().toLocaleString("vi-VN")}); localStorage.setItem(historyKey,JSON.stringify(h)); renderHistory(); }
 function setFilter(type){ currentFilter=type; document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");}); document.getElementById("f-"+type).classList.add("active"); renderHistory(); }
 function renderDashboard(){ const data=JSON.parse(localStorage.getItem(historyKey)||"[]"); const el=document.getElementById("dashboardStats"); const card=document.getElementById("dashboardCard"); if(!el) return; if(!data.length){ card.style.display="none"; return; } card.style.display="block"; const today=new Date(); today.setHours(0,0,0,0); let total=data.length,safe=0,warn30=0,danger20=0,expired=0; data.forEach(function(x){ const hsd=new Date(x.HSD); hsd.setHours(0,0,0,0); const m20=new Date(x.M20); m20.setHours(0,0,0,0); const m30=new Date(x.M30); m30.setHours(0,0,0,0); if(hsd<today){expired++;} else if(today>=m20){danger20++;} else if(today>=m30){warn30++;} else {safe++;} }); el.innerHTML='<div class="stat-card stat-total"><div class="stat-num">'+total+'</div><div class="stat-lbl">📦 Tổng SP</div></div><div class="stat-card stat-safe" onclick="setFilter(\'all\')" style="cursor:pointer"><div class="stat-num">'+safe+'</div><div class="stat-lbl">✅ An toàn</div></div><div class="stat-card stat-warn" onclick="setFilter(\'30\')" style="cursor:pointer"><div class="stat-num">'+warn30+'</div><div class="stat-lbl">⚠️ Giải tồn</div></div><div class="stat-card stat-danger" onclick="setFilter(\'20\')" style="cursor:pointer"><div class="stat-num">'+danger20+'</div><div class="stat-lbl">🔴 Rút hàng</div></div><div class="stat-card" style="background:#1e293b;color:#f8fafc;border-radius:10px;padding:10px 12px;text-align:center;flex:1;min-width:70px"><div class="stat-num" style="font-size:22px;font-weight:700">'+expired+'</div><div class="stat-lbl" style="font-size:11px;margin-top:2px;font-weight:500">❌ Hết hạn</div></div>'; }
 function daysLeft(dateISO){ const today=new Date(); today.setHours(0,0,0,0); const target=new Date(dateISO); target.setHours(0,0,0,0); return Math.round((target-today)/86400000); }
 function countdownBadge(days,label){ if(days>0){ let color=days<=7?"bg-red-100 text-red-700 border-red-300":days<=15?"bg-orange-100 text-orange-700 border-orange-300":"bg-green-100 text-green-700 border-green-300"; return '<span class="inline-block border rounded px-2 py-0.5 text-xs font-semibold '+color+'">⏳ Còn '+days+' ngày → '+label+'</span>'; } else if(days===0){ return '<span class="inline-block border rounded px-2 py-0.5 text-xs font-semibold bg-red-600 text-white border-red-700">🔴 HÔM NAY đạt mốc '+label+'</span>'; } else { return '<span class="inline-block border rounded px-2 py-0.5 text-xs font-semibold bg-gray-800 text-white border-gray-900">⚠️ Đã qua '+Math.abs(days)+' ngày — '+label+'</span>'; } }
 function renderHistory(){ renderDashboard(); const histEl=document.getElementById("historyList"); const statEl=document.getElementById("statisticBox"); let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(currentFilter==="30") data=data.filter(function(x){return x.CanhBao30==="Giải tồn";}); if(currentFilter==="20") data=data.filter(function(x){return x.CanhBao20==="Rút hàng";}); if(!data.length){ histEl.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu</div>"; statEl.innerHTML=""; return; } histEl.innerHTML=data.map(function(x){ const d30=daysLeft(x.M30),d20=daysLeft(x.M20),dHSD=daysLeft(x.HSD); let badge30=x.CanhBao30==="Giải tồn"?countdownBadge(d30,"Giải tồn"):countdownBadge(d30,"30%"); let badge20=x.CanhBao20==="Rút hàng"?countdownBadge(d20,"Rút hàng"):countdownBadge(d20,"20%"); let badgeHSD=""; if(dHSD>0){ let hsdColor=dHSD<=3?"bg-red-100 text-red-700 border-red-300":dHSD<=10?"bg-orange-100 text-orange-700 border-orange-300":"bg-blue-50 text-blue-700 border-blue-200"; badgeHSD='<span class="inline-block border rounded px-2 py-0.5 text-xs '+hsdColor+'">HSD còn '+dHSD+' ngày</span>'; } else if(dHSD===0){ badgeHSD='<span class="inline-block border rounded px-2 py-0.5 text-xs bg-red-600 text-white">HSD HÔM NAY</span>'; } else { badgeHSD='<span class="inline-block border rounded px-2 py-0.5 text-xs bg-black text-white">❌ Đã hết hạn '+Math.abs(dHSD)+' ngày</span>'; } return '<div class="border-b pb-2 mb-1"><div class="font-semibold">'+(x.TenSP||"(chưa đặt tên)")+'</div><div class="text-xs text-gray-500 mb-1">Barcode: '+(x.Barcode||"-")+' &nbsp;|&nbsp; ⏱ '+x.ThoiGian+'</div><div class="flex flex-wrap gap-1 mb-1">'+badge30+badge20+badgeHSD+'</div><div class="text-xs text-gray-400">Mốc 30%: '+new Date(x.M30).toLocaleDateString("vi-VN")+' &nbsp;|&nbsp; Mốc 20%: '+new Date(x.M20).toLocaleDateString("vi-VN")+' &nbsp;|&nbsp; HSD: '+new Date(x.HSD).toLocaleDateString("vi-VN")+'</div></div>'; }).join(""); statEl.innerHTML="📦 Tổng: <b>"+data.length+"</b>"; }
-function clearHistory(){ const d=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!d.length){ alert("Không có dữ liệu để xóa"); return; } document.getElementById("confirmBox").classList.remove("hidden"); document.getElementById("confirmBox").classList.add("flex"); }
+function clearHistory(){ const d=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!d.length){ alert("Không có dữ liệu để xóa"); return; } document.getElementById("confirmBox").style.display="flex"; }
 function confirmDeleteHistory(){ localStorage.removeItem(historyKey); renderDashboard(); renderHistory(); closeConfirmPopup(); }
-function closeConfirmPopup(){ const b=document.getElementById("confirmBox"); b.classList.add("hidden"); b.classList.remove("flex"); }
+function closeConfirmPopup(){ document.getElementById("confirmBox").style.display="none"; }
 function exportExcel(){ const h=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!h.length){ alert("Không có dữ liệu"); return; } const ws=XLSX.utils.json_to_sheet(h.map(function(x){ return {"Tên SP":x.TenSP||"","Barcode":x.Barcode||"","NSX":new Date(x.NSX).toLocaleDateString("vi-VN"),"HSD":new Date(x.HSD).toLocaleDateString("vi-VN"),"Mốc 30%":new Date(x.M30).toLocaleDateString("vi-VN"),"Mốc 20%":new Date(x.M20).toLocaleDateString("vi-VN"),"Trạng thái 30%":x.CanhBao30,"Trạng thái 20%":x.CanhBao20,"Thời gian tính":x.ThoiGian,"Đã kiểm date":x.completed?"Đã xử lý":"Chưa xử lý"}; })); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"HSD"); XLSX.writeFile(wb,"saigoncoop_hsd.xlsx"); showPopup("export"); }
-function resetForm(){ productName.value=""; barcode.value=""; nsx.value=""; hsd.value=""; beforeHsdValue.value=""; periodValue.value=""; result.innerHTML=""; }
+function resetForm(){ document.getElementById("productName").value=""; document.getElementById("barcode").value=""; document.getElementById("nsx").value=""; document.getElementById("hsd").value=""; var bhv=document.getElementById("beforeHsdValue"); if(bhv) bhv.value=""; var pv=document.getElementById("periodValue"); if(pv) pv.value=""; document.getElementById("result").innerHTML=""; }
 
 /* ===== PRINT ===== */
 function addBarcode(code){ let d=JSON.parse(localStorage.getItem(printKey)||"{}"); d[code]=(d[code]||0)+1; localStorage.setItem(printKey,JSON.stringify(d)); renderPrint(); }
@@ -897,7 +908,7 @@ function calcProduct(){ const profitPct=Number(document.getElementById("toolProf
 function resetProduct(){ document.getElementById("toolProfit2").value=""; document.getElementById("toolValue2").value=""; document.getElementById("productResult").innerHTML=""; document.getElementById("toolCostVatType").value="exclude"; document.getElementById("toolCostVat").value="0"; document.getElementById("costVatDetail").classList.add("hidden"); }
 
 /* ===== TOOL: GIỮ NGUYÊN LÃI ===== */
-function calcKeep(){ const price=num(keepPrice.value),profit=Number(keepProfit.value)/100,qty=Number(keepQty.value),discount=Number(keepDiscount.value)/100; if(!price||!profit||!qty) return alert("Nhập dữ liệu"); const pa=price*(1-discount),nq=qty*(price/pa); keepResult.innerHTML="Giá sau giảm: <b>"+money(pa)+" đ</b><br>Cần bán: <b>"+Math.ceil(nq)+"</b> sản phẩm"; }
+function calcKeep(){ const price=num(keepPrice.value),profit=Number(keepProfit.value)/100,qty=Number(keepQty.value),discount=Number(keepDiscount.value)/100; if(!price||!profit||!qty) return alert("Nhập dữ liệu"); if(discount>=1) return alert("Giảm giá không thể đạt 100%"); const pa=price*(1-discount); if(pa<=0) return alert("Giá sau giảm không hợp lệ"); const nq=qty*(price/pa); keepResult.innerHTML="Giá sau giảm: <b>"+money(pa)+" đ</b><br>Cần bán: <b>"+Math.ceil(nq)+"</b> sản phẩm"; }
 function resetKeep(){ keepPrice.value=""; keepProfit.value=""; keepQty.value=""; keepDiscount.value=""; keepResult.innerHTML=""; }
 
 /* ===== TOOL: VÒNG QUAY ===== */
@@ -909,7 +920,7 @@ function calcPromoProfit(){ const cost=num(promoCost.value),disc=Number(promoDis
 function resetPromo(){ promoCost.value=""; promoDiscount.value=""; promoPrice.value=""; promoResult.innerHTML=""; }
 
 /* ===== TOOL: DISCOUNT RISK ===== */
-function calcDiscountRisk(){ const cost=num(riskCost.value),margin=Number(riskMargin.value)/100,discount=Number(riskDiscount.value)/100; if(!cost||!margin) return alert("Nhập dữ liệu"); const price=cost/(1-margin),pa=price*(1-discount),mn=(pa-cost)/pa,ni=margin/mn; let warn=""; if(mn<0.1) warn="<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM</span>"; else if(mn<0.2) warn="<span style='color:#f97316;font-weight:bold'>⚠️ Lợi nhuận giảm mạnh</span>"; else warn="<span style='color:green'>An toàn</span>"; riskResult.innerHTML="Giá bán chuẩn: <b>"+money(price)+" đ</b><br>Giá sau giảm: <b>"+money(pa)+" đ</b><br>Margin còn lại: <b>"+(mn*100).toFixed(2)+" %</b><br>Số lượng cần tăng: <b>"+(ni*100-100).toFixed(1)+" %</b><br>"+warn; }
+function calcDiscountRisk(){ const cost=num(riskCost.value),margin=Number(riskMargin.value)/100,discount=Number(riskDiscount.value)/100; if(!cost||!margin) return alert("Nhập dữ liệu"); if(margin<=0||margin>=1) return alert("Tỉ lệ lãi phải từ 1% đến 99%"); const price=cost/(1-margin),pa=price*(1-discount),mn=(pa-cost)/pa; if(pa<=0||mn<=0){ riskResult.innerHTML="<span style='color:red;font-weight:bold'>⚠️ THUA LỖ – Giá sau giảm thấp hơn giá vốn</span>"; return; } const ni=margin/mn; let warn=""; if(mn<0.1) warn="<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM</span>"; else if(mn<0.2) warn="<span style='color:#f97316;font-weight:bold'>⚠️ Lợi nhuận giảm mạnh</span>"; else warn="<span style='color:green'>An toàn</span>"; riskResult.innerHTML="Giá bán chuẩn: <b>"+money(price)+" đ</b><br>Giá sau giảm: <b>"+money(pa)+" đ</b><br>Margin còn lại: <b>"+(mn*100).toFixed(2)+" %</b><br>Số lượng cần tăng: <b>"+(ni*100-100).toFixed(1)+" %</b><br>"+warn; }
 function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscount.value=""; riskResult.innerHTML=""; }
 
 /* ===== INIT ===== */
