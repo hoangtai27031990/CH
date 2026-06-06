@@ -1640,21 +1640,13 @@ function showCheckDatePopup(list){ isPopupShowing=true; const box=document.getEl
     if(dHSD>0){var hc=dHSD<=3?"badge-danger":dHSD<=10?"badge-warn":"badge-blue"; badgeHSD='<span class="badge '+hc+'">HSD còn '+dHSD+' ngày</span>';}
     else if(dHSD===0){badgeHSD='<span class="badge badge-red">⚠️ HSD HÔM NAY</span>';}
     else{badgeHSD='<span class="badge badge-dark">❌ Hết hạn '+Math.abs(dHSD)+' ngày</span>';}
-    var urgColor=d30<=0?"#9b1c1c":d30<=7?"#92400e":"#0d6e4a";
-    var urgBg=d30<=0?"#fef2f2":d30<=7?"#fff4e6":"#f0fdf4";
     return '<div class="checkdate-inner-item" style="margin-bottom:0">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">'
         +'<div style="font-weight:800;font-size:14px;color:var(--text1);line-height:1.3;flex:1">'+(item.TenSP||"(chưa đặt tên)")+'</div>'
-        +'<button onclick="completeProduct('+item.id+')" class="btn btn-sm" style="background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;flex-shrink:0;padding:5px 10px;font-size:12px">✓ Xong</button>'
+        +'<button onclick="completeProduct('+item.id+')" class="btn btn-sm" style="background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;flex-shrink:0;padding:5px 10px;font-size:12px">✅ Đã xử lý</button>'
       +'</div>'
       +'<div style="font-size:12px;color:var(--text3);margin-bottom:7px">📦 Barcode: '+(item.Barcode||"—")+'&nbsp;·&nbsp;🕐 '+item.ThoiGian+'</div>'
-      +'<div class="badge-row" style="margin-bottom:7px">'+badge30+badge20+badgeHSD+'</div>'
-      +'<div style="background:'+urgBg+';border-radius:9px;padding:7px 10px;font-size:11px;color:'+urgColor+'">'
-        +'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>📅 NSX</span><b>'+new Date(item.NSX).toLocaleDateString("vi-VN")+'</b></div>'
-        +'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>⚠️ Mốc 30% (giải tồn)</span><b>'+new Date(item.M30).toLocaleDateString("vi-VN")+'</b></div>'
-        +'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><span>🔴 Mốc 20% (rút hàng)</span><b>'+new Date(item.M20).toLocaleDateString("vi-VN")+'</b></div>'
-        +'<div style="display:flex;justify-content:space-between"><span>📆 HSD</span><b>'+new Date(item.HSD).toLocaleDateString("vi-VN")+'</b></div>'
-      +'</div>'
+      +'<div class="badge-row">'+badge30+badge20+badgeHSD+'</div>'
     +'</div>';
   }).join("");
   inner.classList.add("checkdate-pulse"); box.style.display="flex"; }
