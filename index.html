@@ -833,6 +833,10 @@ select.inp{
 .sync-ok{background:#e6f9f0;color:#0d6e4a}
 .sync-err{background:#fef2f2;color:#9b1c1c}
 .sync-ing{background:#fff4e6;color:#92400e}
+@keyframes completePop{
+  from{transform:scale(.88) translateY(10px);opacity:0}
+  to{transform:scale(1) translateY(0);opacity:1}
+}
 </style>
 </head>
 <body>
@@ -1271,6 +1275,41 @@ select.inp{
           <div id="trainProgressPct" style="font-size:11px;color:var(--brand);font-weight:700;margin-top:4px;text-align:right">0%</div>
         </div>
 
+        <!-- BANNER HOÀN THÀNH 100% -->
+        <div id="trainCompleteBanner" style="display:none;margin-bottom:16px">
+          <div style="
+            background:linear-gradient(135deg,#0d6e4a 0%,#10b981 100%);
+            border-radius:20px;
+            padding:22px 18px;
+            text-align:center;
+            box-shadow:0 8px 28px rgba(16,185,129,0.30);
+            animation:completePop .4s cubic-bezier(.34,1.56,.64,1);
+          ">
+            <div style="font-size:48px;margin-bottom:8px">🎓</div>
+            <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">Hoàn thành xuất sắc!</div>
+            <div id="trainCompleteHVName" style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:16px"></div>
+            <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:rgba(255,255,255,0.9);line-height:1.6">
+              Bạn đã hoàn thành toàn bộ <b style="color:#fff">14 bài học</b><br>trong lộ trình đào tạo Saigon Co.op 🏆
+            </div>
+            <button onclick="finishTraining()" style="
+              background:#fff;
+              color:#0d6e4a;
+              border:none;
+              border-radius:14px;
+              padding:13px 28px;
+              font-size:15px;
+              font-weight:800;
+              font-family:inherit;
+              cursor:pointer;
+              box-shadow:0 4px 14px rgba(0,0,0,0.15);
+              width:100%;
+              transition:all .15s;
+            " onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+              ✅ Xác nhận hoàn thành → Quay về trang chủ
+            </button>
+          </div>
+        </div>
+
         <!-- GIAI ĐOẠN 1 -->
         <div style="margin-bottom:18px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -1510,6 +1549,26 @@ function renderTrainModules(){
   document.getElementById("trainProgressText").textContent=doneAll+" / "+totalAll+" bài";
   document.getElementById("trainProgressFillTotal").style.width=pctAll+"%";
   document.getElementById("trainProgressPct").textContent=pctAll+"%";
+
+  // Hiện banner hoàn thành khi đạt 100%
+  const banner=document.getElementById("trainCompleteBanner");
+  if(pctAll===100){
+    banner.style.display="block";
+    const nameEl=document.getElementById("trainCompleteHVName");
+    if(currentLearner) nameEl.textContent="👤 "+currentLearner.tenHV+" · "+(currentLearner.cuaHang||currentLearner.maHV);
+    // Scroll lên banner
+    setTimeout(function(){banner.scrollIntoView({behavior:"smooth",block:"center"});},300);
+  } else {
+    banner.style.display="none";
+  }
+}
+
+function finishTraining(){
+  // Reset session học viên để lần sau nhập lại
+  clearLearnerSession();
+  // Quay về tab chính
+  showMain();
+  showToast("🎓 Chúc mừng hoàn thành lộ trình đào tạo!");
 }
 
 /* ===== TRAINING: PDF VIEWER ===== */
