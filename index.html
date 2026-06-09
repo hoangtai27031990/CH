@@ -797,6 +797,42 @@ select.inp{
 .pb-safe{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .pt-safe{padding-top:max(12px,env(safe-area-inset-top))}
 
+
+/* ============================
+   LEARNER FORM & INFO BAR
+=============================== */
+.learner-info-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--brand-pale);
+  border:1.5px solid var(--border2);
+  border-radius:14px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  gap:10px;
+}
+.learner-info-bar-text{flex:1;min-width:0}
+.learner-info-name{font-weight:800;font-size:14px;color:var(--brand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.learner-info-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.learner-switch-btn{
+  flex-shrink:0;
+  background:#fff;
+  border:1.5px solid var(--border2);
+  border-radius:10px;
+  padding:6px 12px;
+  font-size:12px;font-weight:700;
+  color:var(--brand);
+  font-family:inherit;cursor:pointer;
+  white-space:nowrap;
+}
+.sync-status{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:20px;
+  margin-top:4px;
+}
+.sync-ok{background:#e6f9f0;color:#0d6e4a}
+.sync-err{background:#fef2f2;color:#9b1c1c}
+.sync-ing{background:#fff4e6;color:#92400e}
 </style>
 </head>
 <body>
@@ -832,9 +868,11 @@ select.inp{
     <div class="modal-icon">📖</div>
     <div class="modal-title">Xác nhận hoàn thành bài học</div>
     <div id="learnConfirmModuleTitle" style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5"></div>
-    <div style="background:var(--brand-pale);border:1px solid var(--border2);border-radius:12px;padding:11px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.5">
+    <div style="background:var(--brand-pale);border:1px solid var(--border2);border-radius:12px;padding:11px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.5">
       Bạn xác nhận đã đọc và hiểu toàn bộ nội dung bài này?
     </div>
+    <div id="learnerConfirmInfo" style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 11px;background:#f8f8f8;border-radius:10px;text-align:left;line-height:1.6"></div>
+    <span id="syncStatusMsg" class="sync-status" style="display:none;margin-bottom:12px"></span>
     <div class="modal-actions">
       <button onclick="cancelLearnConfirm()" class="btn btn-ghost">Chưa xong</button>
       <button onclick="confirmLearnDone()" class="btn btn-primary">✅ Đã học xong</button>
@@ -864,6 +902,34 @@ select.inp{
     <div class="modal-actions">
       <button onclick="closeConfirmPopup()" class="btn btn-ghost">Hủy</button>
       <button onclick="confirmDeleteHistory()" class="btn btn-danger">Xóa</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- POPUP NHẬP THÔNG TIN HỌC VIÊN -->
+<div id="learnerFormPopup" class="modal-overlay" style="display:none;z-index:3200">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-icon">🎓</div>
+    <div class="modal-title">Thông tin học viên</div>
+    <div class="modal-msg" style="margin-bottom:16px">Nhập thông tin để lưu tiến trình học của bạn</div>
+    <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+      <div>
+        <label class="lbl">Tên học viên <span style="color:var(--brand)">*</span></label>
+        <input id="lfTenHV" class="inp" placeholder="VD: Nguyễn Văn A" autocomplete="off">
+      </div>
+      <div>
+        <label class="lbl">Mã học viên <span style="color:var(--brand)">*</span></label>
+        <input id="lfMaHV" class="inp" placeholder="VD: NV001" autocomplete="off" style="text-transform:uppercase">
+      </div>
+      <div>
+        <label class="lbl">Cửa hàng</label>
+        <input id="lfCuaHang" class="inp" placeholder="VD: CH Lý Thường Kiệt" autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="cancelLearnerForm()" id="lfCancelBtn" class="btn btn-ghost">Hủy</button>
+      <button onclick="submitLearnerForm()" class="btn btn-primary">Bắt đầu học →</button>
     </div>
   </div>
 </div>
@@ -1169,6 +1235,15 @@ select.inp{
     <!-- LỘ TRÌNH CỬA HÀNG TRƯỞNG -->
     <div id="trainManagerPage" class="hidden">
       <div class="card">
+        <!-- THANH THÔNG TIN HỌC VIÊN -->
+        <div id="learnerInfoBar" class="learner-info-bar">
+          <div class="learner-info-bar-text">
+            <div class="learner-info-name" id="learnerInfoName">—</div>
+            <div class="learner-info-sub" id="learnerInfoSub">—</div>
+          </div>
+          <button class="learner-switch-btn" onclick="switchLearner()">🔄 Đổi HV</button>
+        </div>
+
         <!-- Header row -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <button onclick="backToRolePage()" class="back-btn" style="padding:0">← Quay lại</button>
@@ -1300,10 +1375,104 @@ const trainModules = [
   { id:"bai9", title:"Kiểm kê",                                            icon:"📊", pdf:"bai9.pdf" }
 ];
 
-/* ===== TRAINING: LƯU / ĐỌC TIẾN TRÌNH ===== */
-function getTrainProgress(){ return JSON.parse(localStorage.getItem(trainKey)||"{}"); }
-function setTrainDone(moduleId){ const p=getTrainProgress(); if(!p[moduleId]) p[moduleId]={doneAt:new Date().toLocaleString("vi-VN")}; localStorage.setItem(trainKey,JSON.stringify(p)); }
+/* ===== APPS SCRIPT WEBHOOK ===== */
+const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbz5kn-G8K-N_zYVt6xBvcBq0QJRkYwAuSHADeFiB6N2d4M1touywaRxCfJEa6A94jMK/exec";
+
+/* ===== LEARNER SESSION ===== */
+// Mỗi học viên có key riêng: "coop_train_progress_MAHV"
+// currentLearner lưu {maHV, tenHV, cuaHang} trong sessionStorage (xóa khi đóng tab)
+var currentLearner = null;
+
+function getLearnerKey(maHV){
+  return "coop_train_progress_" + (maHV||"default").toUpperCase().replace(/\s+/g,"_");
+}
+function loadCurrentLearner(){
+  try{ currentLearner=JSON.parse(sessionStorage.getItem("coop_learner_session")||"null"); }catch(e){ currentLearner=null; }
+}
+function saveLearnerSession(maHV,tenHV,cuaHang){
+  currentLearner={maHV:maHV.toUpperCase().trim(),tenHV:tenHV.trim(),cuaHang:(cuaHang||"").trim()};
+  sessionStorage.setItem("coop_learner_session",JSON.stringify(currentLearner));
+}
+function clearLearnerSession(){
+  currentLearner=null;
+  sessionStorage.removeItem("coop_learner_session");
+}
+
+/* ===== TRAINING: LƯU / ĐỌC TIẾN TRÌNH theo MÃ HV ===== */
+function getTrainProgress(){
+  const key=currentLearner?getLearnerKey(currentLearner.maHV):trainKey;
+  return JSON.parse(localStorage.getItem(key)||"{}");
+}
+function setTrainDone(moduleId){
+  const key=currentLearner?getLearnerKey(currentLearner.maHV):trainKey;
+  const p=getTrainProgress();
+  if(!p[moduleId]) p[moduleId]={doneAt:new Date().toLocaleString("vi-VN")};
+  localStorage.setItem(key,JSON.stringify(p));
+}
 function isModuleDone(moduleId){ return !!getTrainProgress()[moduleId]; }
+
+/* ===== FORM NHẬP HỌC VIÊN ===== */
+function showLearnerForm(isSwitch){
+  document.getElementById("lfTenHV").value="";
+  document.getElementById("lfMaHV").value="";
+  document.getElementById("lfCuaHang").value="";
+  // Nếu là đổi học viên (không phải lần đầu) thì cho phép hủy
+  document.getElementById("lfCancelBtn").style.display=isSwitch?"":"none";
+  document.getElementById("learnerFormPopup").style.display="flex";
+  setTimeout(function(){document.getElementById("lfTenHV").focus();},100);
+}
+function cancelLearnerForm(){
+  document.getElementById("learnerFormPopup").style.display="none";
+}
+function submitLearnerForm(){
+  const ten=document.getElementById("lfTenHV").value.trim();
+  const ma=document.getElementById("lfMaHV").value.trim();
+  const ch=document.getElementById("lfCuaHang").value.trim();
+  if(!ten){ document.getElementById("lfTenHV").focus(); showToast("⚠️ Vui lòng nhập tên học viên"); return; }
+  if(!ma){ document.getElementById("lfMaHV").focus(); showToast("⚠️ Vui lòng nhập mã học viên"); return; }
+  saveLearnerSession(ma,ten,ch);
+  document.getElementById("learnerFormPopup").style.display="none";
+  updateLearnerInfoBar();
+  renderTrainModules();
+}
+function switchLearner(){
+  showLearnerForm(true);
+}
+function updateLearnerInfoBar(){
+  if(!currentLearner) return;
+  document.getElementById("learnerInfoName").textContent="👤 "+currentLearner.tenHV+" · "+currentLearner.maHV;
+  document.getElementById("learnerInfoSub").textContent=(currentLearner.cuaHang||"Chưa nhập cửa hàng");
+}
+
+/* ===== GỬI DỮ LIỆU LÊN GOOGLE SHEET ===== */
+function syncToSheet(moduleId, tenBai){
+  if(!currentLearner) return;
+  var payload={
+    maHV: currentLearner.maHV,
+    tenHV: currentLearner.tenHV,
+    cuaHang: currentLearner.cuaHang||"",
+    moduleId: moduleId,
+    tenBai: tenBai
+  };
+  // Hiện trạng thái đang gửi
+  showSyncStatus("ing");
+  fetch(APPS_SCRIPT_URL,{
+    method:"POST",
+    mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  }).then(function(){
+    showSyncStatus("ok");
+  }).catch(function(){
+    showSyncStatus("err");
+  });
+}
+function showSyncStatus(state){
+  var map={ing:["sync-ing","⏳ Đang lưu lên Sheet…"],ok:["sync-ok","☁️ Đã lưu lên Google Sheet"],err:["sync-err","⚠️ Lưu Sheet thất bại – đã lưu offline"]};
+  var info=map[state]||map["ok"];
+  var el=document.getElementById("syncStatusMsg");
+  if(el){el.className="sync-status "+info[0];el.textContent=info[1];el.style.display="inline-flex";}
+}
 
 /* ===== TRAINING: RENDER MODULE LIST ===== */
 function renderModuleList(modules, containerId, startIndex){
@@ -1415,12 +1584,24 @@ function showLearnConfirm(){
   const allModules=trainModules1.concat(trainModules);
   const m=allModules.find(function(x){return x.id===currentModuleId;});
   document.getElementById("learnConfirmModuleTitle").textContent=(m?m.icon+" "+m.title:"");
+  // Hiện thông tin học viên
+  var info=document.getElementById("learnerConfirmInfo");
+  if(info && currentLearner){
+    info.innerHTML="👤 <b>"+currentLearner.tenHV+"</b> · "+currentLearner.maHV+(currentLearner.cuaHang?"<br>🏪 "+currentLearner.cuaHang:"");
+    info.style.display="block";
+  } else if(info){ info.style.display="none"; }
+  // Ẩn sync status cũ
+  var ss=document.getElementById("syncStatusMsg"); if(ss) ss.style.display="none";
   document.getElementById("learnConfirmPopup").style.display="flex";
 }
 function cancelLearnConfirm(){ document.getElementById("learnConfirmPopup").style.display="none"; }
 function confirmLearnDone(){
   if(!currentModuleId) return;
+  const allModules=trainModules1.concat(trainModules);
+  const m=allModules.find(function(x){return x.id===currentModuleId;});
   setTrainDone(currentModuleId);
+  // Gửi lên Google Sheet
+  if(m) syncToSheet(currentModuleId, m.icon+" "+m.title);
   renderTrainModules();
   document.getElementById("learnConfirmPopup").style.display="none";
   const btn=document.getElementById("btnConfirmLearn");
@@ -1439,7 +1620,8 @@ function closePdfViewer(){
 }
 function askResetTrain(){ document.getElementById("trainResetConfirm").style.display="flex"; }
 function confirmResetTrain(){
-  localStorage.removeItem(trainKey);
+  const key=currentLearner?getLearnerKey(currentLearner.maHV):trainKey;
+  localStorage.removeItem(key);
   document.getElementById("trainResetConfirm").style.display="none";
   renderTrainModules();
   showToast("Đã reset tiến trình ✓");
@@ -1523,7 +1705,13 @@ function showTrainRole(role){
   if(role==="staff"){showToast("Nội dung đang được chuẩn bị, sắp ra mắt!"); return;}
   document.getElementById("trainRolePage").classList.add("hidden");
   document.getElementById("trainManagerPage").classList.remove("hidden");
-  renderTrainModules();
+  // Nếu chưa có phiên học viên → bắt buộc nhập
+  if(!currentLearner){
+    showLearnerForm(false);
+  } else {
+    updateLearnerInfoBar();
+    renderTrainModules();
+  }
 }
 function backToRolePage(){
   document.getElementById("trainManagerPage").classList.add("hidden");
@@ -1687,6 +1875,7 @@ function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscou
 /* ===== INIT ===== */
 ["toolCost","toolPrice","toolValue2","keepPrice","invSales","invStock","promoCost","promoPrice","riskCost"].forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("blur",function(){ let v=el.value.replace(/\./g,"").replace(/,/g,"."); if(v&&!isNaN(v)) el.value=Number(v).toLocaleString("vi-VN"); }); });
 
+loadCurrentLearner();
 changeCalcMode();
 autoCleanExpired();
 renderDashboard();
