@@ -1781,8 +1781,7 @@ function renderTrainModulesStaff(){
 
 /* ===== STAFF: MỞ PDF ===== */
 function openModuleStaff(moduleId){
-  // Staff dùng chung PDF viewer nhưng set currentRole để biết confirm đúng chỗ
-  currentModuleRole="staff";
+  currentModuleRole="staff"; // set trước, openModule sẽ giữ nguyên vì đã là "staff"
   openModule(moduleId);
 }
 
@@ -1794,11 +1793,14 @@ function confirmLearnDoneStaff(){
   setTrainDoneStaff(currentModuleId);
   if(m) syncToSheetStaff(currentModuleId, m.icon+" "+m.title);
   renderTrainModulesStaff();
-  document.getElementById("learnConfirmPopup").style.display="none";
   var btn=document.getElementById("btnConfirmLearn");
   btn.style.background="#10b981";
   btn.textContent="✅ Đã hoàn thành";
-  showToast("🎉 Đã lưu tiến trình bài học!");
+  // Đóng popup sau 1.5s để người dùng thấy trạng thái sync
+  setTimeout(function(){
+    document.getElementById("learnConfirmPopup").style.display="none";
+    showToast("🎉 Đã lưu tiến trình bài học!");
+  }, 1500);
 }
 
 /* ===== STAFF: SYNC SHEET ===== */
@@ -1812,6 +1814,7 @@ function syncToSheetStaff(moduleId, tenBai){
     moduleId:  moduleId,
     tenBai:    tenBai
   });
+  showSyncStatus("ing");
   fetch(APPS_SCRIPT_URL+"?"+params.toString(),{method:"GET",mode:"no-cors"})
     .then(function(){showSyncStatus("ok");})
     .catch(function(){showSyncStatus("err");});
@@ -1849,8 +1852,8 @@ if(typeof pdfjsLib !== 'undefined'){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 function openModule(moduleId){
-  // Nếu gọi trực tiếp (manager), luôn set role=manager; openModuleStaff sẽ override trước khi vào đây
-  currentModuleRole="manager";
+  // currentModuleRole phải được set TRƯỚC khi gọi hàm này (openModuleStaff set "staff", gọi trực tiếp giữ "manager")
+  if(currentModuleRole!=="staff") currentModuleRole="manager";
   const allModules=trainModules1.concat(trainModules);
   const m=allModules.find(function(x){return x.id===moduleId;});
   if(!m) return;
