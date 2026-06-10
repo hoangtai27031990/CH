@@ -1696,7 +1696,7 @@ function clearLearnerSessionStaff(){
 /* ===== STAFF: LƯU / ĐỌC TIẾN TRÌNH ===== */
 function getTrainProgressStaff(){
   var key=currentLearnerStaff?getLearnerKeyStaff(currentLearnerStaff.maHV):"coop_train_staff_default";
-  return JSON.parse(localStorage.getItem(key)||"{}");
+  try{ return JSON.parse(localStorage.getItem(key)||"{}"); }catch(e){ return {}; }
 }
 function setTrainDoneStaff(moduleId){
   var key=currentLearnerStaff?getLearnerKeyStaff(currentLearnerStaff.maHV):"coop_train_staff_default";
@@ -1711,9 +1711,9 @@ function showLearnerFormStaff(isSwitch){
   document.getElementById("lfTenHVStaff").value="";
   document.getElementById("lfMaHVStaff").value="";
   document.getElementById("lfCuaHangStaff").value="";
-  document.getElementById("lfCancelBtnStaff").style.display=isSwitch?"":"none";
+  document.getElementById("lfCancelBtnStaff").style.display=isSwitch?"inline-flex":"none";
   document.getElementById("learnerFormPopupStaff").style.display="flex";
-  setTimeout(function(){document.getElementById("lfTenHVStaff").focus();},100);
+  setTimeout(function(){document.getElementById("lfTenHVStaff").focus();},150);
 }
 function cancelLearnerFormStaff(){
   document.getElementById("learnerFormPopupStaff").style.display="none";
@@ -1726,7 +1726,6 @@ function submitLearnerFormStaff(){
   if(!ma){ document.getElementById("lfMaHVStaff").focus(); showToast("⚠️ Vui lòng nhập mã học viên"); return; }
   saveLearnerSessionStaff(ma,ten,ch);
   document.getElementById("learnerFormPopupStaff").style.display="none";
-  // Đảm bảo trang staff đang hiện
   document.getElementById("trainRolePage").classList.add("hidden");
   document.getElementById("trainManagerPage").classList.add("hidden");
   document.getElementById("trainStaffPage").classList.remove("hidden");
@@ -1736,17 +1735,20 @@ function submitLearnerFormStaff(){
 function switchLearnerStaff(){ showLearnerFormStaff(true); }
 function updateLearnerInfoBarStaff(){
   if(!currentLearnerStaff) return;
-  document.getElementById("learnerInfoNameStaff").textContent="👤 "+currentLearnerStaff.tenHV+" · "+currentLearnerStaff.maHV;
-  document.getElementById("learnerInfoSubStaff").textContent=(currentLearnerStaff.cuaHang||"Chưa nhập cửa hàng");
+  var nameEl=document.getElementById("learnerInfoNameStaff");
+  var subEl=document.getElementById("learnerInfoSubStaff");
+  if(nameEl) nameEl.textContent="👤 "+currentLearnerStaff.tenHV+" · "+currentLearnerStaff.maHV;
+  if(subEl)  subEl.textContent=(currentLearnerStaff.cuaHang||"Chưa nhập cửa hàng");
 }
 
 /* ===== STAFF: RENDER MODULE LIST ===== */
 function renderModuleListStaff(modules, containerId){
   var list=document.getElementById(containerId);
+  if(!list) return;
   var progress=getTrainProgressStaff();
   list.innerHTML=modules.map(function(m,i){
-    var done=isModuleDoneStaff(m.id);
-    var doneAt=done?progress[m.id].doneAt:"";
+    var done=!!progress[m.id];
+    var doneAt=done?(progress[m.id].doneAt||""):"";
     return '<div class="train-module-item '+(done?"done":"")+'" onclick="openModuleStaff(\''+m.id+'\')">'+
       '<div class="train-badge '+(done?"train-badge-done":"train-badge-todo")+'">'+(done?"✓":(i+1))+'</div>'+
       '<div style="flex:1;min-width:0">'+
@@ -1759,69 +1761,67 @@ function renderModuleListStaff(modules, containerId){
 }
 
 function renderTrainModulesStaff(){
-  var staffModules=trainModules1; // Dùng chung giai đoạn 1 của CHT
-  var done=staffModules.filter(function(m){return isModuleDoneStaff(m.id);}).length;
+  var staffModules=trainModules1;
+  var progress=getTrainProgressStaff();
+  var done=staffModules.filter(function(m){ return !!progress[m.id]; }).length;
   var total=staffModules.length;
   var pct=total>0?Math.round(done/total*100):0;
-  document.getElementById("staffProgressText").textContent=done+" / "+total+" bài";
-  document.getElementById("staffProgressFill").style.width=pct+"%";
-  document.getElementById("staffProgressPct").textContent=pct+"%";
+  var ptEl=document.getElementById("staffProgressText");
+  var pfEl=document.getElementById("staffProgressFill");
+  var ppEl=document.getElementById("staffProgressPct");
+  if(ptEl) ptEl.textContent=done+" / "+total+" bài";
+  if(pfEl) pfEl.style.width=pct+"%";
+  if(ppEl) ppEl.textContent=pct+"%";
   renderModuleListStaff(staffModules,"staffModuleList");
-  // Banner hoàn thành
   var banner=document.getElementById("staffCompleteBanner");
-  if(pct===100){
-    banner.style.display="block";
-    var nameEl=document.getElementById("staffCompleteHVName");
-    if(currentLearnerStaff) nameEl.textContent="👤 "+currentLearnerStaff.tenHV+" · "+(currentLearnerStaff.cuaHang||currentLearnerStaff.maHV);
-    setTimeout(function(){banner.scrollIntoView({behavior:"smooth",block:"center"});},300);
-  } else {
-    banner.style.display="none";
+  if(banner){
+    if(pct===100){
+      banner.style.display="block";
+      var nameEl=document.getElementById("staffCompleteHVName");
+      if(nameEl&&currentLearnerStaff) nameEl.textContent="👤 "+currentLearnerStaff.tenHV+" · "+(currentLearnerStaff.cuaHang||currentLearnerStaff.maHV);
+      setTimeout(function(){banner.scrollIntoView({behavior:"smooth",block:"center"});},300);
+    } else {
+      banner.style.display="none";
+    }
   }
 }
 
-/* ===== STAFF: MỞ PDF ===== */
+/* ===== STAFF: MỞ BÀI HỌC ===== */
 function openModuleStaff(moduleId){
-  currentModuleRole="staff"; // set trước, openModule sẽ giữ nguyên vì đã là "staff"
-  console.log("[STAFF] openModuleStaff called, moduleId=", moduleId, "role=", currentModuleRole);
+  currentModuleRole="staff";
   openModule(moduleId);
 }
 
 /* ===== STAFF: XÁC NHẬN HOÀN THÀNH ===== */
 function confirmLearnDoneStaff(){
   if(!currentModuleId) return;
-  var allModules=trainModules1;
-  var m=allModules.find(function(x){return x.id===currentModuleId;});
+  var m=trainModules1.find(function(x){return x.id===currentModuleId;});
   setTrainDoneStaff(currentModuleId);
   if(m) syncToSheetStaff(currentModuleId, m.icon+" "+m.title);
   renderTrainModulesStaff();
   var btn=document.getElementById("btnConfirmLearn");
-  btn.style.background="#10b981";
-  btn.textContent="✅ Đã hoàn thành";
-  // Đóng popup sau 1.5s để người dùng thấy trạng thái sync
+  if(btn){ btn.style.background="#10b981"; btn.textContent="✅ Đã hoàn thành"; }
   setTimeout(function(){
     document.getElementById("learnConfirmPopup").style.display="none";
     showToast("🎉 Đã lưu tiến trình bài học!");
   }, 1500);
 }
 
-/* ===== STAFF: SYNC SHEET ===== */
+/* ===== STAFF: SYNC LÊN GOOGLE SHEET ===== */
 function syncToSheetStaff(moduleId, tenBai){
-  console.log("[SYNC STAFF] currentLearnerStaff=", currentLearnerStaff, "moduleId=", moduleId);
-  if(!currentLearnerStaff){ console.warn("[SYNC STAFF] ABORT: currentLearnerStaff is null"); return; }
+  if(!currentLearnerStaff) return;
   var params=new URLSearchParams({
-    maHV:      currentLearnerStaff.maHV,
-    tenHV:     currentLearnerStaff.tenHV,
-    cuaHang:   currentLearnerStaff.cuaHang||"",
-    chucDanh:  "Nhân viên bán hàng",
-    moduleId:  moduleId,
-    tenBai:    tenBai
+    maHV:     currentLearnerStaff.maHV,
+    tenHV:    currentLearnerStaff.tenHV,
+    cuaHang:  currentLearnerStaff.cuaHang||"",
+    chucDanh: "Nhân viên bán hàng",
+    moduleId: moduleId,
+    tenBai:   tenBai
   });
   showSyncStatus("ing");
-  var url=APPS_SCRIPT_URL+"?"+params.toString();
-  console.log("[SYNC STAFF] Fetching URL:", url);
-  fetch(url,{method:"GET",mode:"no-cors"})
-    .then(function(){ console.log("[SYNC STAFF] Fetch ok"); showSyncStatus("ok");})
-    .catch(function(err){ console.error("[SYNC STAFF] Fetch error:", err); showSyncStatus("err");});
+  fetch(APPS_SCRIPT_URL+"?"+params.toString(),{method:"GET",mode:"no-cors"})
+    .then(function(){ showSyncStatus("ok"); })
+    .catch(function(){ showSyncStatus("err"); });
 }
 
 /* ===== STAFF: RESET ===== */
@@ -1834,14 +1834,14 @@ function confirmResetTrainStaff(){
   showToast("Đã reset tiến trình ✓");
 }
 
-/* ===== STAFF: HOÀN THÀNH ===== */
+/* ===== STAFF: HOÀN THÀNH TOÀN BỘ ===== */
 function finishTrainingStaff(){
   clearLearnerSessionStaff();
   showMain();
   showToast("🎓 Chúc mừng hoàn thành lộ trình đào tạo Nhân viên!");
 }
 
-/* ===== STAFF: NAVIGATION ===== */
+/* ===== STAFF: QUAY LẠI ===== */
 function backToRolePageStaff(){
   document.getElementById("trainStaffPage").classList.add("hidden");
   document.getElementById("trainRolePage").classList.remove("hidden");
@@ -1937,7 +1937,6 @@ function showLearnConfirm(){
 function cancelLearnConfirm(){ document.getElementById("learnConfirmPopup").style.display="none"; }
 function confirmLearnDone(){
   if(!currentModuleId) return;
-  console.log("[CONFIRM] role=", currentModuleRole, "moduleId=", currentModuleId);
   // Route theo role
   if(currentModuleRole==="staff"){
     confirmLearnDoneStaff();
