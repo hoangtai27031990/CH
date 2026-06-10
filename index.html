@@ -938,46 +938,6 @@ select.inp{
   </div>
 </div>
 
-<!-- POPUP NHẬP THÔNG TIN HỌC VIÊN (STAFF) -->
-<div id="learnerFormPopupStaff" class="modal-overlay" style="display:none;z-index:3200">
-  <div class="modal-box" style="max-width:380px">
-    <div class="modal-icon">🛒</div>
-    <div class="modal-title">Thông tin học viên</div>
-    <div class="modal-msg" style="margin-bottom:16px">Nhân viên bán hàng – nhập thông tin để lưu tiến trình</div>
-    <div style="text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
-      <div>
-        <label class="lbl">Tên học viên <span style="color:var(--brand)">*</span></label>
-        <input id="lfTenHVStaff" class="inp" placeholder="VD: Nguyễn Văn A" autocomplete="off">
-      </div>
-      <div>
-        <label class="lbl">Mã học viên <span style="color:var(--brand)">*</span></label>
-        <input id="lfMaHVStaff" class="inp" placeholder="VD: NV001" autocomplete="off" style="text-transform:uppercase">
-      </div>
-      <div>
-        <label class="lbl">Cửa hàng</label>
-        <input id="lfCuaHangStaff" class="inp" placeholder="VD: CH Lý Thường Kiệt" autocomplete="off">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button onclick="cancelLearnerFormStaff()" id="lfCancelBtnStaff" class="btn btn-ghost">Hủy</button>
-      <button onclick="submitLearnerFormStaff()" class="btn btn-primary">Bắt đầu học →</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- POPUP RESET TIẾN TRÌNH STAFF -->
-<div id="trainResetConfirmStaff" style="display:none" class="modal-overlay" style="z-index:2300">
-  <div class="modal-box">
-    <div class="modal-icon">🔄</div>
-    <div class="modal-title" style="color:#1d4ed8">Reset tiến trình?</div>
-    <div class="modal-msg">Toàn bộ lịch sử học nhân viên sẽ bị xóa.</div>
-    <div class="modal-actions">
-      <button onclick="document.getElementById('trainResetConfirmStaff').style.display='none'" class="btn btn-ghost">Hủy</button>
-      <button onclick="confirmResetTrainStaff()" class="btn btn-danger">Xóa & Reset</button>
-    </div>
-  </div>
-</div>
 <!-- PDF VIEWER FULLSCREEN -->
 <div id="pdfViewer" class="pdf-viewer-wrapper" style="display:none">
   <div class="pdf-viewer-header">
@@ -1267,9 +1227,10 @@ select.inp{
             <span class="train-role-icon">👔</span>
             <span>Cửa hàng trưởng</span>
           </button>
-          <button class="train-role-btn" onclick="showTrainRole('staff')">
+          <button class="train-role-btn" onclick="showTrainRole('staff')" style="opacity:.55">
             <span class="train-role-icon">🛒</span>
             <span>Nhân viên bán hàng</span>
+            <span style="font-size:11px;color:var(--text3);font-weight:500">(Sắp ra mắt)</span>
           </button>
         </div>
       </div>
@@ -1378,66 +1339,6 @@ select.inp{
           </div>
           <div id="trainModuleList" class="space-y"></div>
         </div>
-      </div>
-    </div>
-
-
-    <!-- LỘ TRÌNH NHÂN VIÊN BÁN HÀNG -->
-    <div id="trainStaffPage" class="hidden">
-      <div class="card">
-        <!-- THANH THÔNG TIN HỌC VIÊN (staff) -->
-        <div id="learnerInfoBarStaff" class="learner-info-bar">
-          <div class="learner-info-bar-text">
-            <div class="learner-info-name" id="learnerInfoNameStaff">—</div>
-            <div class="learner-info-sub" id="learnerInfoSubStaff">—</div>
-          </div>
-          <button class="learner-switch-btn" onclick="switchLearnerStaff()">🔄 Đổi HV</button>
-        </div>
-
-        <!-- Header row -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <button onclick="backToRolePageStaff()" class="back-btn" style="padding:0">← Quay lại</button>
-          <button onclick="askResetTrainStaff()" class="btn btn-danger btn-sm">🔄 Reset</button>
-        </div>
-
-        <!-- Role info -->
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-          <div style="width:48px;height:48px;border-radius:14px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🛒</div>
-          <div>
-            <div style="font-weight:800;font-size:16px;color:#1d4ed8">Nhân viên bán hàng</div>
-            <div style="font-size:12px;color:var(--text3)">Lộ trình đào tạo nghiệp vụ cơ bản</div>
-          </div>
-        </div>
-
-        <!-- Tiến trình -->
-        <div class="progress-box" style="background:#eff6ff;border-color:#bfdbfe">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#1e40af;margin-bottom:5px">
-            <span style="font-weight:600">Tiến trình đào tạo</span>
-            <span id="staffProgressText" style="font-weight:700">0 / 5 bài</span>
-          </div>
-          <div class="train-progress-bar" style="background:#dbeafe">
-            <div id="staffProgressFill" style="height:100%;background:linear-gradient(90deg,#1d4ed8,#3b82f6);border-radius:999px;transition:width .5s;width:0%"></div>
-          </div>
-          <div id="staffProgressPct" style="font-size:11px;color:#1d4ed8;font-weight:700;margin-top:4px;text-align:right">0%</div>
-        </div>
-
-        <!-- BANNER HOÀN THÀNH 100% (staff) -->
-        <div id="staffCompleteBanner" style="display:none;margin-bottom:16px">
-          <div style="background:linear-gradient(135deg,#1d4ed8 0%,#3b82f6 100%);border-radius:20px;padding:22px 18px;text-align:center;box-shadow:0 8px 28px rgba(29,78,216,0.30);animation:completePop .4s cubic-bezier(.34,1.56,.64,1)">
-            <div style="font-size:48px;margin-bottom:8px">🎓</div>
-            <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">Hoàn thành xuất sắc!</div>
-            <div id="staffCompleteHVName" style="font-size:13px;color:rgba(255,255,255,0.85);margin-bottom:16px"></div>
-            <div style="background:rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:rgba(255,255,255,0.9);line-height:1.6">
-              Bạn đã hoàn thành toàn bộ <b style="color:#fff">5 bài học</b><br>trong lộ trình đào tạo Nhân viên bán hàng 🏆
-            </div>
-            <button onclick="finishTrainingStaff()" style="background:#fff;color:#1d4ed8;border:none;border-radius:14px;padding:13px 28px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.15);width:100%;transition:all .15s" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
-              ✅ Xác nhận hoàn thành → Quay về trang chủ
-            </button>
-          </div>
-        </div>
-
-        <!-- DANH SÁCH BÀI HỌC -->
-        <div id="staffModuleList" class="space-y"></div>
       </div>
     </div>
 
@@ -1587,12 +1488,11 @@ function syncToSheet(moduleId, tenBai){
   if(!currentLearner) return;
   // Dùng GET + query string để tránh CORS (no-cors POST không gửi được JSON)
   var params = new URLSearchParams({
-    maHV:      currentLearner.maHV,
-    tenHV:     currentLearner.tenHV,
-    cuaHang:   currentLearner.cuaHang||"",
-    chucDanh:  "Cửa hàng trưởng",
-    moduleId:  moduleId,
-    tenBai:    tenBai
+    maHV:     currentLearner.maHV,
+    tenHV:    currentLearner.tenHV,
+    cuaHang:  currentLearner.cuaHang||"",
+    moduleId: moduleId,
+    tenBai:   tenBai
   });
   showSyncStatus("ing");
   fetch(APPS_SCRIPT_URL + "?" + params.toString(), {
@@ -1671,167 +1571,6 @@ function finishTraining(){
   showToast("🎓 Chúc mừng hoàn thành lộ trình đào tạo!");
 }
 
-/* ===== STAFF: LEARNER SESSION ===== */
-var currentLearnerStaff = null;
-
-function getLearnerKeyStaff(maHV){
-  return "coop_train_staff_" + (maHV||"default").toUpperCase().replace(/[^A-Z0-9]/g,"_");
-}
-function loadCurrentLearnerStaff(){
-  try{ currentLearnerStaff=JSON.parse(sessionStorage.getItem("coop_learner_staff_session")||"null"); }catch(e){ currentLearnerStaff=null; }
-}
-function saveLearnerSessionStaff(maHV,tenHV,cuaHang){
-  currentLearnerStaff={maHV:maHV.toUpperCase().trim(),tenHV:tenHV.trim(),cuaHang:(cuaHang||"").trim()};
-  sessionStorage.setItem("coop_learner_staff_session",JSON.stringify(currentLearnerStaff));
-}
-function clearLearnerSessionStaff(){
-  currentLearnerStaff=null;
-  sessionStorage.removeItem("coop_learner_staff_session");
-}
-
-/* ===== STAFF: LƯU / ĐỌC TIẾN TRÌNH ===== */
-function getTrainProgressStaff(){
-  var key=currentLearnerStaff?getLearnerKeyStaff(currentLearnerStaff.maHV):"coop_train_staff_default";
-  return JSON.parse(localStorage.getItem(key)||"{}");
-}
-function setTrainDoneStaff(moduleId){
-  var key=currentLearnerStaff?getLearnerKeyStaff(currentLearnerStaff.maHV):"coop_train_staff_default";
-  var p=getTrainProgressStaff();
-  if(!p[moduleId]) p[moduleId]={doneAt:new Date().toLocaleString("vi-VN")};
-  localStorage.setItem(key,JSON.stringify(p));
-}
-function isModuleDoneStaff(moduleId){ return !!getTrainProgressStaff()[moduleId]; }
-
-/* ===== STAFF: FORM NHẬP HỌC VIÊN ===== */
-function showLearnerFormStaff(isSwitch){
-  document.getElementById("lfTenHVStaff").value="";
-  document.getElementById("lfMaHVStaff").value="";
-  document.getElementById("lfCuaHangStaff").value="";
-  document.getElementById("lfCancelBtnStaff").style.display=isSwitch?"":"none";
-  document.getElementById("learnerFormPopupStaff").style.display="flex";
-  setTimeout(function(){document.getElementById("lfTenHVStaff").focus();},100);
-}
-function cancelLearnerFormStaff(){
-  document.getElementById("learnerFormPopupStaff").style.display="none";
-}
-function submitLearnerFormStaff(){
-  var ten=document.getElementById("lfTenHVStaff").value.trim();
-  var ma=document.getElementById("lfMaHVStaff").value.trim();
-  var ch=document.getElementById("lfCuaHangStaff").value.trim();
-  if(!ten){ document.getElementById("lfTenHVStaff").focus(); showToast("⚠️ Vui lòng nhập tên học viên"); return; }
-  if(!ma){ document.getElementById("lfMaHVStaff").focus(); showToast("⚠️ Vui lòng nhập mã học viên"); return; }
-  saveLearnerSessionStaff(ma,ten,ch);
-  document.getElementById("learnerFormPopupStaff").style.display="none";
-  updateLearnerInfoBarStaff();
-  renderTrainModulesStaff();
-}
-function switchLearnerStaff(){ showLearnerFormStaff(true); }
-function updateLearnerInfoBarStaff(){
-  if(!currentLearnerStaff) return;
-  document.getElementById("learnerInfoNameStaff").textContent="👤 "+currentLearnerStaff.tenHV+" · "+currentLearnerStaff.maHV;
-  document.getElementById("learnerInfoSubStaff").textContent=(currentLearnerStaff.cuaHang||"Chưa nhập cửa hàng");
-}
-
-/* ===== STAFF: RENDER MODULE LIST ===== */
-function renderModuleListStaff(modules, containerId){
-  var list=document.getElementById(containerId);
-  var progress=getTrainProgressStaff();
-  list.innerHTML=modules.map(function(m,i){
-    var done=isModuleDoneStaff(m.id);
-    var doneAt=done?progress[m.id].doneAt:"";
-    return '<div class="train-module-item '+(done?"done":"")+'" onclick="openModuleStaff(''+m.id+'')">'+
-      '<div class="train-badge '+(done?"train-badge-done":"train-badge-todo")+'">'+(done?"✓":(i+1))+'</div>'+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="font-weight:700;font-size:13px;color:var(--text1)">'+m.icon+' '+m.title+'</div>'+
-        (done?'<div style="font-size:11px;color:#10b981;margin-top:2px">✅ Đã hoàn thành · '+doneAt+'</div>':'<div style="font-size:11px;color:var(--text3);margin-top:2px">Chưa học</div>')+
-      '</div>'+
-      '<div style="color:var(--text3);font-size:18px;flex-shrink:0">›</div>'+
-    '</div>';
-  }).join("");
-}
-
-function renderTrainModulesStaff(){
-  var staffModules=trainModules1; // Dùng chung giai đoạn 1 của CHT
-  var done=staffModules.filter(function(m){return isModuleDoneStaff(m.id);}).length;
-  var total=staffModules.length;
-  var pct=total>0?Math.round(done/total*100):0;
-  document.getElementById("staffProgressText").textContent=done+" / "+total+" bài";
-  document.getElementById("staffProgressFill").style.width=pct+"%";
-  document.getElementById("staffProgressPct").textContent=pct+"%";
-  renderModuleListStaff(staffModules,"staffModuleList");
-  // Banner hoàn thành
-  var banner=document.getElementById("staffCompleteBanner");
-  if(pct===100){
-    banner.style.display="block";
-    var nameEl=document.getElementById("staffCompleteHVName");
-    if(currentLearnerStaff) nameEl.textContent="👤 "+currentLearnerStaff.tenHV+" · "+(currentLearnerStaff.cuaHang||currentLearnerStaff.maHV);
-    setTimeout(function(){banner.scrollIntoView({behavior:"smooth",block:"center"});},300);
-  } else {
-    banner.style.display="none";
-  }
-}
-
-/* ===== STAFF: MỞ PDF ===== */
-function openModuleStaff(moduleId){
-  // Staff dùng chung PDF viewer nhưng set currentRole để biết confirm đúng chỗ
-  currentModuleRole="staff";
-  openModule(moduleId);
-}
-
-/* ===== STAFF: XÁC NHẬN HOÀN THÀNH ===== */
-function confirmLearnDoneStaff(){
-  if(!currentModuleId) return;
-  var allModules=trainModules1;
-  var m=allModules.find(function(x){return x.id===currentModuleId;});
-  setTrainDoneStaff(currentModuleId);
-  if(m) syncToSheetStaff(currentModuleId, m.icon+" "+m.title);
-  renderTrainModulesStaff();
-  document.getElementById("learnConfirmPopup").style.display="none";
-  var btn=document.getElementById("btnConfirmLearn");
-  btn.style.background="#10b981";
-  btn.textContent="✅ Đã hoàn thành";
-  showToast("🎉 Đã lưu tiến trình bài học!");
-}
-
-/* ===== STAFF: SYNC SHEET ===== */
-function syncToSheetStaff(moduleId, tenBai){
-  if(!currentLearnerStaff) return;
-  var params=new URLSearchParams({
-    maHV:      currentLearnerStaff.maHV,
-    tenHV:     currentLearnerStaff.tenHV,
-    cuaHang:   currentLearnerStaff.cuaHang||"",
-    chucDanh:  "Nhân viên bán hàng",
-    moduleId:  moduleId,
-    tenBai:    tenBai
-  });
-  fetch(APPS_SCRIPT_URL+"?"+params.toString(),{method:"GET",mode:"no-cors"})
-    .then(function(){showSyncStatus("ok");})
-    .catch(function(){showSyncStatus("err");});
-}
-
-/* ===== STAFF: RESET ===== */
-function askResetTrainStaff(){ document.getElementById("trainResetConfirmStaff").style.display="flex"; }
-function confirmResetTrainStaff(){
-  var key=currentLearnerStaff?getLearnerKeyStaff(currentLearnerStaff.maHV):"coop_train_staff_default";
-  localStorage.removeItem(key);
-  document.getElementById("trainResetConfirmStaff").style.display="none";
-  renderTrainModulesStaff();
-  showToast("Đã reset tiến trình ✓");
-}
-
-/* ===== STAFF: HOÀN THÀNH ===== */
-function finishTrainingStaff(){
-  clearLearnerSessionStaff();
-  showMain();
-  showToast("🎓 Chúc mừng hoàn thành lộ trình đào tạo Nhân viên!");
-}
-
-/* ===== STAFF: NAVIGATION ===== */
-function backToRolePageStaff(){
-  document.getElementById("trainStaffPage").classList.add("hidden");
-  document.getElementById("trainRolePage").classList.remove("hidden");
-}
-
 /* ===== TRAINING: PDF VIEWER ===== */
 let currentModuleId = null;
 let pdfRenderAborted = false;
@@ -1840,8 +1579,6 @@ if(typeof pdfjsLib !== 'undefined'){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 function openModule(moduleId){
-  // Nếu gọi trực tiếp (manager), set role=manager; nếu từ staff sẽ override
-  if(currentModuleRole!=="staff") currentModuleRole="manager";
   const allModules=trainModules1.concat(trainModules);
   const m=allModules.find(function(x){return x.id===moduleId;});
   if(!m) return;
@@ -1904,15 +1641,12 @@ function showLearnConfirm(){
   const allModules=trainModules1.concat(trainModules);
   const m=allModules.find(function(x){return x.id===currentModuleId;});
   document.getElementById("learnConfirmModuleTitle").textContent=(m?m.icon+" "+m.title:"");
-  // Hiện thông tin học viên (manager hoặc staff)
+  // Hiện thông tin học viên
   var info=document.getElementById("learnerConfirmInfo");
-  if(info){
-    var lrn=(currentModuleRole==="staff")?currentLearnerStaff:currentLearner;
-    if(lrn){
-      info.innerHTML="👤 <b>"+lrn.tenHV+"</b> · "+lrn.maHV+(lrn.cuaHang?"<br>🏪 "+lrn.cuaHang:"");
-      info.style.display="block";
-    } else { info.style.display="none"; }
-  }
+  if(info && currentLearner){
+    info.innerHTML="👤 <b>"+currentLearner.tenHV+"</b> · "+currentLearner.maHV+(currentLearner.cuaHang?"<br>🏪 "+currentLearner.cuaHang:"");
+    info.style.display="block";
+  } else if(info){ info.style.display="none"; }
   // Ẩn sync status cũ
   var ss=document.getElementById("syncStatusMsg"); if(ss) ss.style.display="none";
   document.getElementById("learnConfirmPopup").style.display="flex";
@@ -1920,14 +1654,10 @@ function showLearnConfirm(){
 function cancelLearnConfirm(){ document.getElementById("learnConfirmPopup").style.display="none"; }
 function confirmLearnDone(){
   if(!currentModuleId) return;
-  // Route theo role
-  if(currentModuleRole==="staff"){
-    confirmLearnDoneStaff();
-    return;
-  }
   const allModules=trainModules1.concat(trainModules);
   const m=allModules.find(function(x){return x.id===currentModuleId;});
   setTrainDone(currentModuleId);
+  // Gửi lên Google Sheet
   if(m) syncToSheet(currentModuleId, m.icon+" "+m.title);
   renderTrainModules();
   document.getElementById("learnConfirmPopup").style.display="none";
@@ -2026,27 +1756,13 @@ function showTraining(){
   setActiveTab("train");
   document.getElementById("trainRolePage").classList.remove("hidden");
   document.getElementById("trainManagerPage").classList.add("hidden");
-  document.getElementById("trainStaffPage").classList.add("hidden");
   if(document.getElementById("sidebar").classList.contains("active")) toggleMenu();
 }
-/* ===== currentModuleRole: biết confirm cho manager hay staff ===== */
-var currentModuleRole = "manager";
-
 function showTrainRole(role){
-  if(role==="staff"){
-    document.getElementById("trainRolePage").classList.add("hidden");
-    document.getElementById("trainStaffPage").classList.remove("hidden");
-    if(!currentLearnerStaff){
-      showLearnerFormStaff(false);
-    } else {
-      updateLearnerInfoBarStaff();
-      renderTrainModulesStaff();
-    }
-    return;
-  }
-  // manager
+  if(role==="staff"){showToast("Nội dung đang được chuẩn bị, sắp ra mắt!"); return;}
   document.getElementById("trainRolePage").classList.add("hidden");
   document.getElementById("trainManagerPage").classList.remove("hidden");
+  // Nếu chưa có phiên học viên → bắt buộc nhập
   if(!currentLearner){
     showLearnerForm(false);
   } else {
@@ -2217,7 +1933,6 @@ function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscou
 ["toolCost","toolPrice","toolValue2","keepPrice","invSales","invStock","promoCost","promoPrice","riskCost"].forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("blur",function(){ let v=el.value.replace(/\./g,"").replace(/,/g,"."); if(v&&!isNaN(v)) el.value=Number(v).toLocaleString("vi-VN"); }); });
 
 loadCurrentLearner();
-loadCurrentLearnerStaff();
 changeCalcMode();
 autoCleanExpired();
 renderDashboard();
